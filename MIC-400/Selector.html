@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador Selector de Opciones</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .panel-control {
+            background-color: #2c2c2c;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            border: 2px solid #3d3d3d;
+        }
+
+        .contenedor-leds {
+            display: flex;
+            gap: 25px;
+            justify-content: center;
+            margin-bottom: 40px;
+            margin-top: 20px;
+        }
+
+        .modulo-led {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .led {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #4a0000;
+            box-shadow: inset -2px -2px 6px rgba(0,0,0,0.8), inset 2px 2px 6px rgba(255,255,255,0.1);
+            border: 2px solid #111;
+            transition: background-color 0.1s, box-shadow 0.1s;
+        }
+
+        .led.encendido {
+            background-color: #ff3333;
+            box-shadow: 0 0 20px #ff0000, 0 0 40px #ff0000, inset -2px -2px 6px rgba(0,0,0,0.2), inset 2px 2px 8px rgba(255,255,255,0.8);
+        }
+
+        .etiqueta {
+            font-size: 14px;
+            font-weight: bold;
+            color: #aaaaaa;
+        }
+
+        .pulsador {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 6px #0056b3;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .pulsador:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="panel-control">
+        <h2>Selector de 5 Opciones</h2>
+        
+        <div class="contenedor-leds">
+            <div class="modulo-led">
+                <div class="led" id="led1"></div>
+                <span class="etiqueta">LED 1</span>
+            </div>
+            <div class="modulo-led">
+                <div class="led" id="led2"></div>
+                <span class="etiqueta">LED 2</span>
+            </div>
+            <div class="modulo-led">
+                <div class="led" id="led3"></div>
+                <span class="etiqueta">LED 3</span>
+            </div>
+            <div class="modulo-led">
+                <div class="led" id="led4"></div>
+                <span class="etiqueta">LED 4</span>
+            </div>
+            <div class="modulo-led">
+                <div class="led" id="led5"></div>
+                <span class="etiqueta">LED 5</span>
+            </div>
+        </div>
+
+        <button class="pulsador" id="botonSeleccion">Pulsador</button>
+    </div>
+
+    <script>
+        // 0 indica sistema apagado. Del 1 al 5 corresponden a los LEDs.
+        let estadoActual = 0; 
+        const totalEstados = 6; // 6 estados en total (0, 1, 2, 3, 4, 5)
+        const boton = document.getElementById('botonSeleccion');
+
+        boton.addEventListener('click', () => {
+            // 1. Apagar el LED actual (solo si el estado es mayor a 0)
+            if (estadoActual > 0) {
+                document.getElementById(`led${estadoActual}`).classList.remove('encendido');
+            }
+
+            // 2. Avanzar al siguiente estado. 
+            // Si es 5, (5+1)%6 = 0 (apaga todo).
+            estadoActual = (estadoActual + 1) % totalEstados;
+
+            // 3. Encender el nuevo LED (solo si el nuevo estado es mayor a 0)
+            if (estadoActual > 0) {
+                document.getElementById(`led${estadoActual}`).classList.add('encendido');
+            }
+        });
+    </script>
+</body>
+</html>
