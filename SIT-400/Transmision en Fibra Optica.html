@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Simulador de Fibra Óptica</title>
+
+    <style>
+        :root {
+            --primary: #38bdf8;
+            --secondary: #14b8a6;
+            --background-dark: #07111f;
+            --background-medium: #0f2035;
+            --panel: rgba(15, 32, 53, 0.92);
+            --panel-border: rgba(125, 211, 252, 0.22);
+            --text-main: #e6f4ff;
+            --text-secondary: #b8cadd;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 34px 20px 45px;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            color: var(--text-main);
+            background:
+                radial-gradient(
+                    circle at 20% 10%,
+                    rgba(14, 165, 233, 0.16),
+                    transparent 34%
+                ),
+                radial-gradient(
+                    circle at 85% 85%,
+                    rgba(20, 184, 166, 0.13),
+                    transparent 35%
+                ),
+                linear-gradient(
+                    145deg,
+                    var(--background-dark),
+                    var(--background-medium)
+                );
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            color: #f0f9ff;
+            font-size: clamp(1.8rem, 4vw, 2.7rem);
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.25);
+        }
+
+        body > p {
+            margin: 0 0 25px;
+            color: var(--text-secondary);
+            font-size: 1.08rem;
+            letter-spacing: 0.4px;
+        }
+
+        canvas {
+            display: block;
+            width: min(100%, 900px);
+            height: auto;
+            margin: 0 auto;
+            background-color: #020817;
+            border: 1px solid rgba(125, 211, 252, 0.45);
+            border-radius: 14px;
+            box-shadow:
+                0 20px 45px rgba(0, 0, 0, 0.42),
+                0 0 28px rgba(14, 165, 233, 0.11),
+                inset 0 0 25px rgba(14, 165, 233, 0.06);
+        }
+
+        .controls {
+            width: min(100%, 900px);
+            margin: 22px auto 0;
+            padding: 19px 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 14px 18px;
+            background: var(--panel);
+            border: 1px solid var(--panel-border);
+            border-radius: 14px;
+            box-shadow:
+                0 14px 30px rgba(0, 0, 0, 0.25),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px);
+        }
+
+        label {
+            margin: 0;
+            color: #e0f2fe;
+            font-size: 0.96rem;
+            font-weight: 650;
+        }
+
+        select,
+        input,
+        button {
+            margin: 0;
+            font-family: inherit;
+            font-size: 0.95rem;
+        }
+
+        select,
+        button {
+            padding: 10px 12px;
+            color: #e6f4ff;
+            background-color: #0b192b;
+            border: 1px solid rgba(125, 211, 252, 0.35);
+            border-radius: 8px;
+            outline: none;
+            transition:
+                border-color 0.2s ease,
+                box-shadow 0.2s ease,
+                background-color 0.2s ease,
+                transform 0.15s ease;
+        }
+
+        select {
+            min-width: 285px;
+            cursor: pointer;
+        }
+
+        button {
+            cursor: pointer;
+            background: linear-gradient(135deg, #0b4f75, #0e7490);
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+
+        select:hover,
+        select:focus,
+        button:hover,
+        button:focus {
+            background-color: #10233b;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.13);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+        }
+
+        select option {
+            color: #e6f4ff;
+            background-color: #0b192b;
+        }
+
+        input[type="range"] {
+            width: 190px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .info-box {
+            width: min(100%, 900px);
+            margin: 20px auto 0;
+            padding: 18px 20px;
+            color: #d9eaf7;
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(3, 105, 161, 0.19),
+                    rgba(15, 32, 53, 0.94)
+                );
+            border: 1px solid rgba(125, 211, 252, 0.18);
+            border-left: 5px solid var(--primary);
+            border-radius: 10px;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            font-size: 1.02rem;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #7dd3fc;
+        }
+
+        @media (max-width: 720px) {
+            body {
+                padding: 24px 12px 35px;
+            }
+
+            .controls {
+                padding: 18px 14px;
+                flex-direction: column;
+            }
+
+            select,
+            input[type="range"],
+            button {
+                width: 100%;
+                min-width: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Simulador de Transmisión en Fibra Óptica</h1>
+
+    <p>Reflexión Interna Total y Modos de Propagación</p>
+
+    <canvas
+        id="fiberCanvas"
+        width="750"
+        height="250"
+        aria-label="Simulación educativa de propagación de luz en una fibra óptica"
+    ></canvas>
+
+    <div class="controls">
+        <label for="modeSelect">Modo de fibra:</label>
+
+        <select id="modeSelect">
+            <option value="multimode">
+                Multimodo (Varios haces en zigzag)
+            </option>
+
+            <option value="singlemode">
+                Monomodo (Señal digital de intensidad)
+            </option>
+        </select>
+
+        <label for="attenuationRange">Intensidad de señal:</label>
+
+        <input
+            type="range"
+            id="attenuationRange"
+            min="10"
+            max="100"
+            value="100"
+        >
+
+        <button type="button" id="restartButton">
+            Reiniciar propagación
+        </button>
+    </div>
+
+    <div class="info-box" id="description">
+        <strong>Multimodo:</strong>
+        Los rayos de luz avanzan desde el emisor hacia el receptor siguiendo
+        trayectorias independientes y rebotando de forma angular contra los
+        límites del núcleo debido a la reflexión interna total.
+    </div>
+
+    <script>
+        "use strict";
+
+        const canvas = document.getElementById("fiberCanvas");
+        const ctx = canvas.getContext("2d");
+
+        const modeSelect = document.getElementById("modeSelect");
+        const attenuationRange =
+            document.getElementById("attenuationRange");
+        const restartButton =
+            document.getElementById("restartButton");
+        const description =
+            document.getElementById("description");
+
+        const CORE_TOP = 60;
+        const CORE_BOTTOM = 190;
+        const CORE_CENTER = 125;
+
+        let mode = "multimode";
+        let alpha = 1;
+
+        let multimodeProgress = 0;
+        let multimodeComplete = false;
+
+        let digitalSignalTravel = 0;
+        let lastFrameTime = performance.now();
+
+        const multimodePropagationSpeed = 235;
+        const digitalSignalSpeed = 180;
+
+        const digitalBits = [
+            1, 0, 1, 1, 0, 1, 0, 0, 1
+        ];
+
+        const bitWidth = 54;
+        const bitGap = 7;
+        const bitBlockWidth = bitWidth + bitGap;
+        const digitalPatternWidth =
+            digitalBits.length * bitBlockWidth;
+
+        const multimodeBeams = [
+            {
+                wavelength: 118,
+                minY: 65,
+                maxY: 185,
+                color: "#ffeb3b",
+                phase: 0,
+                lineWidth: 3.2
+            },
+            {
+                wavelength: 86,
+                minY: 69,
+                maxY: 181,
+                color: "#ff9800",
+                phase: 29,
+                lineWidth: 3
+            },
+            {
+                wavelength: 154,
+                minY: 73,
+                maxY: 177,
+                color: "#00e5ff",
+                phase: 71,
+                lineWidth: 3
+            }
+        ];
+
+        modeSelect.addEventListener(
+            "change",
+            changeMode
+        );
+
+        attenuationRange.addEventListener(
+            "input",
+            updateAttenuation
+        );
+
+        restartButton.addEventListener(
+            "click",
+            restartPropagation
+        );
+
+        function changeMode() {
+            mode = modeSelect.value;
+
+            if (mode === "multimode") {
+                description.innerHTML =
+                    "<strong>Multimodo:</strong> " +
+                    "Los rayos de luz avanzan desde el emisor hacia el " +
+                    "receptor siguiendo trayectorias independientes y " +
+                    "rebotando de forma angular contra los límites del " +
+                    "núcleo debido a la reflexión interna total.";
+            } else {
+                description.innerHTML =
+                    "<strong>Monomodo:</strong> " +
+                    "La luz se propaga continuamente por una única " +
+                    "trayectoria central. La señal digital utiliza brillo " +
+                    "alto para representar el bit 1 y brillo bajo para " +
+                    "representar el bit 0, sin apagar completamente la luz.";
+            }
+
+            restartPropagation();
+        }
+
+        function updateAttenuation() {
+            const value =
+                Number(attenuationRange.value);
+
+            alpha = Math.max(
+                0.1,
+                Math.min(1, value / 100)
+            );
+        }
+
+        function restartPropagation() {
+            multimodeProgress = 0;
+            multimodeComplete = false;
+            digitalSignalTravel = 0;
+        }
+
+        function createVerticalGradient(
+            y1,
+            y2,
+            color1,
+            color2,
+            color3
+        ) {
+            const gradient =
+                ctx.createLinearGradient(
+                    0,
+                    y1,
+                    0,
+                    y2
+                );
+
+            gradient.addColorStop(0, color1);
+            gradient.addColorStop(0.5, color2);
+            gradient.addColorStop(1, color3);
+
+            return gradient;
+        }
+
+        function drawFiberStructure() {
+            ctx.save();
+
+            ctx.fillStyle = createVerticalGradient(
+                0,
+                CORE_TOP,
+                "#07111f",
+                "#142b42",
+                "#1d3c55"
+            );
+
+            ctx.fillRect(
+                0,
+                0,
+                canvas.width,
+                CORE_TOP
+            );
+
+            ctx.fillStyle = createVerticalGradient(
+                CORE_TOP,
+                CORE_BOTTOM,
+                "#0d665f",
+                "#0c8c82",
+                "#0d665f"
+            );
+
+            ctx.fillRect(
+                0,
+                CORE_TOP,
+                canvas.width,
+                CORE_BOTTOM - CORE_TOP
+            );
+
+            ctx.fillStyle = createVerticalGradient(
+                CORE_BOTTOM,
+                canvas.height,
+                "#1d3c55",
+                "#142b42",
+                "#07111f"
+            );
+
+            ctx.fillRect(
+                0,
+                CORE_BOTTOM,
+                canvas.width,
+                canvas.height - CORE_BOTTOM
+            );
+
+            const coreGlow =
+                ctx.createLinearGradient(
+                    0,
+                    CORE_TOP,
+                    0,
+                    CORE_BOTTOM
+                );
+
+            coreGlow.addColorStop(
+                0,
+                "rgba(94, 234, 212, 0.12)"
+            );
+
+            coreGlow.addColorStop(
+                0.5,
+                "rgba(153, 246, 228, 0.05)"
+            );
+
+            coreGlow.addColorStop(
+                1,
+                "rgba(94, 234, 212, 0.12)"
+            );
+
+            ctx.fillStyle = coreGlow;
+
+            ctx.fillRect(
+                0,
+                CORE_TOP,
+                canvas.width,
+                CORE_BOTTOM - CORE_TOP
+            );
+
+            ctx.strokeStyle =
+                "rgba(94, 234, 212, 0.95)";
+
+            ctx.lineWidth = 2;
+            ctx.shadowBlur = 12;
+            ctx.shadowColor = "#2dd4bf";
+
+            ctx.beginPath();
+
+            ctx.moveTo(0, CORE_TOP);
+            ctx.lineTo(canvas.width, CORE_TOP);
+
+            ctx.moveTo(0, CORE_BOTTOM);
+            ctx.lineTo(canvas.width, CORE_BOTTOM);
+
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+
+            ctx.strokeStyle =
+                "rgba(255, 255, 255, 0.08)";
+
+            ctx.lineWidth = 1;
+            ctx.setLineDash([6, 7]);
+
+            ctx.beginPath();
+
+            ctx.moveTo(0, CORE_CENTER);
+            ctx.lineTo(canvas.width, CORE_CENTER);
+
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+
+            drawLayerLabel(
+                15,
+                29,
+                "REVESTIMIENTO / CLADDING",
+                "Índice de refracción menor",
+                "rgba(186, 230, 253, 0.95)"
+            );
+
+            drawLayerLabel(
+                15,
+                82,
+                "NÚCLEO / CORE",
+                "Índice de refracción mayor · Guía de luz",
+                "rgba(204, 251, 241, 0.98)"
+            );
+
+            drawLayerLabel(
+                15,
+                220,
+                "REVESTIMIENTO / CLADDING",
+                "Índice de refracción menor",
+                "rgba(186, 230, 253, 0.95)"
+            );
+
+            ctx.restore();
+        }
+
+        function drawLayerLabel(
+            x,
+            y,
+            title,
+            subtitle,
+            color
+        ) {
+            ctx.save();
+
+            ctx.textBaseline = "middle";
+
+            ctx.font =
+                "700 10px Segoe UI, sans-serif";
+
+            ctx.fillStyle = color;
+            ctx.fillText(title, x, y - 7);
+
+            ctx.font =
+                "400 10px Segoe UI, sans-serif";
+
+            ctx.fillStyle =
+                "rgba(226, 242, 255, 0.72)";
+
+            ctx.fillText(
+                subtitle,
+                x,
+                y + 7
+            );
+
+            ctx.restore();
+        }
+
+        function triangleWave(
+            x,
+            wavelength,
+            minY,
+            maxY,
+            phase
+        ) {
+            const period =
+                Math.max(1, wavelength);
+
+            let progress =
+                (x + phase) % period;
+
+            if (progress < 0) {
+                progress += period;
+            }
+
+            const normalized =
+                progress / period;
+
+            const triangularValue =
+                Math.abs(normalized - 0.5) * 2;
+
+            const amplitude =
+                maxY - minY;
+
+            return minY +
+                triangularValue * amplitude;
+        }
+
+        function traceZigZagPath(
+            beam,
+            maxX
+        ) {
+            const endX = Math.max(
+                0,
+                Math.min(canvas.width, maxX)
+            );
+
+            for (
+                let x = 0;
+                x <= endX;
+                x += 2
+            ) {
+                const y = triangleWave(
+                    x,
+                    beam.wavelength,
+                    beam.minY,
+                    beam.maxY,
+                    beam.phase
+                );
+
+                if (x === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+
+            if (endX > 0) {
+                const finalY = triangleWave(
+                    endX,
+                    beam.wavelength,
+                    beam.minY,
+                    beam.maxY,
+                    beam.phase
+                );
+
+                ctx.lineTo(endX, finalY);
+            }
+        }
+
+        function drawZigZagBeam(
+            beam,
+            maxX
+        ) {
+            if (maxX <= 0) {
+                return;
+            }
+
+            ctx.save();
+
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+
+            ctx.globalAlpha = alpha * 0.23;
+            ctx.strokeStyle = beam.color;
+            ctx.lineWidth = beam.lineWidth + 7;
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = beam.color;
+
+            ctx.beginPath();
+            traceZigZagPath(beam, maxX);
+            ctx.stroke();
+
+            ctx.globalAlpha = alpha * 0.55;
+            ctx.strokeStyle = beam.color;
+            ctx.lineWidth = beam.lineWidth + 3;
+            ctx.shadowBlur = 14;
+
+            ctx.beginPath();
+            traceZigZagPath(beam, maxX);
+            ctx.stroke();
+
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = beam.color;
+            ctx.lineWidth = beam.lineWidth;
+            ctx.shadowBlur = 9;
+
+            ctx.beginPath();
+            traceZigZagPath(beam, maxX);
+            ctx.stroke();
+
+            ctx.globalAlpha = alpha * 0.68;
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 0.75;
+            ctx.shadowBlur = 5;
+
+            ctx.beginPath();
+            traceZigZagPath(beam, maxX);
+            ctx.stroke();
+
+            if (!multimodeComplete) {
+                const headY = triangleWave(
+                    maxX,
+                    beam.wavelength,
+                    beam.minY,
+                    beam.maxY,
+                    beam.phase
+                );
+
+                drawBeamHead(
+                    maxX,
+                    headY,
+                    beam.color,
+                    5
+                );
+            }
+
+            ctx.restore();
+        }
+
+        function drawSingleModeTransmission() {
+            drawSingleModeGuide();
+            drawContinuousDigitalSignal();
+            drawEmitterAndReceiver();
+        }
+
+        function drawSingleModeGuide() {
+            ctx.save();
+
+            ctx.lineCap = "round";
+
+            ctx.globalAlpha = alpha * 0.08;
+            ctx.strokeStyle = "#00ffff";
+            ctx.lineWidth = 14;
+            ctx.shadowBlur = 14;
+            ctx.shadowColor = "#00ffff";
+
+            ctx.beginPath();
+
+            ctx.moveTo(0, CORE_CENTER);
+            ctx.lineTo(canvas.width, CORE_CENTER);
+
+            ctx.stroke();
+
+            ctx.globalAlpha = alpha * 0.24;
+            ctx.strokeStyle = "#00d9ff";
+            ctx.lineWidth = 2.5;
+            ctx.shadowBlur = 6;
+
+            ctx.beginPath();
+
+            ctx.moveTo(0, CORE_CENTER);
+            ctx.lineTo(canvas.width, CORE_CENTER);
+
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawContinuousDigitalSignal() {
+            const movement =
+                digitalSignalTravel %
+                digitalPatternWidth;
+
+            let patternStartX =
+                movement -
+                digitalPatternWidth;
+
+            while (
+                patternStartX <
+                canvas.width
+            ) {
+                for (
+                    let i = 0;
+                    i < digitalBits.length;
+                    i++
+                ) {
+                    const bit =
+                        digitalBits[i];
+
+                    const x =
+                        patternStartX +
+                        i * bitBlockWidth;
+
+                    drawDigitalBitSegment(
+                        x,
+                        bitWidth,
+                        bit
+                    );
+                }
+
+                patternStartX +=
+                    digitalPatternWidth;
+            }
+        }
+
+        function drawDigitalBitSegment(
+            x,
+            width,
+            bit
+        ) {
+            const segmentStart =
+                Math.max(0, x);
+
+            const segmentEnd =
+                Math.min(
+                    canvas.width,
+                    x + width
+                );
+
+            if (segmentEnd <= segmentStart) {
+                return;
+            }
+
+            const isHigh =
+                bit === 1;
+
+            const signalAlpha =
+                isHigh
+                    ? alpha
+                    : alpha * 0.25;
+
+            const outerWidth =
+                isHigh ? 18 : 9;
+
+            const middleWidth =
+                isHigh ? 9 : 5;
+
+            const coreWidth =
+                isHigh ? 4 : 2.5;
+
+            ctx.save();
+
+            ctx.lineCap = "butt";
+
+            ctx.globalAlpha =
+                signalAlpha * 0.18;
+
+            ctx.strokeStyle = "#00ffff";
+            ctx.lineWidth = outerWidth;
+            ctx.shadowBlur =
+                isHigh ? 24 : 6;
+            ctx.shadowColor = "#00ffff";
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                segmentStart,
+                CORE_CENTER
+            );
+
+            ctx.lineTo(
+                segmentEnd,
+                CORE_CENTER
+            );
+
+            ctx.stroke();
+
+            ctx.globalAlpha =
+                signalAlpha * 0.52;
+
+            ctx.strokeStyle = "#00e5ff";
+            ctx.lineWidth = middleWidth;
+            ctx.shadowBlur =
+                isHigh ? 17 : 4;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                segmentStart,
+                CORE_CENTER
+            );
+
+            ctx.lineTo(
+                segmentEnd,
+                CORE_CENTER
+            );
+
+            ctx.stroke();
+
+            ctx.globalAlpha =
+                signalAlpha;
+
+            ctx.strokeStyle = "#00ffff";
+            ctx.lineWidth = coreWidth;
+            ctx.shadowBlur =
+                isHigh ? 12 : 3;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                segmentStart,
+                CORE_CENTER
+            );
+
+            ctx.lineTo(
+                segmentEnd,
+                CORE_CENTER
+            );
+
+            ctx.stroke();
+
+            if (isHigh) {
+                ctx.globalAlpha =
+                    alpha * 0.88;
+
+                ctx.strokeStyle = "#ffffff";
+                ctx.lineWidth = 1;
+                ctx.shadowBlur = 5;
+                ctx.shadowColor = "#ffffff";
+
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    segmentStart,
+                    CORE_CENTER
+                );
+
+                ctx.lineTo(
+                    segmentEnd,
+                    CORE_CENTER
+                );
+
+                ctx.stroke();
+            }
+
+            drawBitLabel(
+                x + width / 2,
+                bit,
+                isHigh
+            );
+
+            ctx.restore();
+        }
+
+        function drawBitLabel(
+            centerX,
+            bit,
+            isHigh
+        ) {
+            if (
+                centerX < -20 ||
+                centerX > canvas.width + 20
+            ) {
+                return;
+            }
+
+            ctx.save();
+
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            ctx.font =
+                "700 11px Segoe UI, sans-serif";
+
+            ctx.globalAlpha =
+                isHigh ? 0.95 : 0.55;
+
+            ctx.fillStyle =
+                isHigh
+                    ? "#e6ffff"
+                    : "#a5cbd1";
+
+            ctx.fillText(
+                String(bit),
+                centerX,
+                CORE_CENTER + 28
+            );
+
+            ctx.restore();
+        }
+
+        function drawEmitterAndReceiver() {
+            ctx.save();
+
+            ctx.font =
+                "700 10px Segoe UI, sans-serif";
+
+            ctx.textBaseline = "middle";
+
+            ctx.textAlign = "left";
+            ctx.fillStyle =
+                "rgba(224, 242, 254, 0.95)";
+
+            ctx.fillText(
+                "EMISOR",
+                12,
+                CORE_CENTER - 30
+            );
+
+            ctx.textAlign = "right";
+
+            ctx.fillText(
+                "RECEPTOR",
+                canvas.width - 12,
+                CORE_CENTER - 30
+            );
+
+            ctx.fillStyle =
+                "rgba(0, 255, 255, 0.88)";
+
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = "#00ffff";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                7,
+                CORE_CENTER,
+                4,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.fillStyle =
+                "rgba(125, 211, 252, 0.88)";
+
+            ctx.beginPath();
+
+            ctx.arc(
+                canvas.width - 7,
+                CORE_CENTER,
+                4,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawBeamHead(
+            x,
+            y,
+            color,
+            radius
+        ) {
+            const glow =
+                ctx.createRadialGradient(
+                    x,
+                    y,
+                    0,
+                    x,
+                    y,
+                    radius * 4
+                );
+
+            glow.addColorStop(
+                0,
+                `rgba(255,255,255,${alpha})`
+            );
+
+            glow.addColorStop(
+                0.2,
+                colorToRGBA(
+                    color,
+                    alpha * 0.95
+                )
+            );
+
+            glow.addColorStop(
+                1,
+                colorToRGBA(color, 0)
+            );
+
+            ctx.fillStyle = glow;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                radius * 4,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+        }
+
+        function colorToRGBA(
+            color,
+            opacity
+        ) {
+            const colorMap = {
+                "#ffeb3b":
+                    `rgba(255,235,59,${opacity})`,
+
+                "#ff9800":
+                    `rgba(255,152,0,${opacity})`,
+
+                "#00e5ff":
+                    `rgba(0,229,255,${opacity})`,
+
+                "#00ffff":
+                    `rgba(0,255,255,${opacity})`
+            };
+
+            return colorMap[color] ||
+                `rgba(255,255,255,${opacity})`;
+        }
+
+        function drawDirectionIndicator() {
+            ctx.save();
+
+            ctx.globalAlpha = 0.84;
+
+            ctx.fillStyle =
+                "rgba(224, 242, 254, 0.92)";
+
+            ctx.font =
+                "600 10px Segoe UI, sans-serif";
+
+            ctx.textAlign = "right";
+            ctx.textBaseline = "middle";
+
+            ctx.fillText(
+                "EMISOR → RECEPTOR",
+                canvas.width - 42,
+                18
+            );
+
+            ctx.strokeStyle =
+                "rgba(125, 211, 252, 0.95)";
+
+            ctx.fillStyle =
+                "rgba(125, 211, 252, 0.95)";
+
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                canvas.width - 34,
+                18
+            );
+
+            ctx.lineTo(
+                canvas.width - 9,
+                18
+            );
+
+            ctx.stroke();
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                canvas.width - 9,
+                18
+            );
+
+            ctx.lineTo(
+                canvas.width - 17,
+                13
+            );
+
+            ctx.lineTo(
+                canvas.width - 17,
+                23
+            );
+
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawStatusLabel() {
+            ctx.save();
+
+            let statusText;
+
+            if (mode === "multimode") {
+                if (!multimodeComplete) {
+                    const percentage =
+                        Math.round(
+                            (
+                                Math.min(
+                                    multimodeProgress,
+                                    canvas.width
+                                ) /
+                                canvas.width
+                            ) * 100
+                        );
+
+                    statusText =
+                        `Propagación multimodo: ${percentage}%`;
+                } else {
+                    statusText =
+                        "Propagación multimodo completada";
+                }
+            } else {
+                statusText =
+                    "Señal monomodo continua: brillo alto = 1 · brillo bajo = 0";
+            }
+
+            ctx.font =
+                "600 10px Segoe UI, sans-serif";
+
+            ctx.textAlign = "left";
+            ctx.textBaseline = "middle";
+
+            ctx.fillStyle =
+                "rgba(224, 242, 254, 0.95)";
+
+            ctx.fillText(
+                statusText,
+                16,
+                18
+            );
+
+            ctx.restore();
+        }
+
+        function updateAnimation(
+            deltaSeconds
+        ) {
+            if (mode === "multimode") {
+                if (!multimodeComplete) {
+                    multimodeProgress +=
+                        multimodePropagationSpeed *
+                        deltaSeconds;
+
+                    if (
+                        multimodeProgress >=
+                        canvas.width
+                    ) {
+                        multimodeProgress =
+                            canvas.width;
+
+                        multimodeComplete = true;
+                    }
+                }
+            } else {
+                digitalSignalTravel +=
+                    digitalSignalSpeed *
+                    deltaSeconds;
+
+                if (
+                    digitalSignalTravel >=
+                    digitalPatternWidth
+                ) {
+                    digitalSignalTravel -=
+                        digitalPatternWidth;
+                }
+            }
+        }
+
+        function animate(currentTime) {
+            const elapsed =
+                (currentTime - lastFrameTime) /
+                1000;
+
+            const deltaSeconds =
+                Math.min(elapsed, 0.05);
+
+            lastFrameTime = currentTime;
+
+            ctx.clearRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+            drawFiberStructure();
+
+            if (mode === "multimode") {
+                multimodeBeams.forEach(
+                    function (beam) {
+                        drawZigZagBeam(
+                            beam,
+                            multimodeProgress
+                        );
+                    }
+                );
+            } else {
+                drawSingleModeTransmission();
+            }
+
+            drawDirectionIndicator();
+            drawStatusLabel();
+
+            updateAnimation(deltaSeconds);
+
+            window.requestAnimationFrame(
+                animate
+            );
+        }
+
+        updateAttenuation();
+        changeMode();
+
+        window.requestAnimationFrame(
+            function (time) {
+                lastFrameTime = time;
+                animate(time);
+            }
+        );
+    </script>
+
+</body>
+</html>
