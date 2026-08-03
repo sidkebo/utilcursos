@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador del Espectro Electromagnético | SIT-400</title>
+
+    <style>
+        :root {
+            --background-1: #050c18;
+            --background-2: #0b1d33;
+            --panel: rgba(12, 29, 50, 0.94);
+            --panel-soft: rgba(18, 42, 69, 0.82);
+            --border: rgba(125, 211, 252, 0.2);
+            --text: #edf8ff;
+            --muted: #9fb5ca;
+            --active-color: #34d399;
+            --active-rgb: 52, 211, 153;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            padding: 32px 18px 45px;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(
+                    circle at 15% 10%,
+                    rgba(56, 189, 248, 0.14),
+                    transparent 32%
+                ),
+                radial-gradient(
+                    circle at 88% 85%,
+                    rgba(52, 211, 153, 0.1),
+                    transparent 32%
+                ),
+                linear-gradient(
+                    145deg,
+                    var(--background-1),
+                    var(--background-2)
+                );
+        }
+
+        .page {
+            width: min(1120px, 100%);
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 22px;
+            text-align: center;
+        }
+
+        .course-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 7px 13px;
+            color: #bae6fd;
+            background: rgba(14, 116, 144, 0.2);
+            border: 1px solid rgba(125, 211, 252, 0.2);
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .course-badge::before {
+            width: 8px;
+            height: 8px;
+            content: "";
+            background: var(--active-color);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--active-color);
+        }
+
+        h1 {
+            margin: 0;
+            color: #f0f9ff;
+            font-size: clamp(1.9rem, 4vw, 3rem);
+            line-height: 1.12;
+            text-shadow: 0 0 24px rgba(56, 189, 248, 0.2);
+        }
+
+        .subtitle {
+            margin: 10px auto 0;
+            color: var(--muted);
+            font-size: 1.04rem;
+            line-height: 1.55;
+        }
+
+        .spectrum-overview {
+            margin-bottom: 18px;
+            padding: 16px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 15px 34px rgba(0, 0, 0, 0.22);
+        }
+
+        .overview-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        .overview-title {
+            color: #dff7ff;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .overview-note {
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .band-strip {
+            display: grid;
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+            gap: 7px;
+        }
+
+        .band-button {
+            min-width: 0;
+            min-height: 64px;
+            padding: 9px 7px;
+            color: #c9deeb;
+            background: rgba(4, 14, 29, 0.66);
+            border: 1px solid rgba(148, 163, 184, 0.14);
+            border-top: 4px solid var(--band-color);
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.25;
+            cursor: pointer;
+            transition:
+                transform 0.16s ease,
+                border-color 0.16s ease,
+                background-color 0.16s ease,
+                box-shadow 0.16s ease;
+        }
+
+        .band-button:hover {
+            transform: translateY(-1px);
+            background: rgba(14, 35, 58, 0.84);
+        }
+
+        .band-button.active {
+            color: #f4fcff;
+            background: rgba(var(--band-rgb), 0.14);
+            border-color: rgba(var(--band-rgb), 0.58);
+            box-shadow:
+                0 0 0 3px rgba(var(--band-rgb), 0.08),
+                inset 0 0 18px rgba(var(--band-rgb), 0.08);
+        }
+
+        .band-button:focus-visible,
+        button:focus-visible,
+        select:focus-visible,
+        input[type="range"]:focus-visible {
+            outline: 2px solid #38bdf8;
+            outline-offset: 4px;
+        }
+
+        .simulation-panel {
+            overflow: hidden;
+            background: rgba(2, 10, 24, 0.78);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow:
+                0 24px 55px rgba(0, 0, 0, 0.38),
+                inset 0 1px 0 rgba(255, 255, 255, 0.035);
+        }
+
+        .canvas-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 14px 18px;
+            background: rgba(9, 24, 42, 0.9);
+            border-bottom: 1px solid rgba(125, 211, 252, 0.12);
+        }
+
+        .canvas-title {
+            color: #dff7ff;
+            font-size: 0.92rem;
+            font-weight: 700;
+        }
+
+        .simulation-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #a7f3d0;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .simulation-status::before {
+            width: 8px;
+            height: 8px;
+            content: "";
+            background: var(--active-color);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--active-color);
+        }
+
+        .simulation-status.paused {
+            color: #fde68a;
+        }
+
+        .simulation-status.paused::before {
+            background: #fbbf24;
+            box-shadow: 0 0 10px #fbbf24;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #020817;
+        }
+
+        .dashboard {
+            margin-top: 22px;
+            padding: 21px;
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 16px 35px rgba(0, 0, 0, 0.24);
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .metric {
+            min-width: 0;
+            padding: 15px;
+            background: var(--panel-soft);
+            border: 1px solid rgba(125, 211, 252, 0.12);
+            border-radius: 12px;
+        }
+
+        .metric-label {
+            display: block;
+            margin-bottom: 7px;
+            color: var(--muted);
+            font-size: 0.71rem;
+            font-weight: 700;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+        }
+
+        .metric-value {
+            display: block;
+            overflow: hidden;
+            color: #f0f9ff;
+            font-size: 1.04rem;
+            font-weight: 750;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .controls-row {
+            display: grid;
+            grid-template-columns: 1.25fr 1fr auto;
+            align-items: end;
+            gap: 18px;
+        }
+
+        .control-group {
+            min-width: 0;
+        }
+
+        .control-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .control-label {
+            color: #e0f2fe;
+            font-size: 0.91rem;
+            font-weight: 650;
+        }
+
+        .value-display {
+            min-width: 92px;
+            padding: 6px 10px;
+            color: #dff9ff;
+            background: rgba(2, 10, 24, 0.62);
+            border: 1px solid rgba(125, 211, 252, 0.16);
+            border-radius: 8px;
+            font-size: 0.84rem;
+            font-weight: 750;
+            text-align: center;
+        }
+
+        select {
+            width: 100%;
+            min-height: 43px;
+            padding: 9px 11px;
+            color: #e6f4ff;
+            background: rgba(4, 16, 31, 0.9);
+            border: 1px solid rgba(125, 211, 252, 0.2);
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        select option {
+            color: #e6f4ff;
+            background: #0b1d33;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            margin: 0;
+            appearance: none;
+            background: rgba(148, 163, 184, 0.23);
+            border-radius: 999px;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            width: 18px;
+            height: 18px;
+            appearance: none;
+            background: #e0faff;
+            border: 3px solid var(--active-color);
+            border-radius: 50%;
+            box-shadow:
+                0 0 0 4px rgba(var(--active-rgb), 0.1),
+                0 0 12px rgba(var(--active-rgb), 0.5);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: #e0faff;
+            border: 3px solid var(--active-color);
+            border-radius: 50%;
+            box-shadow:
+                0 0 0 4px rgba(var(--active-rgb), 0.1),
+                0 0 12px rgba(var(--active-rgb), 0.5);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 9px;
+        }
+
+        .action-button {
+            min-height: 43px;
+            padding: 10px 15px;
+            color: #e6faff;
+            background: linear-gradient(135deg, #075985, #0e7490);
+            border: 1px solid rgba(125, 211, 252, 0.34);
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition:
+                transform 0.16s ease,
+                filter 0.16s ease,
+                box-shadow 0.16s ease;
+        }
+
+        .action-button.secondary {
+            color: #cfe9f7;
+            background: rgba(15, 42, 67, 0.9);
+        }
+
+        .action-button:hover {
+            filter: brightness(1.12);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px rgba(3, 105, 161, 0.24);
+        }
+
+        .info-panel {
+            margin-top: 18px;
+            padding: 18px 20px;
+            color: #c8dceb;
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(var(--active-rgb), 0.12),
+                    rgba(12, 28, 48, 0.92)
+                );
+            border: 1px solid rgba(var(--active-rgb), 0.18);
+            border-left: 5px solid var(--active-color);
+            border-radius: 11px;
+            line-height: 1.62;
+        }
+
+        .info-panel h2 {
+            margin: 0 0 8px;
+            color: var(--active-color);
+            font-size: 1.08rem;
+        }
+
+        .specification-line {
+            margin: 0 0 8px;
+            color: #d4e8f6;
+            font-size: 0.91rem;
+        }
+
+        .description-line {
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        .classification-badge {
+            display: inline-flex;
+            align-items: center;
+            margin-top: 12px;
+            padding: 6px 10px;
+            color: #e9fbff;
+            background: rgba(var(--active-rgb), 0.12);
+            border: 1px solid rgba(var(--active-rgb), 0.24);
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+
+        .note-box {
+            margin-top: 12px;
+            padding: 13px 16px;
+            color: #9fb5ca;
+            background: rgba(2, 10, 24, 0.36);
+            border: 1px solid rgba(148, 163, 184, 0.12);
+            border-radius: 10px;
+            font-size: 0.86rem;
+            line-height: 1.55;
+        }
+
+        .note-box strong {
+            color: #d7edf8;
+        }
+
+        @media (max-width: 930px) {
+            .band-strip {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+
+            .metrics {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .controls-row {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                width: 100%;
+            }
+
+            .action-button {
+                flex: 1;
+            }
+        }
+
+        @media (max-width: 560px) {
+            body {
+                padding: 22px 10px 35px;
+            }
+
+            .overview-heading,
+            .canvas-header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .band-strip {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard {
+                padding: 16px;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="page">
+        <header class="header">
+            <div class="course-badge">
+                SIT-400 · Sistemas de Telecomunicaciones
+            </div>
+
+            <h1>Simulador del Espectro Electromagnético</h1>
+
+            <p class="subtitle">
+                Comparación de bandas de frecuencia, longitud de onda,
+                energía y aplicaciones en telecomunicaciones.
+            </p>
+        </header>
+
+        <section class="spectrum-overview">
+            <div class="overview-heading">
+                <span class="overview-title">
+                    Bandas ordenadas de menor a mayor frecuencia
+                </span>
+
+                <span class="overview-note">
+                    El ancho de cada bloque no representa su escala real.
+                </span>
+            </div>
+
+            <div class="band-strip">
+                <button
+                    type="button"
+                    class="band-button"
+                    data-band="1"
+                    style="--band-color:#94a3b8;--band-rgb:148,163,184;"
+                >
+                    ELF · VLF · LF
+                </button>
+
+                <button
+                    type="button"
+                    class="band-button"
+                    data-band="2"
+                    style="--band-color:#38bdf8;--band-rgb:56,189,248;"
+                >
+                    MF · HF
+                </button>
+
+                <button
+                    type="button"
+                    class="band-button active"
+                    data-band="3"
+                    style="--band-color:#34d399;--band-rgb:52,211,153;"
+                >
+                    VHF · UHF
+                </button>
+
+                <button
+                    type="button"
+                    class="band-button"
+                    data-band="4"
+                    style="--band-color:#facc15;--band-rgb:250,204,21;"
+                >
+                    Microondas
+                </button>
+
+                <button
+                    type="button"
+                    class="band-button"
+                    data-band="5"
+                    style="--band-color:#fb923c;--band-rgb:251,146,60;"
+                >
+                    Infrarrojo
+                </button>
+
+                <button
+                    type="button"
+                    class="band-button"
+                    data-band="6"
+                    style="--band-color:#f43f5e;--band-rgb:244,63,94;"
+                >
+                    Luz visible
+                </button>
+
+                <button
+                    type="button"
+                    class="band-button"
+                    data-band="7"
+                    style="--band-color:#a855f7;--band-rgb:168,85,247;"
+                >
+                    Ultravioleta
+                </button>
+
+                <button
+                    type="button"
+                    class="band-button"
+                    data-band="8"
+                    style="--band-color:#e2e8f0;--band-rgb:226,232,240;"
+                >
+                    Rayos X · Gamma
+                </button>
+            </div>
+        </section>
+
+        <section class="simulation-panel">
+            <div class="canvas-header">
+                <span class="canvas-title" id="canvasTitle">
+                    VHF y UHF · onda electromagnética idealizada
+                </span>
+
+                <span class="simulation-status" id="simulationStatus">
+                    Propagación activa
+                </span>
+            </div>
+
+            <canvas
+                id="spectrumCanvas"
+                width="1050"
+                height="500"
+                aria-label="Simulación animada del espectro electromagnético"
+            ></canvas>
+        </section>
+
+        <section class="dashboard">
+            <div class="metrics">
+                <div class="metric">
+                    <span class="metric-label">Frecuencia seleccionada</span>
+                    <span class="metric-value" id="frequencyMetric">
+                        300 MHz
+                    </span>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Longitud de onda</span>
+                    <span class="metric-value" id="wavelengthMetric">
+                        99,9 cm
+                    </span>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Energía por fotón</span>
+                    <span class="metric-value" id="energyMetric">
+                        1,24 µeV
+                    </span>
+                </div>
+
+                <div class="metric">
+                    <span class="metric-label">Clasificación</span>
+                    <span class="metric-value" id="classificationMetric">
+                        No ionizante
+                    </span>
+                </div>
+            </div>
+
+            <div class="controls-row">
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label class="control-label" for="bandSelect">
+                            Banda del espectro
+                        </label>
+                    </div>
+
+                    <select id="bandSelect">
+                        <option value="1">
+                            1. ELF / VLF / LF · 3 Hz a 300 kHz
+                        </option>
+
+                        <option value="2">
+                            2. MF / HF · 300 kHz a 30 MHz
+                        </option>
+
+                        <option value="3" selected>
+                            3. VHF / UHF · 30 MHz a 3 GHz
+                        </option>
+
+                        <option value="4">
+                            4. Microondas · 3 GHz a 300 GHz
+                        </option>
+
+                        <option value="5">
+                            5. Infrarrojo · 300 GHz a 400 THz
+                        </option>
+
+                        <option value="6">
+                            6. Visible · 400 THz a 790 THz
+                        </option>
+
+                        <option value="7">
+                            7. Ultravioleta · 790 THz a 30 PHz
+                        </option>
+
+                        <option value="8">
+                            8. Rayos X y gamma · más de 30 PHz
+                        </option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="frequencyPosition"
+                        >
+                            Posición dentro de la banda
+                        </label>
+
+                        <output
+                            class="value-display"
+                            id="positionDisplay"
+                        >
+                            50 %
+                        </output>
+                    </div>
+
+                    <input
+                        type="range"
+                        id="frequencyPosition"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="50"
+                    >
+                </div>
+
+                <div class="action-buttons">
+                    <button
+                        type="button"
+                        class="action-button"
+                        id="pauseButton"
+                    >
+                        Pausar
+                    </button>
+
+                    <button
+                        type="button"
+                        class="action-button secondary"
+                        id="restartButton"
+                    >
+                        Reiniciar
+                    </button>
+                </div>
+            </div>
+
+            <article class="info-panel">
+                <h2 id="bandTitle">
+                    3. Muy alta y ultra alta frecuencia
+                </h2>
+
+                <p class="specification-line" id="bandSpecs">
+                    <strong>Rango:</strong> 30 MHz a 3 GHz ·
+                    <strong>Longitud de onda:</strong> 10 m a 10 cm
+                </p>
+
+                <p class="description-line" id="bandDescription">
+                    <strong>Aplicaciones:</strong>
+                    radio FM, televisión digital, comunicaciones móviles,
+                    GPS, Bluetooth, RFID y Wi-Fi de 2,4 GHz.
+                </p>
+
+                <span
+                    class="classification-badge"
+                    id="classificationBadge"
+                >
+                    Radiación no ionizante
+                </span>
+            </article>
+
+            <div class="note-box">
+                <strong>Nota didáctica:</strong>
+                todas las bandas son radiación electromagnética y pueden
+                representarse mediante campos sinusoidales. La frecuencia
+                visual está comprimida porque el espectro real abarca muchos
+                órdenes de magnitud. La curva representa el valor instantáneo
+                del campo eléctrico, no una trayectoria ondulada seguida por
+                la energía.
+            </div>
+        </section>
+    </main>
+
+    <script>
+        "use strict";
+
+        const canvas =
+            document.getElementById("spectrumCanvas");
+
+        const ctx =
+            canvas.getContext("2d");
+
+        const bandSelect =
+            document.getElementById("bandSelect");
+
+        const frequencyPosition =
+            document.getElementById("frequencyPosition");
+
+        const positionDisplay =
+            document.getElementById("positionDisplay");
+
+        const frequencyMetric =
+            document.getElementById("frequencyMetric");
+
+        const wavelengthMetric =
+            document.getElementById("wavelengthMetric");
+
+        const energyMetric =
+            document.getElementById("energyMetric");
+
+        const classificationMetric =
+            document.getElementById("classificationMetric");
+
+        const bandTitle =
+            document.getElementById("bandTitle");
+
+        const bandSpecs =
+            document.getElementById("bandSpecs");
+
+        const bandDescription =
+            document.getElementById("bandDescription");
+
+        const classificationBadge =
+            document.getElementById("classificationBadge");
+
+        const canvasTitle =
+            document.getElementById("canvasTitle");
+
+        const pauseButton =
+            document.getElementById("pauseButton");
+
+        const restartButton =
+            document.getElementById("restartButton");
+
+        const simulationStatus =
+            document.getElementById("simulationStatus");
+
+        const bandButtons =
+            Array.from(
+                document.querySelectorAll(".band-button")
+            );
+
+        const PLOT_LEFT = 125;
+        const PLOT_RIGHT = canvas.width - 52;
+        const PLOT_TOP = 82;
+        const PLOT_BOTTOM = canvas.height - 92;
+        const CENTER_Y = (PLOT_TOP + PLOT_BOTTOM) / 2;
+        const PLOT_WIDTH = PLOT_RIGHT - PLOT_LEFT;
+
+        const SPEED_OF_LIGHT = 299792458;
+        const PLANCK_CONSTANT = 6.62607015e-34;
+        const ELEMENTARY_CHARGE = 1.602176634e-19;
+
+        const GLOBAL_MIN_FREQUENCY = 3;
+        const GLOBAL_MAX_FREQUENCY = 3e20;
+        const VISUAL_WAVE_SPEED = 180;
+
+        let elapsedTime = 0;
+        let lastFrameTime = performance.now();
+        let isPaused = false;
+
+        const bandsData = {
+            1: {
+                shortTitle: "ELF, VLF y LF",
+                title:
+                    "1. Frecuencias extremadamente, muy bajas y bajas",
+                minFrequency: 3,
+                maxFrequency: 3e5,
+                rangeText: "3 Hz a 300 kHz",
+                wavelengthText: "100 000 km a 1 km",
+                applications:
+                    "comunicación con submarinos, señales horarias, " +
+                    "navegación, balizas y sistemas de baja frecuencia.",
+                classification:
+                    "Radiación no ionizante",
+                classificationShort:
+                    "No ionizante",
+                color: "#94a3b8",
+                rgb: "148, 163, 184"
+            },
+
+            2: {
+                shortTitle: "MF y HF",
+                title:
+                    "2. Frecuencias medias y altas",
+                minFrequency: 3e5,
+                maxFrequency: 3e7,
+                rangeText: "300 kHz a 30 MHz",
+                wavelengthText: "1 km a 10 m",
+                applications:
+                    "radio AM, radiodifusión de onda corta, " +
+                    "radioaficionados, comunicaciones marítimas y " +
+                    "enlaces que aprovechan la ionosfera.",
+                classification:
+                    "Radiación no ionizante",
+                classificationShort:
+                    "No ionizante",
+                color: "#38bdf8",
+                rgb: "56, 189, 248"
+            },
+
+            3: {
+                shortTitle: "VHF y UHF",
+                title:
+                    "3. Muy alta y ultra alta frecuencia",
+                minFrequency: 3e7,
+                maxFrequency: 3e9,
+                rangeText: "30 MHz a 3 GHz",
+                wavelengthText: "10 m a 10 cm",
+                applications:
+                    "radio FM, televisión digital, comunicaciones " +
+                    "móviles, GPS, Bluetooth, RFID y Wi-Fi de 2,4 GHz.",
+                classification:
+                    "Radiación no ionizante",
+                classificationShort:
+                    "No ionizante",
+                color: "#34d399",
+                rgb: "52, 211, 153"
+            },
+
+            4: {
+                shortTitle: "Microondas",
+                title:
+                    "4. Microondas: SHF y parte de EHF",
+                minFrequency: 3e9,
+                maxFrequency: 3e11,
+                rangeText: "3 GHz a 300 GHz",
+                wavelengthText: "10 cm a 1 mm",
+                applications:
+                    "Wi-Fi de 5 y 6 GHz, enlaces satelitales, " +
+                    "radares, radioenlaces punto a punto y sistemas " +
+                    "5G de ondas milimétricas.",
+                classification:
+                    "Radiación no ionizante",
+                classificationShort:
+                    "No ionizante",
+                color: "#facc15",
+                rgb: "250, 204, 21"
+            },
+
+            5: {
+                shortTitle: "Infrarrojo",
+                title:
+                    "5. Radiación infrarroja",
+                minFrequency: 3e11,
+                maxFrequency: 4e14,
+                rangeText: "300 GHz a 400 THz",
+                wavelengthText: "1 mm a 750 nm",
+                applications:
+                    "fibra óptica en ventanas de 850, 1310 y 1550 nm, " +
+                    "controles remotos, sensores térmicos y " +
+                    "comunicaciones ópticas de corto alcance.",
+                classification:
+                    "Radiación no ionizante",
+                classificationShort:
+                    "No ionizante",
+                color: "#fb923c",
+                rgb: "251, 146, 60"
+            },
+
+            6: {
+                shortTitle: "Luz visible",
+                title:
+                    "6. Espectro visible",
+                minFrequency: 4e14,
+                maxFrequency: 7.9e14,
+                rangeText: "400 THz a 790 THz",
+                wavelengthText: "750 nm a 380 nm",
+                applications:
+                    "Li-Fi, enlaces láser en espacio libre, sensores " +
+                    "ópticos, iluminación y sistemas de comunicación " +
+                    "mediante luz visible.",
+                classification:
+                    "Radiación no ionizante",
+                classificationShort:
+                    "No ionizante",
+                color: "#f43f5e",
+                rgb: "244, 63, 94"
+            },
+
+            7: {
+                shortTitle: "Ultravioleta",
+                title:
+                    "7. Radiación ultravioleta",
+                minFrequency: 7.9e14,
+                maxFrequency: 3e16,
+                rangeText: "790 THz a 30 PHz",
+                wavelengthText: "380 nm a 10 nm",
+                applications:
+                    "comunicaciones ultravioletas especializadas, " +
+                    "detección óptica, análisis de materiales y " +
+                    "procesos de desinfección.",
+                classification:
+                    "Zona de transición: el UV de mayor energía " +
+                    "puede ser ionizante",
+                classificationShort:
+                    "Transición",
+                color: "#a855f7",
+                rgb: "168, 85, 247"
+            },
+
+            8: {
+                shortTitle: "Rayos X y gamma",
+                title:
+                    "8. Rayos X y rayos gamma",
+                minFrequency: 3e16,
+                maxFrequency: 3e20,
+                rangeText: "más de 30 PHz",
+                wavelengthText: "menor que 10 nm",
+                applications:
+                    "medicina, inspección de materiales, seguridad, " +
+                    "investigación científica y astrofísica; no son " +
+                    "bandas habituales de telecomunicación comercial.",
+                classification:
+                    "Radiación ionizante",
+                classificationShort:
+                    "Ionizante",
+                color: "#e2e8f0",
+                rgb: "226, 232, 240"
+            }
+        };
+
+        bandSelect.addEventListener(
+            "change",
+            function () {
+                changeBand(
+                    Number(bandSelect.value)
+                );
+            }
+        );
+
+        frequencyPosition.addEventListener(
+            "input",
+            updateInterface
+        );
+
+        pauseButton.addEventListener(
+            "click",
+            togglePause
+        );
+
+        restartButton.addEventListener(
+            "click",
+            restartSimulation
+        );
+
+        bandButtons.forEach(
+            function (button) {
+                button.addEventListener(
+                    "click",
+                    function () {
+                        changeBand(
+                            Number(button.dataset.band)
+                        );
+                    }
+                );
+            }
+        );
+
+        function changeBand(bandNumber) {
+            bandSelect.value =
+                String(bandNumber);
+
+            frequencyPosition.value =
+                "50";
+
+            elapsedTime = 0;
+
+            bandButtons.forEach(
+                function (button) {
+                    button.classList.toggle(
+                        "active",
+                        Number(
+                            button.dataset.band
+                        ) === bandNumber
+                    );
+                }
+            );
+
+            updateInterface();
+        }
+
+        function getCurrentBand() {
+            return bandsData[
+                Number(bandSelect.value)
+            ];
+        }
+
+        function getSelectedFrequency() {
+            const band =
+                getCurrentBand();
+
+            const position =
+                Number(
+                    frequencyPosition.value
+                ) / 100;
+
+            const minLog =
+                Math.log10(
+                    band.minFrequency
+                );
+
+            const maxLog =
+                Math.log10(
+                    band.maxFrequency
+                );
+
+            return Math.pow(
+                10,
+                minLog +
+                (
+                    maxLog - minLog
+                ) *
+                position
+            );
+        }
+
+        function getSimulationValues() {
+            const band =
+                getCurrentBand();
+
+            const frequency =
+                getSelectedFrequency();
+
+            const wavelength =
+                SPEED_OF_LIGHT /
+                frequency;
+
+            const photonEnergyJoules =
+                PLANCK_CONSTANT *
+                frequency;
+
+            const photonEnergyEV =
+                photonEnergyJoules /
+                ELEMENTARY_CHARGE;
+
+            const globalPosition =
+                clamp(
+                    (
+                        Math.log10(frequency) -
+                        Math.log10(
+                            GLOBAL_MIN_FREQUENCY
+                        )
+                    ) /
+                    (
+                        Math.log10(
+                            GLOBAL_MAX_FREQUENCY
+                        ) -
+                        Math.log10(
+                            GLOBAL_MIN_FREQUENCY
+                        )
+                    ),
+                    0,
+                    1
+                );
+
+            const visualWavelength =
+                270 -
+                globalPosition * 235;
+
+            const visualAngularFrequency =
+                (
+                    Math.PI *
+                    2 *
+                    VISUAL_WAVE_SPEED
+                ) /
+                visualWavelength;
+
+            return {
+                band,
+                frequency,
+                wavelength,
+                photonEnergyEV,
+                visualWavelength,
+                visualAngularFrequency
+            };
+        }
+
+        function updateInterface() {
+            const values =
+                getSimulationValues();
+
+            const band =
+                values.band;
+
+            document.documentElement
+                .style
+                .setProperty(
+                    "--active-color",
+                    band.color
+                );
+
+            document.documentElement
+                .style
+                .setProperty(
+                    "--active-rgb",
+                    band.rgb
+                );
+
+            positionDisplay.textContent =
+                frequencyPosition.value +
+                " %";
+
+            frequencyMetric.textContent =
+                formatFrequency(
+                    values.frequency
+                );
+
+            wavelengthMetric.textContent =
+                formatLength(
+                    values.wavelength
+                );
+
+            energyMetric.textContent =
+                formatEnergy(
+                    values.photonEnergyEV
+                );
+
+            classificationMetric.textContent =
+                band.classificationShort;
+
+            bandTitle.textContent =
+                band.title;
+
+            bandSpecs.innerHTML =
+                "<strong>Rango:</strong> " +
+                band.rangeText +
+                " · <strong>Longitud de onda:</strong> " +
+                band.wavelengthText;
+
+            bandDescription.innerHTML =
+                "<strong>Aplicaciones:</strong> " +
+                band.applications;
+
+            classificationBadge.textContent =
+                band.classification;
+
+            canvasTitle.textContent =
+                band.shortTitle +
+                " · onda electromagnética idealizada";
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+
+            pauseButton.textContent =
+                isPaused
+                    ? "Continuar"
+                    : "Pausar";
+
+            simulationStatus.textContent =
+                isPaused
+                    ? "Simulación pausada"
+                    : "Propagación activa";
+
+            simulationStatus.classList.toggle(
+                "paused",
+                isPaused
+            );
+        }
+
+        function restartSimulation() {
+            elapsedTime = 0;
+            lastFrameTime =
+                performance.now();
+
+            if (isPaused) {
+                isPaused = false;
+
+                pauseButton.textContent =
+                    "Pausar";
+
+                simulationStatus.textContent =
+                    "Propagación activa";
+
+                simulationStatus
+                    .classList
+                    .remove("paused");
+            }
+        }
+
+        function drawBackground() {
+            const gradient =
+                ctx.createLinearGradient(
+                    0,
+                    0,
+                    canvas.width,
+                    canvas.height
+                );
+
+            gradient.addColorStop(
+                0,
+                "#020817"
+            );
+
+            gradient.addColorStop(
+                0.58,
+                "#071426"
+            );
+
+            gradient.addColorStop(
+                1,
+                "#081a2e"
+            );
+
+            ctx.fillStyle =
+                gradient;
+
+            ctx.fillRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+        }
+
+        function drawGrid() {
+            ctx.save();
+
+            ctx.strokeStyle =
+                "rgba(125, 211, 252, 0.065)";
+
+            ctx.lineWidth = 1;
+
+            for (
+                let x = PLOT_LEFT;
+                x <= PLOT_RIGHT;
+                x += 50
+            ) {
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    x,
+                    PLOT_TOP
+                );
+
+                ctx.lineTo(
+                    x,
+                    PLOT_BOTTOM
+                );
+
+                ctx.stroke();
+            }
+
+            for (
+                let y = PLOT_TOP;
+                y <= PLOT_BOTTOM;
+                y += 45
+            ) {
+                ctx.beginPath();
+
+                ctx.moveTo(
+                    PLOT_LEFT,
+                    y
+                );
+
+                ctx.lineTo(
+                    PLOT_RIGHT,
+                    y
+                );
+
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle =
+                "rgba(186, 230, 253, 0.3)";
+
+            ctx.lineWidth = 1.4;
+            ctx.setLineDash([7, 7]);
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                PLOT_LEFT,
+                CENTER_Y
+            );
+
+            ctx.lineTo(
+                PLOT_RIGHT,
+                CENTER_Y
+            );
+
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+
+            ctx.strokeStyle =
+                "rgba(186, 230, 253, 0.34)";
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                PLOT_LEFT,
+                PLOT_TOP
+            );
+
+            ctx.lineTo(
+                PLOT_LEFT,
+                PLOT_BOTTOM
+            );
+
+            ctx.lineTo(
+                PLOT_RIGHT,
+                PLOT_BOTTOM
+            );
+
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawSource(values) {
+            const sourceX =
+                PLOT_LEFT - 32;
+
+            const sourcePulse =
+                0.65 +
+                Math.abs(
+                    Math.sin(
+                        values
+                            .visualAngularFrequency *
+                        elapsedTime
+                    )
+                ) *
+                0.35;
+
+            ctx.save();
+
+            const sourceGradient =
+                ctx.createRadialGradient(
+                    sourceX,
+                    CENTER_Y,
+                    0,
+                    sourceX,
+                    CENTER_Y,
+                    30
+                );
+
+            sourceGradient.addColorStop(
+                0,
+                "rgba(255,255,255," +
+                sourcePulse +
+                ")"
+            );
+
+            sourceGradient.addColorStop(
+                0.25,
+                "rgba(" +
+                values.band.rgb +
+                "," +
+                sourcePulse +
+                ")"
+            );
+
+            sourceGradient.addColorStop(
+                1,
+                "rgba(" +
+                values.band.rgb +
+                ",0)"
+            );
+
+            ctx.fillStyle =
+                sourceGradient;
+
+            ctx.beginPath();
+
+            ctx.arc(
+                sourceX,
+                CENTER_Y,
+                30,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            ctx.strokeStyle =
+                "rgba(226, 242, 255, 0.78)";
+
+            ctx.lineWidth = 4;
+            ctx.lineCap = "round";
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                sourceX,
+                CENTER_Y - 48
+            );
+
+            ctx.lineTo(
+                sourceX,
+                CENTER_Y + 48
+            );
+
+            ctx.stroke();
+
+            ctx.fillStyle =
+                "rgba(224, 242, 254, 0.92)";
+
+            ctx.font =
+                "700 10px Segoe UI, sans-serif";
+
+            ctx.textAlign =
+                "center";
+
+            ctx.fillText(
+                "FUENTE",
+                sourceX,
+                CENTER_Y + 72
+            );
+
+            ctx.restore();
+        }
+
+        function drawWave(values) {
+            const amplitude = 108;
+
+            const waveNumber =
+                (
+                    Math.PI *
+                    2
+                ) /
+                values.visualWavelength;
+
+            ctx.save();
+
+            ctx.lineCap =
+                "round";
+
+            ctx.lineJoin =
+                "round";
+
+            drawWavePass(
+                values,
+                waveNumber,
+                amplitude,
+                15,
+                "rgba(" +
+                values.band.rgb +
+                ",0.15)",
+                24
+            );
+
+            drawWavePass(
+                values,
+                waveNumber,
+                amplitude,
+                5,
+                "rgba(" +
+                values.band.rgb +
+                ",0.68)",
+                14
+            );
+
+            drawWavePass(
+                values,
+                waveNumber,
+                amplitude,
+                2,
+                "rgba(241, 252, 255, 0.96)",
+                6
+            );
+
+            ctx.restore();
+        }
+
+        function drawWavePass(
+            values,
+            waveNumber,
+            amplitude,
+            lineWidth,
+            color,
+            shadowBlur
+        ) {
+            ctx.beginPath();
+
+            for (
+                let x = PLOT_LEFT;
+                x <= PLOT_RIGHT;
+                x += 2
+            ) {
+                const distance =
+                    x - PLOT_LEFT;
+
+                const phase =
+                    waveNumber *
+                    distance -
+                    values
+                        .visualAngularFrequency *
+                    elapsedTime;
+
+                const launchFactor =
+                    Math.min(
+                        1,
+                        distance / 32
+                    );
+
+                const y =
+                    CENTER_Y -
+                    Math.sin(phase) *
+                    amplitude *
+                    launchFactor;
+
+                if (x === PLOT_LEFT) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+
+            ctx.strokeStyle =
+                color;
+
+            ctx.lineWidth =
+                lineWidth;
+
+            ctx.shadowBlur =
+                shadowBlur;
+
+            ctx.shadowColor =
+                values.band.color;
+
+            ctx.stroke();
+        }
+
+        function drawPropagationArrow(values) {
+            const startX =
+                PLOT_RIGHT - 190;
+
+            const endX =
+                PLOT_RIGHT - 32;
+
+            const y =
+                PLOT_TOP + 24;
+
+            ctx.save();
+
+            ctx.strokeStyle =
+                "rgba(224, 242, 254, 0.72)";
+
+            ctx.fillStyle =
+                "rgba(224, 242, 254, 0.78)";
+
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                startX,
+                y
+            );
+
+            ctx.lineTo(
+                endX,
+                y
+            );
+
+            ctx.stroke();
+
+            drawArrowHead(
+                endX,
+                y,
+                0
+            );
+
+            ctx.font =
+                "700 10px Segoe UI, sans-serif";
+
+            ctx.textAlign =
+                "center";
+
+            ctx.textBaseline =
+                "bottom";
+
+            ctx.fillText(
+                "DIRECCIÓN DE PROPAGACIÓN",
+                (
+                    startX +
+                    endX
+                ) / 2,
+                y - 8
+            );
+
+            ctx.fillStyle =
+                values.band.color;
+
+            ctx.textAlign =
+                "left";
+
+            ctx.textBaseline =
+                "middle";
+
+            ctx.fillText(
+                "E",
+                PLOT_LEFT + 18,
+                CENTER_Y - 124
+            );
+
+            ctx.restore();
+        }
+
+        function drawWavelengthMarker(values) {
+            const markerWidth =
+                Math.min(
+                    values.visualWavelength,
+                    PLOT_WIDTH * 0.34
+                );
+
+            const startX =
+                PLOT_LEFT +
+                PLOT_WIDTH * 0.16;
+
+            const endX =
+                startX +
+                markerWidth;
+
+            const y =
+                PLOT_BOTTOM + 32;
+
+            ctx.save();
+
+            ctx.strokeStyle =
+                "rgba(186, 230, 253, 0.62)";
+
+            ctx.fillStyle =
+                "rgba(186, 230, 253, 0.78)";
+
+            ctx.lineWidth = 1.3;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                startX,
+                y
+            );
+
+            ctx.lineTo(
+                endX,
+                y
+            );
+
+            ctx.stroke();
+
+            drawArrowHead(
+                startX,
+                y,
+                Math.PI
+            );
+
+            drawArrowHead(
+                endX,
+                y,
+                0
+            );
+
+            ctx.font =
+                "700 10px Segoe UI, sans-serif";
+
+            ctx.textAlign =
+                "center";
+
+            ctx.textBaseline =
+                "bottom";
+
+            ctx.fillText(
+                "λ visual",
+                (
+                    startX +
+                    endX
+                ) / 2,
+                y - 8
+            );
+
+            ctx.restore();
+        }
+
+        function drawLabels(values) {
+            ctx.save();
+
+            ctx.fillStyle =
+                "rgba(224, 242, 254, 0.92)";
+
+            ctx.font =
+                "700 13px Segoe UI, sans-serif";
+
+            ctx.textAlign =
+                "left";
+
+            ctx.textBaseline =
+                "top";
+
+            ctx.fillText(
+                values.band.shortTitle,
+                PLOT_LEFT,
+                28
+            );
+
+            ctx.fillStyle =
+                "rgba(159, 181, 202, 0.86)";
+
+            ctx.font =
+                "500 10px Segoe UI, sans-serif";
+
+            ctx.fillText(
+                "f = " +
+                formatFrequency(
+                    values.frequency
+                ) +
+                " · λ = " +
+                formatLength(
+                    values.wavelength
+                ),
+                PLOT_LEFT,
+                48
+            );
+
+            ctx.fillStyle =
+                "rgba(186, 230, 253, 0.78)";
+
+            ctx.font =
+                "600 10px Segoe UI, sans-serif";
+
+            ctx.textAlign =
+                "right";
+
+            ctx.textBaseline =
+                "middle";
+
+            ctx.fillText(
+                "Campo eléctrico instantáneo",
+                PLOT_LEFT - 16,
+                CENTER_Y
+            );
+
+            ctx.fillStyle =
+                "rgba(159, 181, 202, 0.72)";
+
+            ctx.textAlign =
+                "right";
+
+            ctx.textBaseline =
+                "bottom";
+
+            ctx.fillText(
+                "Frecuencia visual comprimida · no está a escala",
+                PLOT_RIGHT,
+                canvas.height - 22
+            );
+
+            ctx.restore();
+        }
+
+        function drawEnergyIndicator(values) {
+            const energyLog =
+                Math.log10(
+                    Math.max(
+                        values.photonEnergyEV,
+                        1e-15
+                    )
+                );
+
+            const minLog = -15;
+            const maxLog = 7;
+
+            const normalizedEnergy =
+                clamp(
+                    (
+                        energyLog -
+                        minLog
+                    ) /
+                    (
+                        maxLog -
+                        minLog
+                    ),
+                    0,
+                    1
+                );
+
+            const barX =
+                PLOT_RIGHT - 12;
+
+            const barTop =
+                PLOT_TOP + 66;
+
+            const barHeight =
+                PLOT_BOTTOM -
+                PLOT_TOP -
+                132;
+
+            const fillHeight =
+                barHeight *
+                normalizedEnergy;
+
+            ctx.save();
+
+            ctx.fillStyle =
+                "rgba(148, 163, 184, 0.14)";
+
+            ctx.fillRect(
+                barX,
+                barTop,
+                8,
+                barHeight
+            );
+
+            const gradient =
+                ctx.createLinearGradient(
+                    0,
+                    barTop + barHeight,
+                    0,
+                    barTop
+                );
+
+            gradient.addColorStop(
+                0,
+                "rgba(56, 189, 248, 0.72)"
+            );
+
+            gradient.addColorStop(
+                0.55,
+                "rgba(168, 85, 247, 0.82)"
+            );
+
+            gradient.addColorStop(
+                1,
+                "rgba(244, 63, 94, 0.9)"
+            );
+
+            ctx.fillStyle =
+                gradient;
+
+            ctx.fillRect(
+                barX,
+                barTop +
+                barHeight -
+                fillHeight,
+                8,
+                fillHeight
+            );
+
+            ctx.fillStyle =
+                "rgba(186, 230, 253, 0.72)";
+
+            ctx.font =
+                "700 9px Segoe UI, sans-serif";
+
+            ctx.textAlign =
+                "center";
+
+            ctx.fillText(
+                "ENERGÍA",
+                barX + 4,
+                barTop - 15
+            );
+
+            ctx.restore();
+        }
+
+        function drawArrowHead(
+            x,
+            y,
+            angle
+        ) {
+            const size = 8;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x,
+                y
+            );
+
+            ctx.lineTo(
+                x -
+                size *
+                Math.cos(
+                    angle -
+                    Math.PI / 6
+                ),
+                y -
+                size *
+                Math.sin(
+                    angle -
+                    Math.PI / 6
+                )
+            );
+
+            ctx.lineTo(
+                x -
+                size *
+                Math.cos(
+                    angle +
+                    Math.PI / 6
+                ),
+                y -
+                size *
+                Math.sin(
+                    angle +
+                    Math.PI / 6
+                )
+            );
+
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawScene() {
+            const values =
+                getSimulationValues();
+
+            drawBackground();
+            drawGrid();
+            drawSource(values);
+            drawWave(values);
+            drawPropagationArrow(values);
+            drawWavelengthMarker(values);
+            drawEnergyIndicator(values);
+            drawLabels(values);
+        }
+
+        function animate(currentTime) {
+            const deltaSeconds =
+                Math.min(
+                    (
+                        currentTime -
+                        lastFrameTime
+                    ) / 1000,
+                    0.05
+                );
+
+            lastFrameTime =
+                currentTime;
+
+            if (!isPaused) {
+                elapsedTime +=
+                    deltaSeconds;
+
+                if (
+                    elapsedTime >
+                    10000
+                ) {
+                    elapsedTime = 0;
+                }
+            }
+
+            drawScene();
+
+            window.requestAnimationFrame(
+                animate
+            );
+        }
+
+        function formatFrequency(value) {
+            const units = [
+                {
+                    limit: 1e15,
+                    divisor: 1e15,
+                    symbol: "PHz"
+                },
+                {
+                    limit: 1e12,
+                    divisor: 1e12,
+                    symbol: "THz"
+                },
+                {
+                    limit: 1e9,
+                    divisor: 1e9,
+                    symbol: "GHz"
+                },
+                {
+                    limit: 1e6,
+                    divisor: 1e6,
+                    symbol: "MHz"
+                },
+                {
+                    limit: 1e3,
+                    divisor: 1e3,
+                    symbol: "kHz"
+                },
+                {
+                    limit: 0,
+                    divisor: 1,
+                    symbol: "Hz"
+                }
+            ];
+
+            const unit =
+                units.find(
+                    function (item) {
+                        return value >=
+                            item.limit;
+                    }
+                );
+
+            return formatCompactNumber(
+                value /
+                unit.divisor
+            ) +
+            " " +
+            unit.symbol;
+        }
+
+        function formatLength(valueMeters) {
+            if (valueMeters >= 1000) {
+                return formatCompactNumber(
+                    valueMeters / 1000
+                ) + " km";
+            }
+
+            if (valueMeters >= 1) {
+                return formatCompactNumber(
+                    valueMeters
+                ) + " m";
+            }
+
+            if (valueMeters >= 1e-2) {
+                return formatCompactNumber(
+                    valueMeters * 100
+                ) + " cm";
+            }
+
+            if (valueMeters >= 1e-3) {
+                return formatCompactNumber(
+                    valueMeters * 1000
+                ) + " mm";
+            }
+
+            if (valueMeters >= 1e-6) {
+                return formatCompactNumber(
+                    valueMeters * 1e6
+                ) + " µm";
+            }
+
+            if (valueMeters >= 1e-9) {
+                return formatCompactNumber(
+                    valueMeters * 1e9
+                ) + " nm";
+            }
+
+            return formatCompactNumber(
+                valueMeters * 1e12
+            ) + " pm";
+        }
+
+        function formatEnergy(valueEV) {
+            if (valueEV >= 1e6) {
+                return formatCompactNumber(
+                    valueEV / 1e6
+                ) + " MeV";
+            }
+
+            if (valueEV >= 1e3) {
+                return formatCompactNumber(
+                    valueEV / 1e3
+                ) + " keV";
+            }
+
+            if (valueEV >= 1) {
+                return formatCompactNumber(
+                    valueEV
+                ) + " eV";
+            }
+
+            if (valueEV >= 1e-3) {
+                return formatCompactNumber(
+                    valueEV * 1e3
+                ) + " meV";
+            }
+
+            if (valueEV >= 1e-6) {
+                return formatCompactNumber(
+                    valueEV * 1e6
+                ) + " µeV";
+            }
+
+            if (valueEV >= 1e-9) {
+                return formatCompactNumber(
+                    valueEV * 1e9
+                ) + " neV";
+            }
+
+            return valueEV
+                .toExponential(2)
+                .replace(".", ",") +
+                " eV";
+        }
+
+        function formatCompactNumber(value) {
+            const absoluteValue =
+                Math.abs(value);
+
+            let decimals = 2;
+
+            if (absoluteValue >= 100) {
+                decimals = 0;
+            } else if (
+                absoluteValue >= 10
+            ) {
+                decimals = 1;
+            }
+
+            return Number(value)
+                .toFixed(decimals)
+                .replace(".", ",");
+        }
+
+        function clamp(
+            value,
+            minimum,
+            maximum
+        ) {
+            return Math.min(
+                maximum,
+                Math.max(
+                    minimum,
+                    value
+                )
+            );
+        }
+
+        changeBand(3);
+        updateInterface();
+
+        window.requestAnimationFrame(
+            function startAnimation(time) {
+                lastFrameTime = time;
+                animate(time);
+            }
+        );
+    </script>
+
+</body>
+</html>
