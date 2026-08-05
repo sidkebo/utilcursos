@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <meta
+    name="description"
+    content="Simulador interactivo de un cruce con semáforos vehiculares y peatonales."
+  >
+
+  <title>Simulador de cruce semaforizado</title>
+
+  <!-- Archivo de diseño -->
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+  <main class="aplicacion">
+
+    <header class="encabezado">
+      <div>
+        <p class="encabezado__etiqueta">SIMULADOR INTERACTIVO</p>
+        <h1>Control de cruce semaforizado</h1>
+        <p class="encabezado__descripcion">
+          Seguimiento independiente de semáforos vehiculares y peatonales.
+        </p>
+      </div>
+
+      <div class="encabezado__acciones">
+        <button
+          class="boton-tema"
+          id="btnTema"
+          type="button"
+          aria-label="Cambiar a tema oscuro"
+          title="Cambiar tema"
+        >
+          <span class="boton-tema__icono" id="iconoTema" aria-hidden="true">☾</span>
+          <span id="textoTema">Oscuro</span>
+        </button>
+
+        <div class="estado-ejecucion" aria-live="polite">
+          <span class="estado-ejecucion__punto" id="puntoEjecucion"></span>
+          <span id="textoEjecucion">Detenido</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="barra-controles" aria-label="Controles del simulador">
+      <div class="grupo-botones">
+        <button class="boton boton--principal" id="btnIniciar" type="button">
+          <span aria-hidden="true">▶</span>
+          Iniciar
+        </button>
+
+        <button class="boton boton--secundario" id="btnPausar" type="button">
+          <span aria-hidden="true">⏸</span>
+          Pausar
+        </button>
+
+        <button class="boton boton--secundario" id="btnSiguiente" type="button">
+          <span aria-hidden="true">⏭</span>
+          Siguiente fase
+        </button>
+
+        <button class="boton boton--secundario" id="btnReiniciar" type="button">
+          <span aria-hidden="true">↻</span>
+          Reiniciar
+        </button>
+      </div>
+
+      <div class="grupo-tiempos" aria-label="Configuración temporal">
+        <label class="control-tiempo">
+          <span>Verde</span>
+          <span class="control-tiempo__entrada">
+            <input id="tiempoVerde" type="number" min="2" max="60" value="8">
+            <small>s</small>
+          </span>
+        </label>
+
+        <label class="control-tiempo">
+          <span>Amarillo</span>
+          <span class="control-tiempo__entrada">
+            <input id="tiempoAmarillo" type="number" min="1" max="10" value="3">
+            <small>s</small>
+          </span>
+        </label>
+
+        <label class="control-tiempo control-tiempo--calculado">
+          <span>Rojo calculado</span>
+          <span class="control-tiempo__entrada">
+            <input
+              id="tiempoRojoCalculado"
+              type="number"
+              value="11"
+              readonly
+              aria-readonly="true"
+            >
+            <small>s</small>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <section class="distribucion">
+
+      <!-- COLUMNA IZQUIERDA -->
+      <aside class="columna-seguimiento" aria-label="Seguimiento del lado A">
+
+        <article class="tarjeta-seguimiento tarjeta-seguimiento--vehicular">
+          <div class="tarjeta-seguimiento__cabecera">
+            <div>
+              <p class="tarjeta-seguimiento__tipo">VEHICULAR</p>
+              <h2>Semáforo A</h2>
+            </div>
+
+            <span class="insignia" id="insigniaA">Vía A</span>
+          </div>
+
+          <div class="estado-semaforo">
+            <span class="luz-panel luz-panel--verde" id="indicadorA"></span>
+            <strong id="estadoA">Verde</strong>
+          </div>
+
+          <div class="metricas">
+            <div class="metrica">
+              <span>Tiempo restante</span>
+              <strong id="tiempoA">8 s</strong>
+            </div>
+
+            <div class="metrica">
+              <span>Duración del estado</span>
+              <strong id="duracionA">8 s</strong>
+            </div>
+          </div>
+
+          <div class="barra-progreso" aria-hidden="true">
+            <div id="progresoA"></div>
+          </div>
+        </article>
+
+        <article class="tarjeta-seguimiento tarjeta-seguimiento--peatonal">
+          <div class="tarjeta-seguimiento__cabecera">
+            <div>
+              <p class="tarjeta-seguimiento__tipo">PEATONAL</p>
+              <h2>Peatonal izquierdo</h2>
+            </div>
+
+            <span class="icono-peatonal" aria-hidden="true">🚶</span>
+          </div>
+
+          <div class="estado-semaforo">
+            <span class="luz-panel luz-panel--verde" id="indicadorPedLeft"></span>
+            <strong id="estadoPedLeft">Verde</strong>
+          </div>
+
+          <div class="metricas">
+            <div class="metrica">
+              <span>Tiempo restante</span>
+              <strong id="tiempoPedLeft">11 s</strong>
+            </div>
+
+            <div class="metrica">
+              <span>Duración del estado</span>
+              <strong id="duracionPedLeft">11 s</strong>
+            </div>
+          </div>
+
+          <div class="barra-progreso" aria-hidden="true">
+            <div id="progresoPedLeft"></div>
+          </div>
+        </article>
+      </aside>
+
+      <!-- ZONA CENTRAL -->
+      <section class="zona-central">
+        <div class="escenario">
+          <img
+            src="img/cruce.png"
+            alt="Cruce de calles con semáforos vehiculares y peatonales"
+          >
+
+          <svg
+            class="capa-luces"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 1698 926"
+            preserveAspectRatio="none"
+            aria-hidden="true"
+          >
+            <!-- Semáforo vehicular A -->
+            <circle id="vehA_red" class="foco foco--rojo" cx="752.98" cy="108.29" r="18.5"></circle>
+            <circle id="vehA_yellow" class="foco foco--amarillo" cx="800.63" cy="86.63" r="18.5"></circle>
+            <circle id="vehA_green" class="foco foco--verde" cx="846.83" cy="69.31" r="18.5"></circle>
+
+            <!-- Semáforo vehicular B -->
+            <circle id="vehB_red" class="foco foco--rojo" cx="924.8" cy="67.86" r="18.5"></circle>
+            <circle id="vehB_yellow" class="foco foco--amarillo" cx="971.01" cy="88.08" r="18.5"></circle>
+            <circle id="vehB_green" class="foco foco--verde" cx="1017.21" cy="108.29" r="18.5"></circle>
+
+            <!-- Semáforo peatonal izquierdo -->
+            <circle id="pedLeft_red" class="foco foco--rojo" cx="443.99" cy="356.64" r="14.4"></circle>
+            <circle id="pedLeft_green" class="foco foco--verde" cx="443.99" cy="399.95" r="14.4"></circle>
+
+            <!-- Semáforo peatonal derecho -->
+            <circle id="pedRight_red" class="foco foco--rojo" cx="1204.92" cy="246.9" r="14.4"></circle>
+            <circle id="pedRight_green" class="foco foco--verde" cx="1204.92" cy="290.22" r="14.4"></circle>
+          </svg>
+        </div>
+
+        <div class="mensaje-fase">
+          <div class="mensaje-fase__icono" aria-hidden="true">ℹ</div>
+          <div>
+            <span>Fase actual</span>
+            <strong id="nombreFase">Vía A en verde</strong>
+            <p id="mensaje">
+              La vía A está habilitada y el cruce peatonal izquierdo está en verde.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- COLUMNA DERECHA -->
+      <aside class="columna-seguimiento" aria-label="Seguimiento del lado B">
+
+        <article class="tarjeta-seguimiento tarjeta-seguimiento--vehicular">
+          <div class="tarjeta-seguimiento__cabecera">
+            <div>
+              <p class="tarjeta-seguimiento__tipo">VEHICULAR</p>
+              <h2>Semáforo B</h2>
+            </div>
+
+            <span class="insignia" id="insigniaB">Vía B</span>
+          </div>
+
+          <div class="estado-semaforo">
+            <span class="luz-panel luz-panel--rojo" id="indicadorB"></span>
+            <strong id="estadoB">Rojo</strong>
+          </div>
+
+          <div class="metricas">
+            <div class="metrica">
+              <span>Tiempo restante</span>
+              <strong id="tiempoB">11 s</strong>
+            </div>
+
+            <div class="metrica">
+              <span>Duración del estado</span>
+              <strong id="duracionB">11 s</strong>
+            </div>
+          </div>
+
+          <div class="barra-progreso" aria-hidden="true">
+            <div id="progresoB"></div>
+          </div>
+        </article>
+
+        <article class="tarjeta-seguimiento tarjeta-seguimiento--peatonal">
+          <div class="tarjeta-seguimiento__cabecera">
+            <div>
+              <p class="tarjeta-seguimiento__tipo">PEATONAL</p>
+              <h2>Peatonal derecho</h2>
+            </div>
+
+            <span class="icono-peatonal" aria-hidden="true">🚶</span>
+          </div>
+
+          <div class="estado-semaforo">
+            <span class="luz-panel luz-panel--rojo" id="indicadorPedRight"></span>
+            <strong id="estadoPedRight">Rojo</strong>
+          </div>
+
+          <div class="metricas">
+            <div class="metrica">
+              <span>Tiempo restante</span>
+              <strong id="tiempoPedRight">11 s</strong>
+            </div>
+
+            <div class="metrica">
+              <span>Duración del estado</span>
+              <strong id="duracionPedRight">11 s</strong>
+            </div>
+          </div>
+
+          <div class="barra-progreso" aria-hidden="true">
+            <div id="progresoPedRight"></div>
+          </div>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <!-- Control del tema claro/oscuro -->
+  <script src="js/tema.js"></script>
+
+  <!-- Datos fijos y calibración -->
+  <script src="js/configuracion.js"></script>
+
+  <!-- Lógica del simulador -->
+  <script src="js/simulador.js"></script>
+</body>
+</html>
