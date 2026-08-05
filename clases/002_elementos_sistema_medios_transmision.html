@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clase 2: Elementos del sistema y medios de transmisión | SIT-400</title>
+
+    <link rel="stylesheet" href="../css/002_elementos_sistema_medios_transmision.css">
+</head>
+
+<body>
+
+    <main class="page">
+        <header class="header">
+            <div class="course-badge">
+                SIT-400 · Clase 2
+            </div>
+
+            <h1>Elementos del Sistema y Medios de Transmisión</h1>
+
+            <p class="subtitle">
+                Reconocimiento funcional de los bloques de un sistema,
+                comparación de medios guiados y no guiados y selección
+                técnica del medio según la aplicación.
+            </p>
+        </header>
+
+        <nav
+            class="mode-navigation"
+            aria-label="Secciones del simulador"
+        >
+            <button
+                type="button"
+                class="mode-button active"
+                data-mode="blocks"
+                aria-selected="true"
+            >
+                1. Recorrido por bloques
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="media"
+                aria-selected="false"
+            >
+                2. Comparar medios
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="cases"
+                aria-selected="false"
+            >
+                3. Elegir el medio
+            </button>
+        </nav>
+
+        <section class="simulation-panel">
+            <div class="canvas-header">
+                <span class="canvas-title" id="canvasTitle">
+                    Recorrido funcional de la señal
+                </span>
+
+                <span class="simulation-status" id="simulationStatus">
+                    Simulación activa
+                </span>
+            </div>
+
+            <div class="canvas-container" id="canvasContainer">
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulador de elementos del sistema y medios de transmisión"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div class="metrics">
+                <article class="metric">
+                    <span class="metric-label" id="metricLabel1">
+                        Sistema
+                    </span>
+
+                    <span class="metric-value" id="metricValue1">
+                        Radio FM
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label" id="metricLabel2">
+                        Bloque seleccionado
+                    </span>
+
+                    <span class="metric-value" id="metricValue2">
+                        Fuente
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label" id="metricLabel3">
+                        Progreso visual
+                    </span>
+
+                    <span class="metric-value" id="metricValue3">
+                        0 %
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label" id="metricLabel4">
+                        Condición del canal
+                    </span>
+
+                    <span class="metric-value" id="metricValue4">
+                        Sin perturbación
+                    </span>
+                </article>
+            </div>
+
+            <section
+                class="controls-section"
+                id="blocksControls"
+            >
+                <div class="controls-grid three-columns">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="systemSelect"
+                            >
+                                Sistema de ejemplo
+                            </label>
+                        </div>
+
+                        <select id="systemSelect">
+                            <option value="radioFm">
+                                Radio FM
+                            </option>
+
+                            <option value="camera">
+                                Cámara remota por radio
+                            </option>
+
+                            <option value="temperature">
+                                Telemetría de temperatura por cable
+                            </option>
+
+                            <option value="fiberLink">
+                                Enlace de datos por fibra óptica
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="channelEffect"
+                            >
+                                Condición del canal
+                            </label>
+                        </div>
+
+                        <select id="channelEffect">
+                            <option value="none">
+                                Sin perturbación
+                            </option>
+
+                            <option value="attenuation">
+                                Atenuación
+                            </option>
+
+                            <option value="noise">
+                                Ruido
+                            </option>
+
+                            <option value="interference">
+                                Interferencia
+                            </option>
+
+                            <option value="distortion">
+                                Distorsión
+                            </option>
+
+                            <option value="delay">
+                                Retardo
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="animationSpeed"
+                            >
+                                Velocidad visual
+                            </label>
+
+                            <output
+                                class="value-display"
+                                id="animationSpeedDisplay"
+                            >
+                                1,0×
+                            </output>
+                        </div>
+
+                        <input
+                            type="range"
+                            id="animationSpeed"
+                            min="0.5"
+                            max="2"
+                            step="0.1"
+                            value="1"
+                        >
+                    </div>
+                </div>
+
+                <h2 class="section-title">
+                    Selecciona manualmente el bloque que deseas explicar
+                </h2>
+
+                <div
+                    class="block-selector"
+                    id="blockSelector"
+                ></div>
+            </section>
+
+            <section
+                class="controls-section"
+                id="mediaControls"
+                hidden
+            >
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="mediumSpeed"
+                            >
+                                Velocidad visual de la señal
+                            </label>
+
+                            <output
+                                class="value-display"
+                                id="mediumSpeedDisplay"
+                            >
+                                1,0×
+                            </output>
+                        </div>
+
+                        <input
+                            type="range"
+                            id="mediumSpeed"
+                            min="0.5"
+                            max="2"
+                            step="0.1"
+                            value="1"
+                        >
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <span class="control-label">
+                                Alternativas comparadas
+                            </span>
+
+                            <span class="value-display">
+                                5
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <h2 class="section-title">
+                    Selecciona un medio o tecnología
+                </h2>
+
+                <div
+                    class="medium-selector"
+                    id="mediumSelector"
+                ></div>
+            </section>
+
+            <section
+                class="controls-section"
+                id="caseControls"
+                hidden
+            >
+                <div class="controls-grid three-columns">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="caseSelect"
+                            >
+                                Caso técnico
+                            </label>
+                        </div>
+
+                        <select id="caseSelect">
+                            <option value="classroom">
+                                Aula o laboratorio
+                            </option>
+
+                            <option value="industrial">
+                                Ambiente industrial con motores
+                            </option>
+
+                            <option value="mobile">
+                                Equipos móviles
+                            </option>
+
+                            <option value="remote">
+                                Zona rural aislada
+                            </option>
+
+                            <option value="longDistance">
+                                Enlace terrestre de larga distancia
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="caseMediumSelect"
+                            >
+                                Medio elegido
+                            </label>
+                        </div>
+
+                        <select id="caseMediumSelect">
+                            <option value="twistedPair">
+                                Par trenzado
+                            </option>
+
+                            <option value="coaxial">
+                                Cable coaxial
+                            </option>
+
+                            <option value="fiber">
+                                Fibra óptica
+                            </option>
+
+                            <option value="radio">
+                                Enlace de radio
+                            </option>
+
+                            <option value="satellite">
+                                Enlace satelital
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <span class="control-label">
+                                Verificación
+                            </span>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="action-button evaluate"
+                            id="evaluateButton"
+                        >
+                            Evaluar elección
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                class="detail-panel"
+                id="detailPanel"
+            >
+                <h2 id="detailTitle">
+                    Fuente de información
+                </h2>
+
+                <div
+                    class="detail-grid"
+                    id="detailGrid"
+                ></div>
+            </section>
+
+            <section
+                class="detail-panel"
+                id="mediaDetailPanel"
+                hidden
+            >
+                <h2 id="mediaDetailTitle">
+                    Par trenzado
+                </h2>
+
+                <div
+                    class="detail-grid"
+                    id="mediaDetailGrid"
+                ></div>
+            </section>
+
+            <section
+                class="detail-panel"
+                id="caseDetailPanel"
+                hidden
+            >
+                <h2 id="caseDetailTitle">
+                    Aula o laboratorio
+                </h2>
+
+                <div
+                    class="detail-grid"
+                    id="caseDetailGrid"
+                ></div>
+
+                <div
+                    class="result-box"
+                    id="caseResult"
+                >
+                    Selecciona un medio y presiona “Evaluar elección”.
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Recorrido funcional:</strong>
+                la fuente origina la información, el transductor de entrada
+                la convierte en una señal utilizable, el transmisor la adapta,
+                el canal la transporta, el receptor permite recuperar el
+                mensaje y el transductor de salida entrega una forma útil.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Nota didáctica:</strong>
+                la animación representa funciones y no tiempos reales. Los
+                bloques pueden estar integrados dentro de un mismo equipo.
+                No se desarrollan modulación, decibeles, diseño de antenas,
+                modos de fibra ni presupuestos de enlace.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/002_elementos_sistema_medios_transmision.js"></script>
+
+</body>
+</html>

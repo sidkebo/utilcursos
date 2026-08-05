@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 4: Ganancia, atenuación y cascadas | SIT-400</title>
+
+    <!--
+        Fuente pedagógica: Clase 4 completa de SIT-400.
+        La clase aplica el dB al análisis de amplificadores, cables, conectores,
+        filtros, atenuadores y etapas intermedias, sin introducir todavía
+        nuevos niveles referidos. :contentReference[oaicite:0]{index=0}
+    -->
+
+    <link rel="stylesheet" href="../css/004_ganancia_atenuacion_cascadas.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="course-badge">
+                SIT-400 · Clase 4
+            </div>
+
+            <h1>Ganancia, Atenuación y Cascadas</h1>
+
+            <p class="subtitle">
+                Análisis de una etapa, suma algebraica de ganancias y pérdidas,
+                conversión del resultado a una relación lineal y simulación
+                didáctica de un divisor resistivo como atenuador de tensión.
+            </p>
+        </header>
+
+        <nav
+            class="mode-navigation"
+            aria-label="Secciones del simulador"
+        >
+            <button
+                type="button"
+                class="mode-button active"
+                data-mode="stage"
+                aria-selected="true"
+            >
+                1. Una etapa
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="cascade"
+                aria-selected="false"
+            >
+                2. Cascada de bloques
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="divider"
+                aria-selected="false"
+            >
+                3. Atenuador resistivo
+            </button>
+        </nav>
+
+        <section class="simulation-panel">
+            <div class="canvas-header">
+                <span
+                    class="canvas-title"
+                    id="canvasTitle"
+                >
+                    Ganancia y atenuación de una etapa
+                </span>
+
+                <span
+                    class="simulation-status"
+                    id="simulationStatus"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-container"
+                id="canvasContainer"
+            >
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulación educativa de ganancia, atenuación y cascadas"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div
+                class="metrics"
+                id="metricsContainer"
+            >
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel1"
+                    >
+                        Entrada
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue1"
+                    >
+                        2 W
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel2"
+                    >
+                        Salida
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue2"
+                    >
+                        20 W
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel3"
+                    >
+                        Relación lineal
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue3"
+                    >
+                        10 veces
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel4"
+                    >
+                        Ganancia
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue4"
+                    >
+                        +10 dB
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel5"
+                    >
+                        Atenuación
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue5"
+                    >
+                        −10 dB
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel6"
+                    >
+                        Interpretación
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue6"
+                    >
+                        Aumento
+                    </span>
+                </article>
+            </div>
+
+            <section
+                class="controls-section"
+                id="stageControls"
+            >
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="stageQuantity"
+                            >
+                                Magnitud comparada
+                            </label>
+                        </div>
+
+                        <select id="stageQuantity">
+                            <option value="power">
+                                Potencia
+                            </option>
+
+                            <option value="voltage">
+                                Tensión
+                            </option>
+
+                            <option value="current">
+                                Corriente
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="stageView"
+                            >
+                                Forma principal de expresar el cambio
+                            </label>
+                        </div>
+
+                        <select id="stageView">
+                            <option value="gain">
+                                Ganancia con signo
+                            </option>
+
+                            <option value="attenuation">
+                                Atenuación como pérdida positiva
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="stageInputValue"
+                                id="stageInputLabel"
+                            >
+                                Potencia de entrada
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="stageInputValue"
+                                min="0.000000001"
+                                step="any"
+                                value="2"
+                            >
+
+                            <select
+                                id="stageInputUnit"
+                                aria-label="Unidad de entrada"
+                            ></select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="stageOutputValue"
+                                id="stageOutputLabel"
+                            >
+                                Potencia de salida
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="stageOutputValue"
+                                min="0.000000001"
+                                step="any"
+                                value="20"
+                            >
+
+                            <select
+                                id="stageOutputUnit"
+                                aria-label="Unidad de salida"
+                            ></select>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="controls-grid two-columns"
+                    id="stageConditions"
+                    hidden
+                >
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="stageMeasurement"
+                            >
+                                Criterio de medición
+                            </label>
+                        </div>
+
+                        <select id="stageMeasurement">
+                            <option value="rms">
+                                RMS con RMS
+                            </option>
+
+                            <option value="peak">
+                                Pico con pico
+                            </option>
+
+                            <option value="peakToPeak">
+                                Pico a pico con pico a pico
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="stageImpedance"
+                            >
+                                Condición de impedancia
+                            </label>
+                        </div>
+
+                        <select id="stageImpedance">
+                            <option value="equal">
+                                Impedancias iguales
+                            </option>
+
+                            <option value="unknown">
+                                Impedancias desconocidas
+                            </option>
+
+                            <option value="different">
+                                Impedancias diferentes
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="subpanel">
+                    <h2 class="subpanel-title">
+                        Ejercicios obligatorios de una etapa
+                    </h2>
+
+                    <div class="preset-grid">
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-stage-example="powerGain"
+                        >
+                            2 W → 20 W
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-stage-example="voltageGain"
+                        >
+                            0,5 V → 1 V
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-stage-example="currentLoss"
+                        >
+                            20 mA → 2 mA
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-stage-example="powerLoss"
+                        >
+                            10 W → 1 W
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-stage-example="voltageLoss"
+                        >
+                            2 V → 1 V
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                class="controls-section"
+                id="cascadeControls"
+                hidden
+            >
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="stageCount"
+                            >
+                                Cantidad de bloques
+                            </label>
+
+                            <output
+                                class="value-display"
+                                id="stageCountDisplay"
+                            >
+                                3
+                            </output>
+                        </div>
+
+                        <input
+                            type="range"
+                            id="stageCount"
+                            min="1"
+                            max="6"
+                            step="1"
+                            value="3"
+                        >
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="initialPower"
+                            >
+                                Potencia inicial
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="initialPower"
+                                min="0.000000001"
+                                step="any"
+                                value="1"
+                            >
+
+                            <select id="initialPowerUnit">
+                                <option value="W">
+                                    W
+                                </option>
+
+                                <option value="mW">
+                                    mW
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="saturationThreshold"
+                            >
+                                Umbral didáctico de saturación
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="saturationThreshold"
+                                min="0.000000001"
+                                step="any"
+                                value="100"
+                            >
+
+                            <select id="saturationUnit">
+                                <option value="W">
+                                    W
+                                </option>
+
+                                <option value="mW">
+                                    mW
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="animationSpeed"
+                            >
+                                Velocidad visual
+                            </label>
+
+                            <output
+                                class="value-display"
+                                id="animationSpeedDisplay"
+                            >
+                                1,0×
+                            </output>
+                        </div>
+
+                        <input
+                            type="range"
+                            id="animationSpeed"
+                            min="0.4"
+                            max="2"
+                            step="0.1"
+                            value="1"
+                        >
+                    </div>
+                </div>
+
+                <div class="subpanel">
+                    <h2 class="subpanel-title">
+                        Selecciona el bloque que deseas configurar
+                    </h2>
+
+                    <div
+                        class="stage-selector"
+                        id="stageSelector"
+                    ></div>
+                </div>
+
+                <div class="subpanel">
+                    <h2
+                        class="subpanel-title"
+                        id="selectedStageTitle"
+                    >
+                        Bloque 1
+                    </h2>
+
+                    <div class="controls-grid three-columns">
+                        <div class="control-group">
+                            <div class="control-heading">
+                                <label
+                                    class="control-label"
+                                    for="selectedStageType"
+                                >
+                                    Tipo de bloque
+                                </label>
+                            </div>
+
+                            <select id="selectedStageType"></select>
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-heading">
+                                <label
+                                    class="control-label"
+                                    for="selectedStageMagnitude"
+                                >
+                                    Magnitud en dB
+                                </label>
+                            </div>
+
+                            <input
+                                type="number"
+                                id="selectedStageMagnitude"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                value="20"
+                            >
+                        </div>
+
+                        <div class="control-group">
+                            <div class="control-heading">
+                                <span class="control-label">
+                                    Valor aplicado en la cascada
+                                </span>
+                            </div>
+
+                            <div
+                                class="value-display"
+                                id="selectedStageSignedValue"
+                            >
+                                +20 dB
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subpanel">
+                    <h2 class="subpanel-title">
+                        Configuraciones rápidas
+                    </h2>
+
+                    <div class="preset-grid">
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-cascade-preset="mandatory"
+                        >
+                            +20 −3 −2 dB
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-cascade-preset="balanced"
+                        >
+                            +10 −10 dB
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-cascade-preset="negative"
+                        >
+                            Cascada neta negativa
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-cascade-preset="sixBlocks"
+                        >
+                            Usar los seis bloques
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-cascade-preset="clear"
+                        >
+                            Reiniciar cascada
+                        </button>
+                    </div>
+                </div>
+
+                <div
+                    class="alert-box"
+                    id="cascadeAlert"
+                >
+                    La cascada está dentro del umbral didáctico seleccionado.
+                </div>
+
+                <div class="subpanel">
+                    <h2 class="subpanel-title">
+                        Registro etapa por etapa
+                    </h2>
+
+                    <table class="result-table">
+                        <thead>
+                            <tr>
+                                <th>Etapa</th>
+                                <th>Bloque</th>
+                                <th>Cambio</th>
+                                <th>Factor lineal</th>
+                                <th>Potencia después</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="cascadeTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section
+                class="controls-section"
+                id="dividerControls"
+                hidden
+            >
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="dividerInputVoltage"
+                            >
+                                Tensión de entrada
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="dividerInputVoltage"
+                                min="0.001"
+                                step="0.1"
+                                value="2"
+                            >
+
+                            <select id="dividerVoltageUnit">
+                                <option value="Vpp">
+                                    Vpp
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="dividerFrequency"
+                            >
+                                Frecuencia
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="dividerFrequency"
+                                min="1"
+                                step="1"
+                                value="1000"
+                            >
+
+                            <select id="dividerFrequencyUnit">
+                                <option value="Hz">
+                                    Hz
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="dividerR1"
+                            >
+                                R1
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="dividerR1"
+                                min="0.001"
+                                step="0.1"
+                                value="1"
+                            >
+
+                            <select id="dividerR1Unit">
+                                <option value="kΩ">
+                                    kΩ
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="dividerR2"
+                            >
+                                R2
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="dividerR2"
+                                min="0.001"
+                                step="0.1"
+                                value="1"
+                            >
+
+                            <select id="dividerR2Unit">
+                                <option value="kΩ">
+                                    kΩ
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="subpanel">
+                    <h2 class="subpanel-title">
+                        Resultados esperados del divisor ideal
+                    </h2>
+
+                    <div class="preset-grid">
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-divider-preset="half"
+                        >
+                            R1 = 1 kΩ · R2 = 1 kΩ
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-divider-preset="quarter"
+                        >
+                            R1 = 3 kΩ · R2 = 1 kΩ
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-divider-preset="tenth"
+                        >
+                            R1 = 9 kΩ · R2 = 1 kΩ
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-divider-preset="reset"
+                        >
+                            Configuración de práctica
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            id="dividerPauseHint"
+                        >
+                            Medición de alta impedancia
+                        </button>
+                    </div>
+                </div>
+
+                <div class="alert-box warning">
+                    El divisor se usa como modelo didáctico de atenuación de
+                    tensión. Se supone un osciloscopio virtual de alta impedancia
+                    y sin carga adicional significativa. No representa un
+                    atenuador profesional de RF.
+                </div>
+            </section>
+
+            <section class="formula-panel">
+                <h2 id="formulaPanelTitle">
+                    Cálculo de una etapa
+                </h2>
+
+                <div class="formula-grid">
+                    <div class="formula-item">
+                        <strong>Fórmula principal</strong>
+
+                        <code id="formulaPrimary">
+                            GdB = 10 × log10(Psalida / Pentrada)
+                        </code>
+                    </div>
+
+                    <div class="formula-item">
+                        <strong>Operación</strong>
+
+                        <code id="formulaOperation">
+                            GdB = 10 × log10(20 / 2)
+                        </code>
+                    </div>
+
+                    <div class="formula-item">
+                        <strong>Resultado e interpretación</strong>
+
+                        <span id="formulaResult">
+                            +10 dB · la salida es 10 veces la entrada
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Ganancia y atenuación:</strong>
+                la ganancia con signo compara la salida con la entrada. Una
+                reducción puede expresarse como ganancia negativa o como
+                atenuación positiva.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Nota didáctica:</strong>
+                el dB expresa una relación. No se suman directamente vatios con
+                dB. Los niveles referidos dBm, dBW, dBV, dBu y dBmV no se usan
+                como tema principal en este simulador.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/004_ganancia_atenuacion_cascadas.js"></script>
+</body>
+</html>

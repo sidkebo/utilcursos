@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Clase 14: Generación FM y VCO | SIT-400</title>
+
+<!--
+Base pedagógica: Clase 14 completa de SIT-400. La clase se limita a generación
+FM directa, generación indirecta y VCO; no incluye demodulación ni PLL.
+:contentReference[oaicite:0]{index=0}
+
+Modelo directo centrado en Vbias:
+vcontrol = Vbias + Vm·cos(2πfmt)
+fi = fc + Kvco·(vcontrol − Vbias)
+Δf = Kvco·Vm
+
+El método indirecto multiplica fc y Δf mediante N y puede trasladar la
+frecuencia central con un mezclador.
+:contentReference[oaicite:1]{index=1}
+:contentReference[oaicite:2]{index=2}
+-->
+
+<link rel="stylesheet" href="../css/014_generacion_fm_vco.css">
+</head>
+
+<body>
+<main class="page">
+
+<header class="head">
+    <div class="badge">SIT-400 · Clase 14</div>
+
+    <h1>Generación FM y VCO</h1>
+
+    <p class="subtitle">
+        Simulación funcional de generación FM directa mediante un oscilador
+        controlado por tensión y de generación indirecta mediante modulación
+        angular inicial, multiplicación, filtrado y traslación de frecuencia.
+    </p>
+</header>
+
+<nav class="tabs" aria-label="Modos">
+    <button
+        class="tab active"
+        data-mode="direct"
+        type="button"
+    >
+        Generación directa · VCO
+    </button>
+
+    <button
+        class="tab"
+        data-mode="indirect"
+        type="button"
+    >
+        Generación indirecta
+    </button>
+</nav>
+
+<section class="sim">
+    <div class="sim-head">
+        <span class="sim-title" id="simTitle">
+            Modulante → tensión de control → VCO → señal FM
+        </span>
+
+        <span class="status" id="status">
+            Simulación activa
+        </span>
+    </div>
+
+    <div class="canvas-wrap" id="canvasWrap">
+        <canvas
+            id="canvas"
+            aria-label="Simulador de generación FM y VCO"
+        ></canvas>
+    </div>
+</section>
+
+<section class="dash">
+    <div class="banner" id="banner">
+        <div>
+            <strong id="bannerTitle">
+                VCO en modelo lineal
+            </strong>
+
+            <small id="bannerText">
+                La tensión modulante hace variar la frecuencia alrededor del
+                punto fijado por Vbias.
+            </small>
+        </div>
+
+        <span class="tag" id="bannerTag">
+            Δf = 6 kHz
+        </span>
+    </div>
+
+    <div class="metrics" id="metrics"></div>
+
+    <section id="directUI">
+        <div class="controls">
+            <div class="control">
+                <div class="control-head">
+                    <label for="dFc">
+                        Frecuencia central fᶜ
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="dFc"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="100"
+                    >
+
+                    <select id="dFcU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="kvco">
+                        Sensibilidad Kᵥ꜀ₒ
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="kvco"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value="3"
+                    >
+
+                    <select id="kvcoU">
+                        <option>Hz/V</option>
+                        <option selected>kHz/V</option>
+                        <option>MHz/V</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="vm">
+                        Amplitud Vₘ pico
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="vm"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value="2"
+                    >
+
+                    <select>
+                        <option>V pico</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="dFm">
+                        Frecuencia modulante fₘ
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="dFm"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="1"
+                    >
+
+                    <select id="dFmU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="bias">
+                        Polarización Vbias
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="bias"
+                        type="number"
+                        step="any"
+                        value="2"
+                    >
+
+                    <select>
+                        <option>V DC</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="dSpeed">
+                        Velocidad de animación
+                    </label>
+
+                    <output class="live" id="dSpeedOut">
+                        1,0×
+                    </output>
+                </div>
+
+                <input
+                    id="dSpeed"
+                    type="range"
+                    min="0.2"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                >
+            </div>
+        </div>
+
+        <section class="panel">
+            <h2>Casos rápidos de generación directa</h2>
+
+            <div class="presets">
+                <button
+                    class="preset dp"
+                    data-preset="practice"
+                    type="button"
+                >
+                    Práctica: 20 Hz y 5 Hz/V
+                </button>
+
+                <button
+                    class="preset dp"
+                    data-preset="example"
+                    type="button"
+                >
+                    Ejemplo: 100 kHz ± 6 kHz
+                </button>
+
+                <button
+                    class="preset dp"
+                    data-preset="higher"
+                    type="button"
+                >
+                    Vₘ = 3 V pico
+                </button>
+
+                <button
+                    class="preset dp"
+                    data-preset="curve"
+                    type="button"
+                >
+                    Curva: 80 a 140 kHz
+                </button>
+
+                <button
+                    class="preset dp"
+                    data-preset="small"
+                    type="button"
+                >
+                    Desviación pequeña
+                </button>
+            </div>
+        </section>
+    </section>
+
+    <section id="indirectUI" hidden>
+        <div class="controls">
+            <div class="control">
+                <div class="control-head">
+                    <label for="iFc">
+                        Frecuencia central inicial
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="iFc"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="100"
+                    >
+
+                    <select id="iFcU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="iDf">
+                        Desviación inicial Δf₀
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="iDf"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value="1"
+                    >
+
+                    <select id="iDfU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="iFm">
+                        Frecuencia modulante fₘ
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="iFm"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="1"
+                    >
+
+                    <select id="iFmU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="mult">
+                        Multiplicador N
+                    </label>
+                </div>
+
+                <input
+                    id="mult"
+                    type="number"
+                    min="1"
+                    max="20"
+                    step="1"
+                    value="5"
+                >
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="lo">
+                        Oscilador local
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="lo"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value="0"
+                    >
+
+                    <select id="loU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="mixMode">
+                        Traslación con mezclador
+                    </label>
+                </div>
+
+                <select id="mixMode">
+                    <option value="none">
+                        Sin mezclador
+                    </option>
+
+                    <option value="sum">
+                        Seleccionar suma
+                    </option>
+
+                    <option value="difference">
+                        Seleccionar diferencia
+                    </option>
+                </select>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="iSpeed">
+                        Velocidad de animación
+                    </label>
+
+                    <output class="live" id="iSpeedOut">
+                        1,0×
+                    </output>
+                </div>
+
+                <input
+                    id="iSpeed"
+                    type="range"
+                    min="0.2"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                >
+            </div>
+        </div>
+
+        <section class="panel">
+            <h2>Casos rápidos de generación indirecta</h2>
+
+            <div class="presets">
+                <button
+                    class="preset ip"
+                    data-preset="mandatory"
+                    type="button"
+                >
+                    Obligatorio: N = 5
+                </button>
+
+                <button
+                    class="preset ip"
+                    data-preset="optional"
+                    type="button"
+                >
+                    Refuerzo: N = 4
+                </button>
+
+                <button
+                    class="preset ip"
+                    data-preset="sum"
+                    type="button"
+                >
+                    Multiplicar y subir frecuencia
+                </button>
+
+                <button
+                    class="preset ip"
+                    data-preset="difference"
+                    type="button"
+                >
+                    Multiplicar y bajar frecuencia
+                </button>
+
+                <button
+                    class="preset ip"
+                    data-preset="diagnostic"
+                    type="button"
+                >
+                    Diagnóstico: entrada no angosta
+                </button>
+            </div>
+        </section>
+    </section>
+
+    <section class="panel formula-panel">
+        <h2 id="formulaTitle">Relaciones del VCO</h2>
+
+        <div class="formula-grid">
+            <article class="card">
+                <b id="fl1">Tensión de control</b>
+                <code id="f1"></code>
+            </article>
+
+            <article class="card">
+                <b id="fl2">Frecuencia instantánea</b>
+                <code id="f2"></code>
+            </article>
+
+            <article class="card">
+                <b id="fl3">Desviación máxima</b>
+                <code id="f3"></code>
+            </article>
+
+            <article class="card">
+                <b id="fl4">Índice FM</b>
+                <code id="f4"></code>
+            </article>
+
+            <article class="card">
+                <b id="fl5">Frecuencias límite</b>
+                <code id="f5"></code>
+            </article>
+
+            <article class="card">
+                <b id="fl6">Modelo de señal FM</b>
+                <code id="f6"></code>
+            </article>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Comparación funcional de los métodos</h2>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aspecto</th>
+                        <th>Generación directa</th>
+                        <th>Generación indirecta</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr>
+                        <td>Principio</td>
+                        <td>
+                            La modulante cambia directamente la frecuencia del
+                            oscilador.
+                        </td>
+                        <td>
+                            Se obtiene modulación angular pequeña y luego se
+                            procesa.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Bloque típico</td>
+                        <td>VCO o reactancia controlada.</td>
+                        <td>
+                            Integrador, modulador de fase, NBFM, multiplicadores
+                            y filtros.
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>Ventaja funcional</td>
+                        <td>Camino simple y directo.</td>
+                        <td>Puede partir de una referencia más estable.</td>
+                    </tr>
+
+                    <tr>
+                        <td>Limitación</td>
+                        <td>
+                            Linealidad, estabilidad y rango del oscilador real.
+                        </td>
+                        <td>Mayor cantidad de etapas y ajustes.</td>
+                    </tr>
+
+                    <tr>
+                        <td>Multiplicador</td>
+                        <td>No es el bloque principal.</td>
+                        <td>Multiplica fᶜ y Δf; fₘ no cambia.</td>
+                    </tr>
+
+                    <tr>
+                        <td>Mezclador</td>
+                        <td>Puede añadirse después.</td>
+                        <td>
+                            Traslada fᶜ por suma o diferencia; idealmente no
+                            multiplica Δf.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Ideas técnicas que deben mantenerse claras</h2>
+
+        <div class="concept-grid">
+            <article class="card concept">
+                <b>Generar FM no es cambiar volumen</b>
+                <span>
+                    La amplitud ideal permanece constante; cambia la separación
+                    temporal entre ciclos.
+                </span>
+            </article>
+
+            <article class="card concept">
+                <b>VCO no es PLL</b>
+                <span>
+                    El VCO es un oscilador controlado por tensión. El PLL es un
+                    lazo cerrado de la clase siguiente.
+                </span>
+            </article>
+
+            <article class="card concept">
+                <b>Vₘ es valor pico</b>
+                <span>
+                    En Δf = Kᵥ꜀ₒVₘ se utiliza amplitud pico. Un valor RMS debe
+                    convertirse antes.
+                </span>
+            </article>
+
+            <article class="card concept">
+                <b>Vbias fija el punto de trabajo</b>
+                <span>
+                    Vbias ubica la frecuencia central; Δf depende de Kᵥ꜀ₒ y Vₘ.
+                </span>
+            </article>
+
+            <article class="card concept">
+                <b>Varactor funcional</b>
+                <span>
+                    Polarizado en inversa actúa como capacitancia controlada. Si
+                    Ctotal disminuye, la frecuencia aumenta.
+                </span>
+            </article>
+
+            <article class="card concept">
+                <b>Multiplicador no es mezclador</b>
+                <span>
+                    El multiplicador aumenta fᶜ y Δf. El mezclador traslada el
+                    centro mediante suma o diferencia.
+                </span>
+            </article>
+        </div>
+    </section>
+
+    <div class="actions">
+        <button class="btn" id="pause" type="button">
+            Pausar
+        </button>
+
+        <button
+            class="btn green"
+            id="resume"
+            type="button"
+            disabled
+        >
+            Continuar
+        </button>
+
+        <button class="btn gray" id="reset" type="button">
+            Reiniciar
+        </button>
+    </div>
+
+    <div class="explain" id="explain">
+        <strong>Lectura del Canvas:</strong>
+        en el modo directo, la tensión de control mueve el punto sobre la curva
+        tensión-frecuencia del VCO. En el modo indirecto, los bloques muestran
+        qué etapas modifican fᶜ, Δf y β.
+    </div>
+
+    <div class="note" id="note">
+        <strong>Advertencia visual:</strong>
+        las ondas muestran amplitud instantánea respecto al tiempo y no la
+        trayectoria física de la energía.
+    </div>
+</section>
+</main>
+
+<script src="../js/014_generacion_fm_vco.js"></script>
+</body>
+</html>

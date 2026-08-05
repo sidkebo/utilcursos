@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R2: Aplicaciones reales de frecuencias | SIT-400</title>
+
+<link rel="stylesheet" href="../css/r02_frecuencias_aplicaciones_reales.css">
+</head>
+
+<body>
+<main class="page">
+<header>
+    <div class="badge">SIT-400 · Complementario R2</div>
+
+    <h1>Aplicaciones reales de frecuencias</h1>
+
+    <p class="sub">
+        Comparador de radio, televisión, telefonía, GPS, Bluetooth,
+        Wi-Fi, 5G, radioenlace, satélite, fibra óptica y Li-Fi mediante
+        una escala logarítmica comprimida.
+    </p>
+</header>
+
+<section class="sim">
+    <div class="simhead">
+        <span>
+            Frecuencia, longitud de onda, medio físico y señal sinusoidal comparativa
+        </span>
+
+        <span
+            class="status"
+            id="status"
+        >
+            Simulación activa
+        </span>
+    </div>
+
+    <canvas
+        id="cv"
+        aria-label="Comparador de frecuencias de telecomunicaciones"
+    ></canvas>
+</section>
+
+<section class="dash">
+    <div class="banner">
+        <div>
+            <strong>Comparación entre dos aplicaciones</strong>
+
+            <small>
+                Seleccione dos servicios para ubicarlos en la escala y comparar señales normalizadas.
+            </small>
+        </div>
+
+        <span class="tag">
+            Escala logarítmica
+        </span>
+    </div>
+
+    <div
+        class="metrics"
+        id="metrics"
+    ></div>
+
+    <div class="controls">
+        <div class="control">
+            <div class="ctop">
+                <label for="a">Aplicación A</label>
+            </div>
+
+            <select id="a"></select>
+        </div>
+
+        <div class="control">
+            <div class="ctop">
+                <label for="b">Aplicación B</label>
+            </div>
+
+            <select id="b"></select>
+        </div>
+
+        <div class="control">
+            <div class="ctop">
+                <label for="filter">Marcadores visibles</label>
+            </div>
+
+            <select id="filter">
+                <option value="all">Todos</option>
+                <option value="radio">Radio y TV</option>
+                <option value="mobile">Telefonía y 5G</option>
+                <option value="network">GPS, Bluetooth y Wi-Fi</option>
+                <option value="microwave">Radioenlace y satélite</option>
+                <option value="optical">Fibra y Li-Fi</option>
+            </select>
+        </div>
+
+        <div class="control">
+            <div class="ctop">
+                <label>Aplicaciones secundarias</label>
+            </div>
+
+            <div class="switch">
+                <input
+                    id="all"
+                    type="checkbox"
+                    checked
+                >
+
+                <span>Mostrar otros marcadores</span>
+            </div>
+        </div>
+
+        <div class="control">
+            <div class="ctop">
+                <label for="cycles">
+                    Compresión visual de ciclos
+                </label>
+
+                <output
+                    class="out"
+                    id="cyclesOut"
+                >
+                    1,0×
+                </output>
+            </div>
+
+            <input
+                id="cycles"
+                type="range"
+                min="0.6"
+                max="1.5"
+                step="0.1"
+                value="1"
+            >
+        </div>
+
+        <div class="control">
+            <div class="ctop">
+                <label for="speed">
+                    Velocidad de animación
+                </label>
+
+                <output
+                    class="out"
+                    id="speedOut"
+                >
+                    1,0×
+                </output>
+            </div>
+
+            <input
+                id="speed"
+                type="range"
+                min="0.2"
+                max="2"
+                step="0.1"
+                value="1"
+            >
+        </div>
+    </div>
+
+    <section class="panel">
+        <h2>Referencia de aplicaciones incluidas</h2>
+
+        <div class="tablewrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Aplicación</th>
+                        <th>Referencia usada</th>
+                        <th>Medio</th>
+                        <th>Tipo de señal física</th>
+                        <th>Uso</th>
+                    </tr>
+                </thead>
+
+                <tbody id="ref"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Ideas técnicas que no deben confundirse</h2>
+
+        <div class="grid">
+            <article class="card">
+                <strong>Ciclos dibujados</strong>
+
+                <span>
+                    La cantidad de ciclos está comprimida logarítmicamente y no representa literalmente la frecuencia real.
+                </span>
+            </article>
+
+            <article class="card">
+                <strong>Onda dibujada</strong>
+
+                <span>
+                    La curva representa valor instantáneo frente al tiempo; no es la trayectoria física seguida por la energía.
+                </span>
+            </article>
+
+            <article class="card">
+                <strong>Amplitud normalizada</strong>
+
+                <span>
+                    Las ondas tienen amplitud visual semejante. No comparan potencia, intensidad, alcance ni seguridad.
+                </span>
+            </article>
+
+            <article class="card">
+                <strong>Valores representativos</strong>
+
+                <span>
+                    Canales y bandas pueden variar según país, operador, servicio y norma.
+                </span>
+            </article>
+
+            <article class="card">
+                <strong>Fibra óptica</strong>
+
+                <span>
+                    850, 1310 y 1550 nm son longitudes nominales en espacio libre; dentro del vidrio la longitud física es menor.
+                </span>
+            </article>
+
+            <article class="card">
+                <strong>Sin modulación</strong>
+
+                <span>
+                    Solo se comparan frecuencia y medio. No se muestran AM, FM, ASK, FSK, PSK ni QAM.
+                </span>
+            </article>
+        </div>
+    </section>
+
+    <div class="actions">
+        <button
+            class="btn"
+            id="pause"
+        >
+            Pausar
+        </button>
+
+        <button
+            class="btn go"
+            id="resume"
+            disabled
+        >
+            Continuar
+        </button>
+
+        <button
+            class="btn reset"
+            id="reset"
+        >
+            Reiniciar
+        </button>
+    </div>
+
+    <div class="explain">
+        <strong>Lectura del Canvas:</strong>
+        la zona superior ubica las aplicaciones en una escala logarítmica.
+        La zona central compara dos señales sinusoidales normalizadas.
+        La zona inferior resume medio, señal física y aplicación.
+    </div>
+
+    <div class="note">
+        <strong>Advertencia visual:</strong>
+        la escala abarca aproximadamente desde cientos de kilohertz hasta
+        luz visible. Los cálculos usan c = 299 792 458 m/s en vacío.
+        Las frecuencias de radio, TV, telefonía, Wi-Fi, 5G, radioenlace y
+        satélite son valores nominales o representativos.
+    </div>
+</section>
+</main>
+
+<script src="../js/r02_frecuencias_aplicaciones_reales.js"></script>
+</body>
+</html>

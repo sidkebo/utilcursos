@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 6: Nyquist, muestreo y aliasing | SIT-400</title>
+
+<!--
+Simulador construido a partir de la Clase 6 de SIT-400.
+La clase define el muestreo como la toma de valores en instantes separados,
+diferencia muestreo de cuantificación y establece el criterio teórico
+f_muestreo >= 2 f_max, recomendando trabajar por encima del límite.
+:contentReference[oaicite:0]{index=0}
+:contentReference[oaicite:1]{index=1}
+-->
+
+<link rel="stylesheet" href="../css/006_nyquist_muestreo_aliasing.css">
+</head>
+
+<body>
+<main class="page">
+
+<header class="header">
+    <div class="course-badge">
+        SIT-400 · Clase 6
+    </div>
+
+    <h1>Nyquist, Muestreo y Aliasing</h1>
+
+    <p class="subtitle">
+        Observación de una señal analógica en instantes separados,
+        evaluación del criterio de Nyquist, muestras por ciclo,
+        frecuencia aparente y función conceptual del filtro antialiasing.
+    </p>
+</header>
+
+<section class="simulation-panel">
+    <div class="canvas-header">
+        <span class="canvas-title">
+            Señal continua, muestras y reconstrucción aparente
+        </span>
+
+        <span
+            class="simulation-status"
+            id="simulationStatus"
+        >
+            Simulación activa
+        </span>
+    </div>
+
+    <div
+        class="canvas-container"
+        id="canvasContainer"
+    >
+        <canvas
+            id="simulationCanvas"
+            aria-label="Simulación educativa de muestreo, Nyquist y aliasing"
+        ></canvas>
+    </div>
+</section>
+
+<section class="dashboard">
+
+    <div
+        class="state-banner"
+        id="stateBanner"
+    >
+        <div>
+            <span
+                class="state-title"
+                id="stateTitle"
+            >
+                Muestreo suficiente
+            </span>
+
+            <span
+                class="state-detail"
+                id="stateDetail"
+            >
+                La frecuencia de muestreo es mayor que el doble de la señal.
+            </span>
+        </div>
+
+        <span
+            class="state-value"
+            id="stateValue"
+        >
+            fs &gt; 2fmax
+        </span>
+    </div>
+
+    <div class="metrics">
+        <article class="metric">
+            <span class="metric-label">
+                Periodo de señal
+            </span>
+
+            <span
+                class="metric-value"
+                id="periodMetric"
+            >
+                1 s
+            </span>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">
+                Intervalo de muestreo
+            </span>
+
+            <span
+                class="metric-value"
+                id="sampleIntervalMetric"
+            >
+                100 ms
+            </span>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">
+                Frecuencia de muestreo
+            </span>
+
+            <span
+                class="metric-value"
+                id="samplingMetric"
+            >
+                10 Hz
+            </span>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">
+                Mínimo teórico
+            </span>
+
+            <span
+                class="metric-value"
+                id="minimumMetric"
+            >
+                2 Hz
+            </span>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">
+                Frecuencia de Nyquist
+            </span>
+
+            <span
+                class="metric-value"
+                id="nyquistMetric"
+            >
+                5 Hz
+            </span>
+        </article>
+
+        <article class="metric">
+            <span class="metric-label">
+                Muestras por ciclo
+            </span>
+
+            <span
+                class="metric-value"
+                id="samplesMetric"
+            >
+                10
+            </span>
+        </article>
+    </div>
+
+    <div class="controls-grid">
+
+        <div class="control-group">
+            <div class="control-heading">
+                <label
+                    class="control-label"
+                    for="signalFrequency"
+                >
+                    Frecuencia de la señal
+                </label>
+            </div>
+
+            <div class="input-with-unit">
+                <input
+                    type="number"
+                    id="signalFrequency"
+                    min="0.001"
+                    max="1000000"
+                    step="any"
+                    value="1"
+                >
+
+                <select
+                    id="signalFrequencyUnit"
+                    aria-label="Unidad de frecuencia de la señal"
+                >
+                    <option value="Hz">Hz</option>
+                    <option value="kHz">kHz</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-heading">
+                <label
+                    class="control-label"
+                    for="signalAmplitude"
+                >
+                    Amplitud
+                </label>
+            </div>
+
+            <div class="input-with-unit">
+                <input
+                    type="number"
+                    id="signalAmplitude"
+                    min="0.05"
+                    max="20"
+                    step="0.05"
+                    value="1"
+                >
+
+                <select aria-label="Unidad de amplitud">
+                    <option>V</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-heading">
+                <label
+                    class="control-label"
+                    for="samplingFrequency"
+                >
+                    Frecuencia de muestreo
+                </label>
+            </div>
+
+            <div class="input-with-unit">
+                <input
+                    type="number"
+                    id="samplingFrequency"
+                    min="0.001"
+                    max="1000000"
+                    step="any"
+                    value="10"
+                >
+
+                <select
+                    id="samplingFrequencyUnit"
+                    aria-label="Unidad de frecuencia de muestreo"
+                >
+                    <option value="Hz">Hz</option>
+                    <option value="kHz">kHz</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <div class="control-heading">
+                <label
+                    class="control-label"
+                    for="initialPhase"
+                >
+                    Fase inicial
+                </label>
+
+                <output
+                    class="value-display"
+                    id="initialPhaseDisplay"
+                >
+                    0°
+                </output>
+            </div>
+
+            <input
+                type="range"
+                id="initialPhase"
+                min="0"
+                max="360"
+                step="1"
+                value="0"
+            >
+        </div>
+
+        <div class="control-group">
+            <div class="control-heading">
+                <label
+                    class="control-label"
+                    for="animationSpeed"
+                >
+                    Velocidad de animación
+                </label>
+
+                <output
+                    class="value-display"
+                    id="animationSpeedDisplay"
+                >
+                    1,0×
+                </output>
+            </div>
+
+            <input
+                type="range"
+                id="animationSpeed"
+                min="0.2"
+                max="2"
+                step="0.1"
+                value="1"
+            >
+        </div>
+
+        <div class="control-group">
+            <div class="control-heading">
+                <span class="control-label">
+                    Filtro antialiasing conceptual
+                </span>
+            </div>
+
+            <div class="switch-row">
+                <span id="filterLabel">
+                    Desactivado
+                </span>
+
+                <label class="switch">
+                    <input
+                        type="checkbox"
+                        id="antiAliasingFilter"
+                    >
+
+                    <span class="switch-track"></span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <section class="subpanel">
+        <h2 class="subpanel-title">
+            Casos rápidos de la Clase 6
+        </h2>
+
+        <div class="preset-grid">
+            <button
+                type="button"
+                class="preset-button"
+                data-preset="comfortable"
+            >
+                1 Hz · 10 Hz
+            </button>
+
+            <button
+                type="button"
+                class="preset-button"
+                data-preset="margin"
+            >
+                2 Hz · 8 Hz
+            </button>
+
+            <button
+                type="button"
+                class="preset-button"
+                data-preset="limit"
+            >
+                1 Hz · 2 Hz
+            </button>
+
+            <button
+                type="button"
+                class="preset-button"
+                data-preset="alias"
+            >
+                1 Hz · 1,5 Hz
+            </button>
+
+            <button
+                type="button"
+                class="preset-button"
+                data-preset="exercise"
+            >
+                3 kHz · 5 kHz
+            </button>
+        </div>
+    </section>
+
+    <section class="formula-panel">
+        <h2>
+            Verificación matemática
+        </h2>
+
+        <div class="formula-grid">
+            <div class="formula-item">
+                <strong>Criterio de Nyquist</strong>
+
+                <code id="formulaCriterion">
+                    fs ≥ 2 × fmax
+                </code>
+            </div>
+
+            <div class="formula-item">
+                <strong>Sustitución</strong>
+
+                <code id="formulaSubstitution">
+                    10 Hz &gt; 2 × 1 Hz
+                </code>
+            </div>
+
+            <div class="formula-item">
+                <strong>Frecuencia aparente</strong>
+
+                <span id="formulaAlias">
+                    No aparece aliasing en el modelo ideal.
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <section class="errors-panel">
+        <h2>Ideas que deben permanecer claras</h2>
+
+        <div class="errors-grid">
+            <div class="error-card">
+                <strong>Muestreo no es cuantificación.</strong>
+                El muestreo define en qué instantes se observa la señal;
+                no fija niveles discretos de amplitud.
+            </div>
+
+            <div class="error-card">
+                <strong>Dos muestras por ciclo son un límite teórico.</strong>
+                La fase puede producir casos desfavorables, por lo que en
+                práctica se utiliza una frecuencia mayor.
+            </div>
+
+            <div class="error-card">
+                <strong>Aliasing no es ruido aleatorio.</strong>
+                Es una frecuencia aparente falsa causada por muestreo
+                insuficiente.
+            </div>
+
+            <div class="error-card">
+                <strong>El filtro se coloca antes del muestreador.</strong>
+                Reduce componentes demasiado altas antes de que puedan
+                producir aliasing.
+            </div>
+        </div>
+    </section>
+
+    <div class="actions">
+        <button
+            type="button"
+            class="action-button"
+            id="pauseButton"
+        >
+            Pausar
+        </button>
+
+        <button
+            type="button"
+            class="action-button success"
+            id="continueButton"
+            disabled
+        >
+            Continuar
+        </button>
+
+        <button
+            type="button"
+            class="action-button secondary"
+            id="restartButton"
+        >
+            Reiniciar
+        </button>
+    </div>
+
+    <div
+        class="explanation"
+        id="explanation"
+    >
+        <strong>Señal continua y muestras:</strong>
+        la curva representa el valor instantáneo de una tensión en
+        función del tiempo. Los puntos muestran únicamente los valores
+        tomados por el muestreador en instantes separados.
+    </div>
+
+    <div
+        class="technical-note"
+        id="technicalNote"
+    >
+        <strong>Advertencia visual:</strong>
+        el tiempo mostrado, la frecuencia de movimiento del cursor y el
+        tamaño de las muestras están adaptados para enseñanza. La onda no
+        representa la trayectoria seguida por la energía.
+    </div>
+
+</section>
+</main>
+
+<script src="../js/006_nyquist_muestreo_aliasing.js"></script>
+</body>
+</html>

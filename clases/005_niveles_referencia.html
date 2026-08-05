@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 5: Niveles de referencia | SIT-400</title>
+
+    <!--
+        Base pedagógica: Clase 5 de SIT-400. Los niveles referidos comparan una
+        magnitud con una referencia fija: dBm, dBW, dBV, dBu y dBmV.
+        :contentReference[oaicite:0]{index=0}
+
+        Para relacionar tensión con potencia se requiere conocer la carga o
+        impedancia; los niveles dBV, dBu y dBmV se trabajan con valores RMS.
+        :contentReference[oaicite:1]{index=1}
+        :contentReference[oaicite:2]{index=2}
+    -->
+
+    <link rel="stylesheet" href="../css/005_niveles_referencia.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="course-badge">
+                SIT-400 · Clase 5
+            </div>
+
+            <h1>Niveles de Referencia</h1>
+
+            <p class="subtitle">
+                Conversión e interpretación de dBm, dBW, dBV, dBu y dBmV,
+                diferenciando niveles de potencia, niveles de tensión RMS y
+                conversiones que requieren conocer la carga.
+            </p>
+        </header>
+
+        <nav
+            class="mode-navigation"
+            aria-label="Secciones del simulador"
+        >
+            <button
+                type="button"
+                class="mode-button active"
+                data-mode="calculator"
+                aria-selected="true"
+            >
+                1. Nivel ↔ magnitud física
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="conversion"
+                aria-selected="false"
+            >
+                2. Conversión entre unidades
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="references"
+                aria-selected="false"
+            >
+                3. Mapa de referencias
+            </button>
+        </nav>
+
+        <section class="simulation-panel">
+            <div class="canvas-header">
+                <span
+                    class="canvas-title"
+                    id="canvasTitle"
+                >
+                    Comparación entre una magnitud y su referencia fija
+                </span>
+
+                <span
+                    class="simulation-status"
+                    id="simulationStatus"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-container"
+                id="canvasContainer"
+            >
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulación educativa de niveles de referencia"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div class="metrics">
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel1"
+                    >
+                        Magnitud
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue1"
+                    >
+                        Potencia
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel2"
+                    >
+                        Referencia
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue2"
+                    >
+                        1 mW
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel3"
+                    >
+                        Valor lineal
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue3"
+                    >
+                        10 mW
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel4"
+                    >
+                        Nivel referido
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue4"
+                    >
+                        +10 dBm
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel5"
+                    >
+                        Relación
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue5"
+                    >
+                        10×
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel6"
+                    >
+                        Interpretación
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue6"
+                    >
+                        Sobre referencia
+                    </span>
+                </article>
+            </div>
+
+            <section
+                class="controls-section"
+                id="calculatorControls"
+            >
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="calculatorUnit"
+                            >
+                                Unidad referida
+                            </label>
+                        </div>
+
+                        <select id="calculatorUnit">
+                            <option value="dBm">
+                                dBm · potencia / 1 mW
+                            </option>
+
+                            <option value="dBW">
+                                dBW · potencia / 1 W
+                            </option>
+
+                            <option value="dBV">
+                                dBV · tensión / 1 V RMS
+                            </option>
+
+                            <option value="dBu">
+                                dBu · tensión / 0,775 V RMS
+                            </option>
+
+                            <option value="dBmV">
+                                dBmV · tensión / 1 mV RMS
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="calculatorDirection"
+                            >
+                                Sentido de conversión
+                            </label>
+                        </div>
+
+                        <select id="calculatorDirection">
+                            <option value="linearToLevel">
+                                Magnitud física → nivel
+                            </option>
+
+                            <option value="levelToLinear">
+                                Nivel → magnitud física
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="calculatorInput"
+                                id="calculatorInputLabel"
+                            >
+                                Potencia de entrada
+                            </label>
+                        </div>
+
+                        <input
+                            type="number"
+                            id="calculatorInput"
+                            step="any"
+                            value="10"
+                        >
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="calculatorPhysicalUnit"
+                                id="calculatorPhysicalUnitLabel"
+                            >
+                                Unidad física
+                            </label>
+                        </div>
+
+                        <select id="calculatorPhysicalUnit"></select>
+                    </div>
+                </div>
+
+                <div class="subpanel">
+                    <h2 class="subpanel-title">
+                        Ejemplos obligatorios de la clase
+                    </h2>
+
+                    <div class="preset-grid">
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-example="10mWToDbm"
+                        >
+                            10 mW → dBm
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-example="minus10DbmToMw"
+                        >
+                            −10 dBm → mW
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-example="100WToDbw"
+                        >
+                            100 W → dBW
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-example="2VToDbv"
+                        >
+                            2 V RMS → dBV
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-example="0775VToDbu"
+                        >
+                            0,775 V RMS → dBu
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-example="100mVToDbmv"
+                        >
+                            100 mV RMS → dBmV
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-example="20DbmvToMv"
+                        >
+                            20 dBmV → mV RMS
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-example="zeroDbv"
+                        >
+                            0 dBV → V RMS
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                class="controls-section"
+                id="conversionControls"
+                hidden
+            >
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="sourceLevelUnit"
+                            >
+                                Unidad de origen
+                            </label>
+                        </div>
+
+                        <select id="sourceLevelUnit">
+                            <option value="dBm">dBm</option>
+                            <option value="dBW">dBW</option>
+                            <option value="dBV">dBV</option>
+                            <option value="dBu">dBu</option>
+                            <option value="dBmV">dBmV</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="sourceLevelValue"
+                            >
+                                Nivel de origen
+                            </label>
+                        </div>
+
+                        <input
+                            type="number"
+                            id="sourceLevelValue"
+                            step="any"
+                            value="20"
+                        >
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="targetLevelUnit"
+                            >
+                                Unidad de destino
+                            </label>
+                        </div>
+
+                        <select id="targetLevelUnit">
+                            <option value="dBW">dBW</option>
+                            <option value="dBm">dBm</option>
+                            <option value="dBV">dBV</option>
+                            <option value="dBu">dBu</option>
+                            <option value="dBmV">dBmV</option>
+                        </select>
+                    </div>
+
+                    <div
+                        class="control-group"
+                        id="impedanceGroup"
+                        hidden
+                    >
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="conversionImpedance"
+                            >
+                                Carga resistiva equivalente
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                type="number"
+                                id="conversionImpedance"
+                                min="0.000001"
+                                step="any"
+                                value="100"
+                            >
+
+                            <select aria-label="Unidad de impedancia">
+                                <option>Ω</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    class="alert-box"
+                    id="conversionAlert"
+                >
+                    dBm y dBW representan potencia, por lo que la conversión es
+                    directa.
+                </div>
+
+                <div class="subpanel">
+                    <h2 class="subpanel-title">
+                        Conversiones rápidas
+                    </h2>
+
+                    <div class="preset-grid">
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-conversion="20DbwToDbm"
+                        >
+                            20 dBW → dBm
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-conversion="zeroDbvToDbu"
+                        >
+                            0 dBV → dBu
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-conversion="zeroDbvToDbmv"
+                        >
+                            0 dBV → dBmV
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-conversion="zeroDbuToDbmv"
+                        >
+                            0 dBu → dBmV
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-conversion="zeroDbvToDbm"
+                        >
+                            0 dBV → dBm con carga
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-conversion="zeroDbmToDbv"
+                        >
+                            0 dBm → dBV con carga
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-conversion="fortyDbmvToDbv"
+                        >
+                            40 dBmV → dBV
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-conversion="tenDbmToDbw"
+                        >
+                            10 dBm → dBW
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                class="controls-section"
+                id="referenceControls"
+                hidden
+            >
+                <div class="controls-grid three-columns">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="highlightReference"
+                            >
+                                Referencia resaltada
+                            </label>
+                        </div>
+
+                        <select id="highlightReference">
+                            <option value="dBm">
+                                dBm · 1 mW
+                            </option>
+
+                            <option value="dBW">
+                                dBW · 1 W
+                            </option>
+
+                            <option value="dBV">
+                                dBV · 1 V RMS
+                            </option>
+
+                            <option value="dBu">
+                                dBu · 0,775 V RMS
+                            </option>
+
+                            <option value="dBmV">
+                                dBmV · 1 mV RMS
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="animationSpeed"
+                            >
+                                Velocidad visual
+                            </label>
+
+                            <output
+                                class="value-display"
+                                id="animationSpeedDisplay"
+                            >
+                                1,0×
+                            </output>
+                        </div>
+
+                        <input
+                            type="range"
+                            id="animationSpeed"
+                            min="0.4"
+                            max="2"
+                            step="0.1"
+                            value="1"
+                        >
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <span class="control-label">
+                                Regla de lectura
+                            </span>
+                        </div>
+
+                        <div
+                            class="value-display"
+                            style="
+                                width: 100%;
+                                min-height: 43px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                            "
+                        >
+                            0 unidad = valor de referencia
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert-box warning">
+                    Las referencias de potencia y de tensión aparecen en líneas
+                    separadas. No se comparan directamente entre sí sin una
+                    relación física adicional y, para tensión ↔ potencia, sin
+                    conocer la carga.
+                </div>
+            </section>
+
+            <section class="formula-panel">
+                <h2 id="formulaPanelTitle">
+                    Cálculo del nivel referido
+                </h2>
+
+                <div class="formula-grid">
+                    <div class="formula-item">
+                        <strong>Fórmula principal</strong>
+
+                        <code id="formulaPrimary">
+                            dBm = 10 × log10(P / 1 mW)
+                        </code>
+                    </div>
+
+                    <div class="formula-item">
+                        <strong>Operación</strong>
+
+                        <code id="formulaOperation">
+                            dBm = 10 × log10(10 mW / 1 mW)
+                        </code>
+                    </div>
+
+                    <div class="formula-item">
+                        <strong>Resultado e interpretación</strong>
+
+                        <span id="formulaResult">
+                            10 mW = +10 dBm
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <section
+                class="table-panel"
+                style="margin-top: 16px;"
+            >
+                <h2>Tabla comparativa fija</h2>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Expresión</th>
+                            <th>Qué representa</th>
+                            <th>Referencia</th>
+                            <th>Factor</th>
+                            <th>Qué significa cero</th>
+                            <th>Observación</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>
+                                <span class="unit-chip">dB</span>
+                            </td>
+
+                            <td>Relación general</td>
+
+                            <td>
+                                Dos valores elegidos para comparar
+                            </td>
+
+                            <td>
+                                10 en potencia; 20 en tensión o corriente
+                            </td>
+
+                            <td>
+                                Los dos valores son iguales
+                            </td>
+
+                            <td>
+                                No es una magnitud absoluta.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <span class="unit-chip">dBm</span>
+                            </td>
+
+                            <td>Potencia</td>
+                            <td>1 mW</td>
+                            <td>10</td>
+                            <td>0 dBm = 1 mW</td>
+
+                            <td>
+                                No es lo mismo que dBmV.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <span class="unit-chip">dBW</span>
+                            </td>
+
+                            <td>Potencia</td>
+                            <td>1 W</td>
+                            <td>10</td>
+                            <td>0 dBW = 1 W</td>
+
+                            <td>
+                                dBm = dBW + 30.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <span class="unit-chip">dBV</span>
+                            </td>
+
+                            <td>Tensión RMS</td>
+                            <td>1 V RMS</td>
+                            <td>20</td>
+                            <td>0 dBV = 1 V RMS</td>
+
+                            <td>
+                                No convierte a dBm sin carga.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <span class="unit-chip">dBu</span>
+                            </td>
+
+                            <td>Tensión RMS</td>
+                            <td>0,775 V RMS</td>
+                            <td>20</td>
+                            <td>0 dBu = 0,775 V RMS</td>
+
+                            <td>
+                                dBu es tensión, no potencia.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>
+                                <span class="unit-chip">dBmV</span>
+                            </td>
+
+                            <td>Tensión RMS</td>
+                            <td>1 mV RMS</td>
+                            <td>20</td>
+                            <td>0 dBmV = 1 mV RMS</td>
+
+                            <td>
+                                dBmV = dBV + 60.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section
+                class="errors-panel"
+                style="margin-top: 16px;"
+            >
+                <h2>
+                    Errores conceptuales que debe evitar el estudiante
+                </h2>
+
+                <div class="errors-grid">
+                    <div class="error-card">
+                        <strong>
+                            0 dBm no significa potencia nula.
+                        </strong>
+
+                        Representa exactamente 1 mW.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>
+                            0 dBV no significa tensión nula.
+                        </strong>
+
+                        Representa exactamente 1 V RMS.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>
+                            dBm y dBmV no son equivalentes.
+                        </strong>
+
+                        dBm es potencia; dBmV es tensión RMS.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>
+                            No use Vpp como si fuera RMS.
+                        </strong>
+
+                        Para dBV, dBu y dBmV debe emplearse tensión RMS.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>
+                            No convierta tensión a potencia sin carga.
+                        </strong>
+
+                        Se necesita resistencia o impedancia resistiva
+                        equivalente.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>
+                            Un nivel negativo no es una magnitud física negativa.
+                        </strong>
+
+                        Indica que el valor está por debajo de la referencia.
+                    </div>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Nivel referido:</strong>
+                compara una magnitud física con una referencia fija. Un nivel
+                positivo está por encima de la referencia; cero coincide con
+                ella; y un nivel negativo está por debajo.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Representación visual:</strong>
+                las barras y escalas del Canvas están comprimidas para mostrar
+                relaciones muy grandes o muy pequeñas. No representan tamaños
+                físicos ni trayectorias de energía.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/005_niveles_referencia.js"></script>
+</body>
+</html>

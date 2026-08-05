@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<!--
+Fuente pedagógica revisada: Clase 17 de SIT-400.
+Cadena general, MPEG, Transport Stream, intervalo de guarda, medios y evaluación:
+:contentReference[oaicite:0]{index=0}
+:contentReference[oaicite:1]{index=1}
+:contentReference[oaicite:2]{index=2}
+:contentReference[oaicite:3]{index=3}
+:contentReference[oaicite:4]{index=4}
+-->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Clase 17: Sistemas de TV Digital avanzados | SIT-400</title>
+
+    <link rel="stylesheet" href="../css/017_tv_digital_avanzada.css">
+</head>
+
+<body>
+    <main class="page">
+        <header>
+            <div class="badge">SIT-400 · Clase 17</div>
+
+            <h1>Sistemas de TV Digital avanzados</h1>
+
+            <p class="subtitle">
+                Compresión MPEG, organización ES–PES–Transport Stream,
+                intervalo de guarda, distribución por TDT, cable digital,
+                IPTV, Web TV y satélite, con diagnóstico técnico integrador
+                de fallas básicas.
+            </p>
+        </header>
+
+        <nav
+            class="tabs"
+            aria-label="Módulos de la Clase 17"
+        >
+            <button
+                type="button"
+                class="tab active"
+                data-module="chain"
+            >
+                Cadena general
+            </button>
+
+            <button
+                type="button"
+                class="tab"
+                data-module="mpeg"
+            >
+                Compresión MPEG
+            </button>
+
+            <button
+                type="button"
+                class="tab"
+                data-module="ts"
+            >
+                Transport Stream
+            </button>
+
+            <button
+                type="button"
+                class="tab"
+                data-module="guard"
+            >
+                Intervalo de guarda
+            </button>
+
+            <button
+                type="button"
+                class="tab"
+                data-module="media"
+            >
+                Medios de distribución
+            </button>
+
+            <button
+                type="button"
+                class="tab"
+                data-module="evaluation"
+            >
+                Evaluación integradora
+            </button>
+        </nav>
+
+        <section class="sim">
+            <div class="sim-head">
+                <span
+                    class="sim-title"
+                    id="simTitle"
+                >
+                    Audio/video/datos → MPEG → multiplexación → TS → medio →
+                    receptor → decodificación
+                </span>
+
+                <span
+                    class="status"
+                    id="status"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-wrap"
+                id="canvasWrap"
+            >
+                <canvas
+                    id="canvas"
+                    aria-label="Simulador de sistemas de televisión digital avanzados"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dash">
+            <div
+                class="banner"
+                id="banner"
+            >
+                <div>
+                    <strong id="bannerTitle">
+                        Cadena avanzada de televisión digital
+                    </strong>
+
+                    <small id="bannerText">
+                        La animación muestra el orden funcional del
+                        procesamiento.
+                    </small>
+                </div>
+
+                <span
+                    class="tag"
+                    id="bannerTag"
+                >
+                    Clase 17
+                </span>
+            </div>
+
+            <div
+                class="metrics"
+                id="metrics"
+            ></div>
+
+            <div class="controls">
+                <div
+                    class="control mpeg-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="videoMbps">
+                            Bitrate de video
+                        </label>
+                    </div>
+
+                    <div class="unit">
+                        <input
+                            id="videoMbps"
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value="6"
+                        >
+
+                        <select disabled>
+                            <option>Mbps</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control mpeg-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="audioKbps">
+                            Bitrate de audio
+                        </label>
+                    </div>
+
+                    <div class="unit">
+                        <input
+                            id="audioKbps"
+                            type="number"
+                            min="0"
+                            step="8"
+                            value="192"
+                        >
+
+                        <select disabled>
+                            <option>kbps</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control mpeg-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="dataKbps">
+                            Bitrate de datos
+                        </label>
+                    </div>
+
+                    <div class="unit">
+                        <input
+                            id="dataKbps"
+                            type="number"
+                            min="0"
+                            step="10"
+                            value="300"
+                        >
+
+                        <select disabled>
+                            <option>kbps</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control mpeg-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="spatial">
+                            Compresión espacial
+                        </label>
+
+                        <output
+                            class="out"
+                            id="spatialOut"
+                        >
+                            55 %
+                        </output>
+                    </div>
+
+                    <input
+                        id="spatial"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="55"
+                    >
+                </div>
+
+                <div
+                    class="control mpeg-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="temporal">
+                            Compresión temporal
+                        </label>
+
+                        <output
+                            class="out"
+                            id="temporalOut"
+                        >
+                            60 %
+                        </output>
+                    </div>
+
+                    <input
+                        id="temporal"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="60"
+                    >
+                </div>
+
+                <div
+                    class="control ts-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="tsMbps">
+                            Bitrate total del TS
+                        </label>
+                    </div>
+
+                    <div class="unit">
+                        <input
+                            id="tsMbps"
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value="3"
+                        >
+
+                        <select disabled>
+                            <option>Mbps</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control ts-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="packetType">
+                            Paquete destacado
+                        </label>
+                    </div>
+
+                    <select id="packetType">
+                        <option value="video">
+                            Video · PID 0x0101
+                        </option>
+
+                        <option value="audio">
+                            Audio · PID 0x0102
+                        </option>
+
+                        <option value="data">
+                            Datos · PID 0x0103
+                        </option>
+
+                        <option value="pat">
+                            PAT · PID 0x0000
+                        </option>
+
+                        <option value="pmt">
+                            PMT · PID didáctico 0x0100
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control guard-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="tu">
+                            Tiempo útil Tᵤ
+                        </label>
+                    </div>
+
+                    <div class="unit">
+                        <input
+                            id="tu"
+                            type="number"
+                            min="0.01"
+                            step="0.01"
+                            value="1"
+                        >
+
+                        <select disabled>
+                            <option>ms</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control guard-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="guardRatio">
+                            Fracción de guarda
+                        </label>
+                    </div>
+
+                    <select id="guardRatio">
+                        <option value="0.25">
+                            1/4
+                        </option>
+
+                        <option
+                            value="0.125"
+                            selected
+                        >
+                            1/8
+                        </option>
+
+                        <option value="0.0625">
+                            1/16
+                        </option>
+
+                        <option value="0.03125">
+                            1/32
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control guard-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="echo">
+                            Retardo del eco
+                        </label>
+                    </div>
+
+                    <div class="unit">
+                        <input
+                            id="echo"
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value="0.09"
+                        >
+
+                        <select disabled>
+                            <option>ms</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control media-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="medium">
+                            Medio seleccionado
+                        </label>
+                    </div>
+
+                    <select id="medium">
+                        <option value="tdt">
+                            TDT
+                        </option>
+
+                        <option value="cable">
+                            Cable digital
+                        </option>
+
+                        <option value="iptv">
+                            IPTV
+                        </option>
+
+                        <option
+                            value="web"
+                            selected
+                        >
+                            Web TV
+                        </option>
+
+                        <option value="satellite">
+                            Satélite
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control media-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="capacity">
+                            Capacidad estable disponible
+                        </label>
+                    </div>
+
+                    <div class="unit">
+                        <input
+                            id="capacity"
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value="8"
+                        >
+
+                        <select disabled>
+                            <option>Mbps</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control eval-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="scenario">
+                            Caso de diagnóstico
+                        </label>
+                    </div>
+
+                    <select id="scenario">
+                        <option value="0">
+                            Web TV se congela y toda la red navega lento
+                        </option>
+
+                        <option value="1">
+                            Video correcto, pero falta el audio del servicio
+                        </option>
+
+                        <option value="2">
+                            Eco con retardo mayor que la guarda
+                        </option>
+
+                        <option value="3">
+                            Artefactos por bitrate excesivamente bajo
+                        </option>
+
+                        <option value="4">
+                            Cable falla al mover un conector coaxial
+                        </option>
+
+                        <option value="5">
+                            Satélite pierde servicio por mala alineación
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control eval-c"
+                    hidden
+                >
+                    <div class="control-top">
+                        <label for="diagnosis">
+                            Origen probable
+                        </label>
+                    </div>
+
+                    <select id="diagnosis">
+                        <option value="mpeg">
+                            Compresión MPEG / bitrate
+                        </option>
+
+                        <option value="ts">
+                            Transport Stream / PID
+                        </option>
+
+                        <option value="guard">
+                            Intervalo de guarda
+                        </option>
+
+                        <option value="network">
+                            Red IP / capacidad
+                        </option>
+
+                        <option value="cable">
+                            Cableado coaxial
+                        </option>
+
+                        <option value="satellite">
+                            Recepción satelital
+                        </option>
+
+                        <option value="receiver">
+                            Receptor final
+                        </option>
+                    </select>
+                </div>
+
+                <div class="control">
+                    <div class="control-top">
+                        <label for="speed">
+                            Velocidad de animación
+                        </label>
+
+                        <output
+                            class="out"
+                            id="speedOut"
+                        >
+                            1,0×
+                        </output>
+                    </div>
+
+                    <input
+                        id="speed"
+                        type="range"
+                        min="0.2"
+                        max="2"
+                        step="0.1"
+                        value="1"
+                    >
+                </div>
+            </div>
+
+            <section class="panel">
+                <h2>Casos rápidos de la Clase 17</h2>
+
+                <div class="presets">
+                    <button
+                        type="button"
+                        class="preset"
+                        data-preset="bitrate"
+                    >
+                        Ejemplo 6,492 Mbps
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset"
+                        data-preset="packets"
+                    >
+                        TS de 3 Mbps
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset"
+                        data-preset="guard-ok"
+                    >
+                        Eco dentro de guarda
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset"
+                        data-preset="guard-bad"
+                    >
+                        Eco supera la guarda
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset"
+                        data-preset="streaming"
+                    >
+                        Streaming con 20 %
+                    </button>
+                </div>
+            </section>
+
+            <section class="panel formula-panel">
+                <h2>Relaciones y cálculos de la clase</h2>
+
+                <div class="formula-grid">
+                    <article class="formula">
+                        <strong>Bitrate total</strong>
+                        <code id="fTotal"></code>
+                    </article>
+
+                    <article class="formula">
+                        <strong>Paquete TS</strong>
+                        <code>188 bytes × 8 = 1504 bits</code>
+                    </article>
+
+                    <article class="formula">
+                        <strong>Paquetes por segundo</strong>
+                        <code id="fPackets"></code>
+                    </article>
+
+                    <article class="formula">
+                        <strong>Tiempo total OFDM</strong>
+                        <code id="fGuard"></code>
+                    </article>
+
+                    <article class="formula">
+                        <strong>Eficiencia temporal</strong>
+                        <code id="fEfficiency"></code>
+                    </article>
+
+                    <article class="formula">
+                        <strong>Streaming con margen</strong>
+                        <code id="fStreaming"></code>
+                    </article>
+                </div>
+            </section>
+
+            <section
+                class="panel"
+                id="evalPanel"
+                hidden
+            >
+                <h2>Comprobar diagnóstico</h2>
+
+                <div class="eval-row">
+                    <div>
+                        <label for="scenarioMirror">
+                            Síntoma seleccionado
+                        </label>
+
+                        <select
+                            id="scenarioMirror"
+                            disabled
+                        ></select>
+                    </div>
+
+                    <div>
+                        <label for="diagnosisMirror">
+                            Respuesta elegida
+                        </label>
+
+                        <select
+                            id="diagnosisMirror"
+                            disabled
+                        ></select>
+                    </div>
+
+                    <button
+                        type="button"
+                        class="check"
+                        id="check"
+                    >
+                        Verificar respuesta
+                    </button>
+                </div>
+
+                <div
+                    class="feedback"
+                    id="feedback"
+                >
+                    Seleccione el caso y el origen probable; luego pulse
+                    “Verificar respuesta”.
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Comparación de medios de distribución</h2>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Medio</th>
+                                <th>Infraestructura</th>
+                                <th>Transporte</th>
+                                <th>Ventaja</th>
+                                <th>Limitación</th>
+                                <th>Retardo</th>
+                                <th>Cobertura</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>TDT</td>
+                                <td>
+                                    Estación terrestre, transmisor RF, antena
+                                    UHF y receptor.
+                                </td>
+                                <td>Radio terrestre digital.</td>
+                                <td>Difusión a muchos receptores.</td>
+                                <td>
+                                    Cobertura, ecos, obstáculos e interferencias.
+                                </td>
+                                <td>Bajo a medio.</td>
+                                <td>Regional según la red.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Cable digital</td>
+                                <td>
+                                    Cabecera, red coaxial o HFC, derivadores y
+                                    receptor.
+                                </td>
+                                <td>Red física del operador.</td>
+                                <td>Canal guiado dentro de la red.</td>
+                                <td>
+                                    Conectores, derivadores, ruido y nivel bajo.
+                                </td>
+                                <td>Bajo a medio.</td>
+                                <td>Zona cableada.</td>
+                            </tr>
+
+                            <tr>
+                                <td>IPTV</td>
+                                <td>
+                                    Red IP gestionada, proveedor, decodificador
+                                    o aplicación.
+                                </td>
+                                <td>Paquetes IP en red administrada.</td>
+                                <td>
+                                    Mayor posibilidad de control del servicio.
+                                </td>
+                                <td>
+                                    Configuración, capacidad y estabilidad de
+                                    red.
+                                </td>
+                                <td>Medio.</td>
+                                <td>Red del proveedor.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Web TV</td>
+                                <td>
+                                    Internet abierto, navegador o aplicación.
+                                </td>
+                                <td>Streaming por internet público.</td>
+                                <td>Acceso flexible.</td>
+                                <td>
+                                    Congestión, buffering y variación de
+                                    conexión.
+                                </td>
+                                <td>Medio a alto y variable.</td>
+                                <td>Donde exista internet suficiente.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Satélite</td>
+                                <td>
+                                    Estación terrena, satélite, parabólica, LNB
+                                    y receptor.
+                                </td>
+                                <td>
+                                    Enlace ascendente y descendente.
+                                </td>
+                                <td>Cobertura geográfica amplia.</td>
+                                <td>
+                                    Alineación, clima, cableado y recepción.
+                                </td>
+                                <td>
+                                    Alto frente a medios terrestres.
+                                </td>
+                                <td>Zona amplia del sistema.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Ideas técnicas que no deben confundirse</h2>
+
+                <div class="concept-grid">
+                    <article class="concept">
+                        <strong>MPEG no es TS</strong>
+
+                        <span>
+                            La compresión reduce datos; el TS organiza y
+                            transporta paquetes.
+                        </span>
+                    </article>
+
+                    <article class="concept">
+                        <strong>PID no es todo el programa</strong>
+
+                        <span>
+                            Video, audio, datos y control pueden usar PID
+                            diferentes.
+                        </span>
+                    </article>
+
+                    <article class="concept">
+                        <strong>PAT y PMT</strong>
+
+                        <span>
+                            Ayudan al receptor a localizar programas y sus
+                            componentes.
+                        </span>
+                    </article>
+
+                    <article class="concept">
+                        <strong>
+                            La guarda no agrega datos útiles
+                        </strong>
+
+                        <span>
+                            Protege frente a ecos, pero reduce la eficiencia
+                            temporal.
+                        </span>
+                    </article>
+
+                    <article class="concept">
+                        <strong>IPTV no es Web TV</strong>
+
+                        <span>
+                            IPTV usa red gestionada; Web TV usa internet abierto.
+                        </span>
+                    </article>
+
+                    <article class="concept">
+                        <strong>Alcance de la clase</strong>
+
+                        <span>
+                            No se diseña routing, HFC profesional, CDN ni enlace
+                            satelital.
+                        </span>
+                    </article>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action"
+                    id="pause"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action go"
+                    id="resume"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action reset"
+                    id="reset"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explain"
+                id="explain"
+            >
+                <strong>Lectura del Canvas:</strong>
+                los marcadores muestran orden lógico de procesamiento, no una
+                trayectoria física de la energía.
+            </div>
+
+            <div
+                class="note"
+                id="note"
+            >
+                <strong>Advertencia visual:</strong>
+                los dibujos y escalas son educativos; no representan tramas
+                completas, espectros RF ni redes profesionales.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/017_tv_digital_avanzada.js"></script>
+</body>
+</html>

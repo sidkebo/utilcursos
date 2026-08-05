@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Clase 10: Implementación AM | SIT-400</title>
+
+<!--
+Base pedagógica: Clase 10 completa de SIT-400. El simulador conserva el enfoque
+funcional de oscilador, modulador, resonancia, filtro y mezclador, sin diseño RF
+profesional ni polarización avanzada. :contentReference[oaicite:0]{index=0}
+-->
+
+<link rel="stylesheet" href="../css/010_implementacion_am.css">
+</head>
+
+<body>
+<main class="page">
+
+<header class="head">
+    <div class="badge">SIT-400 · Clase 10</div>
+
+    <h1>Implementación AM</h1>
+
+    <p class="subtitle">
+        Sistema funcional por bloques, osciladores Colpitts y Hartley,
+        resonancia, filtrado y mezcla de frecuencias a nivel de
+        Técnico Superior.
+    </p>
+</header>
+
+<nav
+    class="tabs"
+    aria-label="Secciones del simulador"
+>
+    <button
+        class="tab active"
+        type="button"
+        data-tab="system"
+    >
+        Sistema por bloques
+    </button>
+
+    <button
+        class="tab"
+        type="button"
+        data-tab="colpitts"
+    >
+        Oscilador Colpitts
+    </button>
+
+    <button
+        class="tab"
+        type="button"
+        data-tab="hartley"
+    >
+        Oscilador Hartley
+    </button>
+
+    <button
+        class="tab"
+        type="button"
+        data-tab="mixer"
+    >
+        Mezclador y filtro
+    </button>
+</nav>
+
+<section class="sim">
+    <div class="sim-head">
+        <span
+            class="sim-title"
+            id="canvasTitle"
+        >
+            Cadena funcional de implementación AM
+        </span>
+
+        <span
+            class="status"
+            id="status"
+        >
+            Simulación activa
+        </span>
+    </div>
+
+    <div
+        class="canvas-wrap"
+        id="canvasWrap"
+    >
+        <canvas
+            id="canvas"
+            aria-label="Simulador educativo de implementación AM"
+        ></canvas>
+    </div>
+</section>
+
+<section class="dash">
+    <div
+        class="banner"
+        id="banner"
+    >
+        <div>
+            <strong id="bannerTitle">
+                Sistema funcional AM
+            </strong>
+
+            <small id="bannerText">
+                Seleccione manualmente un bloque; la selección permanecerá
+                fija.
+            </small>
+        </div>
+
+        <span
+            class="banner-tag"
+            id="bannerTag"
+        >
+            Oscilador
+        </span>
+    </div>
+
+    <div
+        class="metrics"
+        id="metrics"
+    ></div>
+
+    <section id="systemUI">
+        <div class="controls">
+            <div class="control">
+                <div class="control-head">
+                    <label for="fc">
+                        Frecuencia portadora
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="fc"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="100"
+                    >
+
+                    <select id="fcU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="fm">
+                        Frecuencia modulante
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="fm"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="5"
+                    >
+
+                    <select id="fmU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="m">
+                        Índice de modulación
+                    </label>
+
+                    <output
+                        class="live"
+                        id="mOut"
+                    >
+                        0,60
+                    </output>
+                </div>
+
+                <input
+                    id="m"
+                    type="range"
+                    min="0"
+                    max="1.5"
+                    step="0.01"
+                    value="0.6"
+                >
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="lo">
+                        Oscilador local
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="lo"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="20"
+                    >
+
+                    <select id="loU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="sysL">
+                        Inductancia LC
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="sysL"
+                        type="number"
+                        min="0.000001"
+                        step="any"
+                        value="0.2533"
+                    >
+
+                    <select id="sysLU">
+                        <option>µH</option>
+                        <option selected>mH</option>
+                        <option>H</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="sysC">
+                        Capacitancia LC
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="sysC"
+                        type="number"
+                        min="0.000001"
+                        step="any"
+                        value="10"
+                    >
+
+                    <select id="sysCU">
+                        <option>pF</option>
+                        <option selected>nF</option>
+                        <option>µF</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="fCenter">
+                        Centro del filtro
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="fCenter"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="100"
+                    >
+
+                    <select id="fCenterU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="fBw">
+                        Ancho del filtro
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="fBw"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="12"
+                    >
+
+                    <select id="fBwU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="sysSpeed">
+                        Velocidad visual
+                    </label>
+
+                    <output
+                        class="live"
+                        id="sysSpeedOut"
+                    >
+                        1,0×
+                    </output>
+                </div>
+
+                <input
+                    id="sysSpeed"
+                    type="range"
+                    min="0.2"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                >
+            </div>
+        </div>
+
+        <section class="panel">
+            <h2>Seleccione manualmente un bloque</h2>
+
+            <div
+                class="picks"
+                id="blockPicks"
+            >
+                <button
+                    class="pick active"
+                    type="button"
+                    data-block="oscillator"
+                >
+                    Oscilador
+                </button>
+
+                <button
+                    class="pick"
+                    type="button"
+                    data-block="modulator"
+                >
+                    Modulador
+                </button>
+
+                <button
+                    class="pick"
+                    type="button"
+                    data-block="resonant"
+                >
+                    Circuito resonante
+                </button>
+
+                <button
+                    class="pick"
+                    type="button"
+                    data-block="filter"
+                >
+                    Filtro
+                </button>
+
+                <button
+                    class="pick"
+                    type="button"
+                    data-block="mixer"
+                >
+                    Mezclador
+                </button>
+
+                <button
+                    class="pick"
+                    type="button"
+                    data-block="output"
+                >
+                    Salida
+                </button>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2 id="detailTitle">
+                Bloque seleccionado: Oscilador
+            </h2>
+
+            <div class="cards">
+                <article class="card">
+                    <b>Función</b>
+                    <span id="dFn"></span>
+                </article>
+
+                <article class="card">
+                    <b>Entrada</b>
+                    <span id="dIn"></span>
+                </article>
+
+                <article class="card">
+                    <b>Salida</b>
+                    <span id="dOut"></span>
+                </article>
+
+                <article class="card">
+                    <b>Forma de onda</b>
+                    <span id="dWave"></span>
+                </article>
+
+                <article class="card">
+                    <b>Falla posible</b>
+                    <span id="dFail"></span>
+                </article>
+
+                <article class="card">
+                    <b>Resultado esperado</b>
+                    <span id="dExpected"></span>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel formula-panel">
+            <h2>Relaciones funcionales</h2>
+
+            <div class="formula-grid">
+                <article class="card">
+                    <b>Resonancia LC ideal</b>
+                    <code id="sysF1"></code>
+                </article>
+
+                <article class="card">
+                    <b>Banda AM y filtro</b>
+                    <code id="sysF2"></code>
+                </article>
+
+                <article class="card">
+                    <b>Productos del mezclador</b>
+                    <code id="sysF3"></code>
+                </article>
+            </div>
+        </section>
+    </section>
+
+    <section
+        id="oscUI"
+        hidden
+    >
+        <div class="controls">
+            <div class="control">
+                <div class="control-head">
+                    <label
+                        id="aLabel"
+                        for="oscA"
+                    >
+                        L
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="oscA"
+                        type="number"
+                        min="0.000001"
+                        step="any"
+                        value="10"
+                    >
+
+                    <select id="oscAU"></select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label
+                        id="bLabel"
+                        for="oscB"
+                    >
+                        C1
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="oscB"
+                        type="number"
+                        min="0.000001"
+                        step="any"
+                        value="10"
+                    >
+
+                    <select id="oscBU"></select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label
+                        id="cLabel"
+                        for="oscC"
+                    >
+                        C2
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="oscC"
+                        type="number"
+                        min="0.000001"
+                        step="any"
+                        value="10"
+                    >
+
+                    <select id="oscCU"></select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="supply">
+                        Alimentación DC
+                    </label>
+                </div>
+
+                <select id="supply">
+                    <option value="ok">Conectada</option>
+                    <option value="bad">Desconectada</option>
+                </select>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="ground">
+                        Tierra común
+                    </label>
+                </div>
+
+                <select id="ground">
+                    <option value="ok">Conectada</option>
+                    <option value="bad">Ausente</option>
+                </select>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="feedback">
+                        Realimentación
+                    </label>
+                </div>
+
+                <select id="feedback">
+                    <option value="ok">Correcta</option>
+                    <option value="bad">Interrumpida</option>
+                </select>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="oscSpeed">
+                        Velocidad visual
+                    </label>
+
+                    <output
+                        class="live"
+                        id="oscSpeedOut"
+                    >
+                        1,0×
+                    </output>
+                </div>
+
+                <input
+                    id="oscSpeed"
+                    type="range"
+                    min="0.2"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                >
+            </div>
+        </div>
+
+        <section class="panel">
+            <h2 id="oscPresetTitle">
+                Casos rápidos
+            </h2>
+
+            <div class="picks">
+                <button
+                    class="pick oscPreset"
+                    type="button"
+                    data-preset="case1"
+                >
+                    Caso principal
+                </button>
+
+                <button
+                    class="pick oscPreset"
+                    type="button"
+                    data-preset="case2"
+                >
+                    Caso alternativo
+                </button>
+
+                <button
+                    class="pick oscPreset"
+                    type="button"
+                    data-preset="supply"
+                >
+                    Sin alimentación
+                </button>
+
+                <button
+                    class="pick oscPreset"
+                    type="button"
+                    data-preset="ground"
+                >
+                    Sin tierra
+                </button>
+
+                <button
+                    class="pick oscPreset"
+                    type="button"
+                    data-preset="feedback"
+                >
+                    Sin realimentación
+                </button>
+            </div>
+        </section>
+
+        <section class="panel formula-panel">
+            <h2>Cálculo funcional</h2>
+
+            <div class="formula-grid">
+                <article class="card">
+                    <b id="eqLabel">Equivalente</b>
+                    <code id="oscF1"></code>
+                </article>
+
+                <article class="card">
+                    <b>Frecuencia estimada</b>
+                    <code id="oscF2"></code>
+                </article>
+
+                <article class="card">
+                    <b>Periodo estimado</b>
+                    <code id="oscF3"></code>
+                </article>
+            </div>
+        </section>
+    </section>
+
+    <section
+        id="mixerUI"
+        hidden
+    >
+        <div class="controls">
+            <div class="control">
+                <div class="control-head">
+                    <label for="f1">
+                        Frecuencia de entrada 1
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="f1"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="10"
+                    >
+
+                    <select id="f1U">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="f2">
+                        Frecuencia de entrada 2
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="f2"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="3"
+                    >
+
+                    <select id="f2U">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="operation">
+                        Operación observada
+                    </label>
+                </div>
+
+                <select id="operation">
+                    <option value="product">
+                        Mezcla ideal: producto
+                    </option>
+
+                    <option value="sum">
+                        Comparación: suma simple
+                    </option>
+                </select>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="selection">
+                        Selección posterior
+                    </label>
+                </div>
+
+                <select id="selection">
+                    <option value="none">Ambos productos</option>
+                    <option value="sum">Conservar suma</option>
+                    <option value="difference">
+                        Conservar diferencia
+                    </option>
+                </select>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="mixBw">
+                        Ancho conceptual del filtro
+                    </label>
+                </div>
+
+                <div class="unit">
+                    <input
+                        id="mixBw"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="1"
+                    >
+
+                    <select id="mixBwU">
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-head">
+                    <label for="mixSpeed">
+                        Velocidad visual
+                    </label>
+
+                    <output
+                        class="live"
+                        id="mixSpeedOut"
+                    >
+                        1,0×
+                    </output>
+                </div>
+
+                <input
+                    id="mixSpeed"
+                    type="range"
+                    min="0.2"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                >
+            </div>
+        </div>
+
+        <section class="panel">
+            <h2>Casos rápidos de mezcla</h2>
+
+            <div class="picks">
+                <button
+                    class="pick mixPreset"
+                    type="button"
+                    data-mix="class"
+                >
+                    10 kHz y 3 kHz
+                </button>
+
+                <button
+                    class="pick mixPreset"
+                    type="button"
+                    data-mix="lesson"
+                >
+                    100 kHz y 20 kHz
+                </button>
+
+                <button
+                    class="pick mixPreset"
+                    type="button"
+                    data-mix="if"
+                >
+                    1000 kHz y 545 kHz
+                </button>
+
+                <button
+                    class="pick mixPreset"
+                    type="button"
+                    data-mix="optional"
+                >
+                    455 kHz y 100 kHz
+                </button>
+
+                <button
+                    class="pick mixPreset"
+                    type="button"
+                    data-mix="simple"
+                >
+                    Suma simple
+                </button>
+            </div>
+        </section>
+
+        <section class="panel formula-panel">
+            <h2>Productos y selección</h2>
+
+            <div class="formula-grid">
+                <article class="card">
+                    <b>Frecuencia suma</b>
+                    <code id="mixF1"></code>
+                </article>
+
+                <article class="card">
+                    <b>Frecuencia diferencia</b>
+                    <code id="mixF2"></code>
+                </article>
+
+                <article class="card">
+                    <b>Salida observada</b>
+                    <code id="mixF3"></code>
+                </article>
+            </div>
+        </section>
+    </section>
+
+    <section class="panel">
+        <h2>Ideas técnicas que no deben confundirse</h2>
+
+        <div class="concepts">
+            <div class="concept">
+                <strong>El modulador AM no es un sumador.</strong>
+                La modulante controla la amplitud de la portadora.
+            </div>
+
+            <div class="concept">
+                <strong>El mezclador tampoco es un sumador común.</strong>
+                El producto o una no linealidad genera suma y diferencia.
+            </div>
+
+            <div class="concept">
+                <strong>El filtro no crea frecuencias.</strong>
+                Solo conserva o rechaza componentes ya existentes.
+            </div>
+
+            <div class="concept">
+                <strong>Colpitts y Hartley no son iguales.</strong>
+                Uno usa divisor capacitivo y el otro divisor inductivo.
+            </div>
+
+            <div class="concept">
+                <strong>La resonancia es una estimación ideal.</strong>
+                Pérdidas, carga y modelos pueden desplazar el valor observado.
+            </div>
+
+            <div class="concept">
+                <strong>Si no oscila, no se inventa el resultado.</strong>
+                Se diagnostican alimentación, tierra, realimentación y
+                conexiones.
+            </div>
+        </div>
+    </section>
+
+    <div class="actions">
+        <button
+            class="btn"
+            type="button"
+            id="pause"
+        >
+            Pausar
+        </button>
+
+        <button
+            class="btn green"
+            type="button"
+            id="resume"
+            disabled
+        >
+            Continuar
+        </button>
+
+        <button
+            class="btn gray"
+            type="button"
+            id="reset"
+        >
+            Reiniciar
+        </button>
+    </div>
+
+    <div
+        class="explain"
+        id="explain"
+    >
+        <strong>Sistema funcional:</strong>
+        el oscilador genera la portadora, el modulador coloca información
+        sobre ella, la resonancia y el filtro seleccionan frecuencia, y el
+        mezclador traslada componentes.
+    </div>
+
+    <div
+        class="note"
+        id="note"
+    >
+        <strong>Representación:</strong>
+        los marcadores móviles indican secuencia funcional. Las curvas
+        muestran amplitud respecto al tiempo y no la trayectoria física de
+        la energía.
+    </div>
+</section>
+</main>
+
+<script src="../js/010_implementacion_am.js"></script>
+</body>
+</html>

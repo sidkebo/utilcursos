@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clase 9: Espectro AM y bandas laterales | SIT-400</title>
+
+    <!--
+        Base pedagógica: Clase 9 completa de SIT-400.
+        La clase diferencia el análisis temporal del análisis en frecuencia,
+        sin desarrollar transformada de Fourier ni implementación de circuitos.
+        :contentReference[oaicite:0]{index=0}
+        :contentReference[oaicite:1]{index=1}
+
+        Para una modulante senoidal:
+        BLI = fc − fm, portadora = fc y BLS = fc + fm.
+        :contentReference[oaicite:2]{index=2}
+        :contentReference[oaicite:3]{index=3}
+
+        Anchos de banda teóricos:
+        AM = 2Bm, DSB-SC = 2Bm, SSB = Bm y VSB = Bm + Bvestigio.
+        :contentReference[oaicite:4]{index=4}
+    -->
+
+    <link rel="stylesheet" href="../css/009_espectro_am_bandas_laterales.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="course-badge">
+                SIT-400 · Clase 9
+            </div>
+
+            <h1>Espectro AM y Bandas Laterales</h1>
+
+            <p class="subtitle">
+                Comparación entre el dominio del tiempo y el dominio de la
+                frecuencia, ubicación de la portadora y las bandas laterales,
+                cálculo del ancho de banda y comparación de AM convencional,
+                DSB-SC, SSB y VSB.
+            </p>
+        </header>
+
+        <section class="simulation-panel">
+            <div class="canvas-header">
+                <span class="canvas-title">
+                    Dominio temporal y dominio de frecuencia
+                </span>
+
+                <span
+                    class="simulation-status"
+                    id="simulationStatus"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-container"
+                id="canvasContainer"
+            >
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulador educativo de espectro AM y bandas laterales"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div
+                class="state-banner"
+                id="stateBanner"
+            >
+                <div>
+                    <strong id="stateTitle">
+                        AM convencional
+                    </strong>
+
+                    <small id="stateDescription">
+                        Se transmiten la portadora, la banda lateral inferior y
+                        la banda lateral superior.
+                    </small>
+                </div>
+
+                <span
+                    class="state-banner-value"
+                    id="stateValue"
+                >
+                    B = 10 kHz
+                </span>
+            </div>
+
+            <div class="metrics">
+                <article class="metric">
+                    <span class="metric-label">
+                        Banda lateral inferior
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="lowerSidebandMetric"
+                    >
+                        95 kHz
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Portadora o referencia
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="carrierMetric"
+                    >
+                        100 kHz
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Banda lateral superior
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="upperSidebandMetric"
+                    >
+                        105 kHz
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Ancho de banda teórico
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="bandwidthMetric"
+                    >
+                        10 kHz
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Amplitud relativa lateral
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="sidebandAmplitudeMetric"
+                    >
+                        0,30 Aᶜ
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Sistema seleccionado
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="systemMetric"
+                    >
+                        AM convencional
+                    </span>
+                </article>
+            </div>
+
+            <div class="controls-grid">
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="carrierFrequency"
+                        >
+                            Frecuencia portadora
+                        </label>
+                    </div>
+
+                    <div class="input-with-unit">
+                        <input
+                            id="carrierFrequency"
+                            type="number"
+                            min="0.001"
+                            max="1000000000"
+                            step="any"
+                            value="100"
+                        >
+
+                        <select
+                            id="carrierFrequencyUnit"
+                            aria-label="Unidad de frecuencia portadora"
+                        >
+                            <option value="Hz">Hz</option>
+
+                            <option
+                                value="kHz"
+                                selected
+                            >
+                                kHz
+                            </option>
+
+                            <option value="MHz">MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="modulatingFrequency"
+                        >
+                            Frecuencia modulante
+                        </label>
+                    </div>
+
+                    <div class="input-with-unit">
+                        <input
+                            id="modulatingFrequency"
+                            type="number"
+                            min="0.001"
+                            max="100000000"
+                            step="any"
+                            value="5"
+                        >
+
+                        <select
+                            id="modulatingFrequencyUnit"
+                            aria-label="Unidad de frecuencia modulante"
+                        >
+                            <option value="Hz">Hz</option>
+
+                            <option
+                                value="kHz"
+                                selected
+                            >
+                                kHz
+                            </option>
+
+                            <option value="MHz">MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="modulatingAmplitude"
+                        >
+                            Amplitud modulante
+                        </label>
+                    </div>
+
+                    <div class="input-with-unit">
+                        <input
+                            id="modulatingAmplitude"
+                            type="number"
+                            min="0.01"
+                            max="1000"
+                            step="0.05"
+                            value="1"
+                        >
+
+                        <select aria-label="Unidad de amplitud modulante">
+                            <option>V</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="modulationIndex"
+                        >
+                            Índice de modulación
+                        </label>
+
+                        <output
+                            class="value-display"
+                            id="modulationIndexDisplay"
+                        >
+                            0,60
+                        </output>
+                    </div>
+
+                    <input
+                        id="modulationIndex"
+                        type="range"
+                        min="0"
+                        max="1.5"
+                        step="0.01"
+                        value="0.6"
+                    >
+                </div>
+
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="systemType"
+                        >
+                            Sistema de modulación
+                        </label>
+                    </div>
+
+                    <select id="systemType">
+                        <option value="am">
+                            AM convencional
+                        </option>
+
+                        <option value="dsb">
+                            DSB-SC
+                        </option>
+
+                        <option value="ssb">
+                            SSB
+                        </option>
+
+                        <option value="vsb">
+                            VSB
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control-group"
+                    id="sideSelectionGroup"
+                    hidden
+                >
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="sideSelection"
+                            id="sideSelectionLabel"
+                        >
+                            Banda transmitida
+                        </label>
+                    </div>
+
+                    <select id="sideSelection">
+                        <option value="upper">
+                            Banda lateral superior
+                        </option>
+
+                        <option value="lower">
+                            Banda lateral inferior
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control-group"
+                    id="vestigeGroup"
+                    hidden
+                >
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="vestigeBandwidth"
+                        >
+                            Ancho del vestigio
+                        </label>
+                    </div>
+
+                    <div class="input-with-unit">
+                        <input
+                            id="vestigeBandwidth"
+                            type="number"
+                            min="0"
+                            max="100000000"
+                            step="any"
+                            value="1"
+                        >
+
+                        <select
+                            id="vestigeBandwidthUnit"
+                            aria-label="Unidad del ancho del vestigio"
+                        >
+                            <option value="Hz">Hz</option>
+
+                            <option
+                                value="kHz"
+                                selected
+                            >
+                                kHz
+                            </option>
+
+                            <option value="MHz">MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="animationSpeed"
+                        >
+                            Velocidad de animación
+                        </label>
+
+                        <output
+                            class="value-display"
+                            id="animationSpeedDisplay"
+                        >
+                            1,0×
+                        </output>
+                    </div>
+
+                    <input
+                        id="animationSpeed"
+                        type="range"
+                        min="0.2"
+                        max="2"
+                        step="0.1"
+                        value="1"
+                    >
+                </div>
+            </div>
+
+            <section class="subpanel">
+                <h2>Casos rápidos de la Clase 9</h2>
+
+                <div class="preset-grid">
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="amExample"
+                    >
+                        AM · 100 kHz ± 5 kHz
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="dsbExample"
+                    >
+                        DSB-SC · dos bandas
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="upperSsb"
+                    >
+                        SSB superior
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="lowerSsb"
+                    >
+                        SSB inferior
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="vsbExample"
+                    >
+                        VSB · 5 kHz + 1 kHz
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="overmodulation"
+                    >
+                        m = 1,2 · advertencia
+                    </button>
+                </div>
+            </section>
+
+            <section class="formula-panel">
+                <h2>Ubicación de componentes y ancho ocupado</h2>
+
+                <div class="formula-grid">
+                    <div class="formula-item">
+                        <strong>Frecuencias principales</strong>
+
+                        <code id="frequencyFormula">
+                            fBLI = fc − fm · fBLS = fc + fm
+                        </code>
+                    </div>
+
+                    <div class="formula-item">
+                        <strong>Amplitudes relativas ideales</strong>
+
+                        <code id="amplitudeFormula">
+                            Portadora = Aᶜ · cada lateral = mAᶜ/2
+                        </code>
+                    </div>
+
+                    <div class="formula-item">
+                        <strong>Ancho de banda</strong>
+
+                        <span id="bandwidthFormula">
+                            BAM = 2Bm = 10 kHz
+                        </span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="comparison-panel">
+                <h2>Comparación con los mismos datos de la modulante</h2>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Sistema</th>
+                                <th>Componentes transmitidas</th>
+                                <th>Ancho teórico</th>
+                                <th>Rango ocupado</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="comparisonTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="errors-panel">
+                <h2>Ideas técnicas que deben mantenerse claras</h2>
+
+                <div class="errors-grid">
+                    <div class="error-card">
+                        <strong>Tiempo y frecuencia no son el mismo gráfico.</strong>
+                        En el tiempo se observa amplitud instantánea y envolvente;
+                        en frecuencia se muestran las componentes presentes.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>La portadora está en fᶜ.</strong>
+                        La frecuencia modulante no aparece como una portadora
+                        separada; determina la separación de las bandas laterales.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>DSB-SC no ocupa la mitad.</strong>
+                        Suprimir la portadora no elimina ninguna banda lateral,
+                        por lo que conserva un ancho de 2Bₘ.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>SSB transmite una sola banda.</strong>
+                        Puede conservarse la banda superior o la inferior.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>VSB necesita el dato del vestigio.</strong>
+                        No puede obtenerse un ancho numérico exacto si no se
+                        conoce Bvestigio.
+                    </div>
+
+                    <div class="error-card">
+                        <strong>El ancho calculado es teórico.</strong>
+                        No incluye bandas de guarda, tolerancias ni transiciones
+                        de filtros de un sistema real.
+                    </div>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Lectura del simulador:</strong>
+                el panel temporal conserva una señal AM convencional como
+                referencia para observar la envolvente. El selector modifica el
+                panel espectral para indicar qué componentes se transmiten,
+                suprimen o conservan parcialmente.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Advertencia visual:</strong>
+                las alturas y separaciones se adaptan al tamaño de la pantalla.
+                Consulte los valores numéricos para cálculos. Las formas de onda
+                representan amplitud respecto al tiempo, no la trayectoria física
+                de la energía.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/009_espectro_am_bandas_laterales.js"></script>
+</body>
+</html>

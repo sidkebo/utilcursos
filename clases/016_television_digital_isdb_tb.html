@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Clase 16: Televisión Digital e ISDB-Tb | SIT-400</title>
+
+    <link rel="stylesheet" href="../css/016_television_digital_isdb_tb.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="badge">
+                SIT-400 · Clase 16
+            </div>
+
+            <h1>Televisión Digital e ISDB-Tb</h1>
+
+            <p class="subtitle">
+                Cadena funcional de transmisión y recepción de televisión
+                digital, organización de 13 segmentos en ISDB-Tb, comparación
+                One-Seg y Full-Seg, resolución de servicios y efecto umbral de
+                la recepción digital.
+            </p>
+        </header>
+
+        <nav
+            class="module-tabs"
+            aria-label="Módulos del simulador"
+        >
+            <button
+                type="button"
+                class="module-button active"
+                data-module="chain"
+            >
+                Cadena digital
+            </button>
+
+            <button
+                type="button"
+                class="module-button"
+                data-module="segments"
+            >
+                Segmentos ISDB-Tb
+            </button>
+
+            <button
+                type="button"
+                class="module-button"
+                data-module="coverage"
+            >
+                Cobertura y umbral
+            </button>
+
+            <button
+                type="button"
+                class="module-button"
+                data-module="comparison"
+            >
+                TV analógica vs. digital
+            </button>
+        </nav>
+
+        <section class="simulation">
+            <div class="simulation-header">
+                <span
+                    class="simulation-title"
+                    id="simulationTitle"
+                >
+                    Audio/video/datos → procesamiento digital → BST-OFDM →
+                    RF → recepción
+                </span>
+
+                <span
+                    class="simulation-status"
+                    id="simulationStatus"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-wrapper"
+                id="canvasWrapper"
+            >
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulador educativo de televisión digital e ISDB-Tb"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div
+                class="banner"
+                id="stateBanner"
+            >
+                <div>
+                    <strong id="stateTitle">
+                        Cadena digital completa
+                    </strong>
+
+                    <small id="stateDescription">
+                        Los bloques muestran la función general desde las
+                        fuentes hasta la pantalla y parlantes.
+                    </small>
+                </div>
+
+                <span
+                    class="banner-tag"
+                    id="stateTag"
+                >
+                    BST-OFDM
+                </span>
+            </div>
+
+            <div
+                class="metrics"
+                id="metrics"
+            ></div>
+
+            <div class="controls">
+                <div
+                    class="control segment-control"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="assignmentTool">
+                            Herramienta para segmentos
+                        </label>
+                    </div>
+
+                    <select id="assignmentTool">
+                        <option value="A">
+                            Capa A · One-Seg central
+                        </option>
+
+                        <option
+                            value="B"
+                            selected
+                        >
+                            Capa B · servicio fijo
+                        </option>
+
+                        <option value="C">
+                            Capa C · servicio fijo
+                        </option>
+
+                        <option value="none">
+                            Dejar sin asignar
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control segment-control"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="serviceB">
+                            Servicio asociado a capa B
+                        </label>
+                    </div>
+
+                    <select id="serviceB">
+                        <option>SDTV</option>
+                        <option selected>HDTV</option>
+                        <option>UHDTV</option>
+                        <option>Audio y datos</option>
+                    </select>
+                </div>
+
+                <div
+                    class="control segment-control"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="serviceC">
+                            Servicio asociado a capa C
+                        </label>
+                    </div>
+
+                    <select id="serviceC">
+                        <option selected>SDTV</option>
+                        <option>HDTV</option>
+                        <option>UHDTV</option>
+                        <option>Audio y datos</option>
+                    </select>
+                </div>
+
+                <div
+                    class="control signal-control"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="signalLevel">
+                            Índice relativo de señal
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="signalLevelOutput"
+                        >
+                            72 / 100
+                        </output>
+                    </div>
+
+                    <input
+                        id="signalLevel"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="72"
+                    >
+                </div>
+
+                <div
+                    class="control signal-control"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="receiverProfile">
+                            Perfil de recepción
+                        </label>
+                    </div>
+
+                    <select id="receiverProfile">
+                        <option value="oneSeg">
+                            One-Seg · configuración robusta
+                        </option>
+
+                        <option value="fullRobust">
+                            Full-Seg · capa robusta
+                        </option>
+
+                        <option
+                            value="fullCapacity"
+                            selected
+                        >
+                            Full-Seg · mayor capacidad
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control coverage-control"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="coverageRadius">
+                            Radio de cobertura dado
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="coverageRadius"
+                            type="number"
+                            min="0.1"
+                            step="0.1"
+                            value="10"
+                        >
+
+                        <select disabled>
+                            <option>km</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control coverage-control"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="receiverDistance">
+                            Distancia conceptual del receptor
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="receiverDistance"
+                            type="number"
+                            min="0"
+                            step="0.1"
+                            value="7"
+                        >
+
+                        <select disabled>
+                            <option>km</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="animationSpeed">
+                            Velocidad de animación
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="animationSpeedOutput"
+                        >
+                            1,0×
+                        </output>
+                    </div>
+
+                    <input
+                        id="animationSpeed"
+                        type="range"
+                        min="0.2"
+                        max="2"
+                        step="0.1"
+                        value="1"
+                    >
+                </div>
+            </div>
+
+            <section class="panel">
+                <h2>Casos rápidos de la Clase 16</h2>
+
+                <div class="presets">
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="chain"
+                    >
+                        Cadena completa
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="oneSixSix"
+                    >
+                        Segmentos 1 + 6 + 6
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="oneTwelve"
+                    >
+                        One-Seg + capa completa
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="threshold"
+                    >
+                        Recorrer efecto umbral
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="coverage12"
+                    >
+                        Cobertura r = 12 km
+                    </button>
+                </div>
+            </section>
+
+            <section class="panel formula-panel">
+                <h2>Relaciones y lecturas técnicas</h2>
+
+                <div class="formula-grid">
+                    <article class="formula-card">
+                        <strong>Segmentos activos</strong>
+                        <code id="formulaSegments"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>
+                            Ancho aproximado de segmento
+                        </strong>
+                        <code id="formulaWidth"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Porcentaje entre activos</strong>
+                        <code id="formulaPercentActive"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Porcentaje del canal RF</strong>
+                        <code id="formulaPercentRf"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Área circular aproximada</strong>
+                        <code id="formulaCoverage"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Efecto umbral</strong>
+                        <code id="formulaThreshold"></code>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Comparación técnica de resoluciones</h2>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Ejemplos de resolución</th>
+                                <th>Demanda relativa de datos</th>
+                                <th>Interpretación en el canal</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>SDTV</td>
+                                <td>720 × 480 o 720 × 576</td>
+                                <td>Menor que HDTV</td>
+                                <td>
+                                    Puede requerir menos capacidad relativa y
+                                    facilitar más servicios, según compresión y
+                                    configuración.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>HDTV</td>
+                                <td>1280 × 720 o 1920 × 1080</td>
+                                <td>Mayor que SDTV</td>
+                                <td>
+                                    Ofrece mayor detalle, pero consume más parte
+                                    de la capacidad disponible.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>UHDTV</td>
+                                <td>3840 × 2160 o 7680 × 4320</td>
+                                <td>Muy alta</td>
+                                <td>
+                                    No debe asumirse como disponible en
+                                    cualquier canal terrestre; depende de
+                                    capacidad y compresión eficiente.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Ideas técnicas que no deben confundirse</h2>
+
+                <div class="concept-grid">
+                    <article class="concept-card">
+                        <strong>
+                            Full-Seg no significa 12 segmentos
+                        </strong>
+
+                        <span>
+                            Full-Seg se refiere a recepción de la señal completa
+                            de banda, incluso cuando existe un segmento central
+                            orientado a One-Seg.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>
+                            Segmentos no son canales independientes
+                        </strong>
+
+                        <span>
+                            Los 13 segmentos se agrupan en capas. No debe
+                            asignarse automáticamente un programa fijo a cada
+                            segmento.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>
+                            Robustez no depende solo del número
+                        </strong>
+
+                        <span>
+                            También intervienen modulación, codificación,
+                            intercalado, nivel de señal e interferencias.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>Resolución no es cobertura</strong>
+
+                        <span>
+                            SDTV, HDTV y UHDTV describen resolución y demanda de
+                            datos; la cobertura depende del sistema y del canal.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>
+                            Cobertura circular solo aproximada
+                        </strong>
+
+                        <span>
+                            A = πr² se usa cuando el radio ya fue dado. La
+                            cobertura real cambia por terreno, edificios,
+                            antenas e interferencia.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>Alcance de la Clase 16</strong>
+
+                        <span>
+                            No se profundiza en MPEG, Transport Stream,
+                            intervalo de guarda, IPTV, Web TV ni televisión
+                            satelital.
+                        </span>
+                    </article>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Lectura del Canvas:</strong>
+                la cadena superior representa funciones de transmisión y la
+                cadena inferior funciones de recepción. Los marcadores
+                animados indican orden de procesamiento, no una trayectoria
+                física de la energía.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Advertencia visual:</strong>
+                la división en segmentos, las pantallas y las curvas de calidad
+                son representaciones educativas. El índice de señal es
+                relativo y no corresponde a dB, dBµV/m, MER, BER ni a un
+                umbral normativo.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/016_television_digital_isdb_tb.js"></script>
+</body>
+</html>

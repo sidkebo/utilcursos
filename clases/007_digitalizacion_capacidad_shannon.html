@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clase 7: Digitalización y Shannon | SIT-400</title>
+
+    <link rel="stylesheet" href="../css/007_digitalizacion_capacidad_shannon.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="course-badge">
+                SIT-400 · Clase 7
+            </div>
+
+            <h1>Digitalización y Capacidad de Shannon</h1>
+
+            <p class="subtitle">
+                Cuantificación uniforme, codificación binaria natural,
+                velocidad binaria y estimación del límite teórico de un canal
+                con ruido mediante Shannon-Hartley.
+            </p>
+        </header>
+
+        <nav
+            class="module-navigation"
+            aria-label="Módulos del simulador"
+        >
+            <button
+                type="button"
+                class="module-button active"
+                data-module="digitalization"
+                aria-selected="true"
+            >
+                Módulo 1 · Digitalización
+            </button>
+
+            <button
+                type="button"
+                class="module-button"
+                data-module="shannon"
+                aria-selected="false"
+            >
+                Módulo 2 · Shannon y capacidad
+            </button>
+        </nav>
+
+        <section class="simulation-panel">
+            <div class="canvas-header">
+                <span
+                    class="canvas-title"
+                    id="canvasTitle"
+                >
+                    Señal analógica, muestras, niveles y códigos
+                </span>
+
+                <span
+                    class="simulation-status"
+                    id="simulationStatus"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-container"
+                id="canvasContainer"
+            >
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulador educativo de digitalización y capacidad de Shannon"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div
+                class="state-banner"
+                id="stateBanner"
+            >
+                <div>
+                    <strong id="stateTitle">
+                        Digitalización dentro del rango
+                    </strong>
+
+                    <small id="stateDescription">
+                        Las muestras se cuantifican mediante el modelo uniforme
+                        seleccionado.
+                    </small>
+                </div>
+
+                <span
+                    class="state-banner-value"
+                    id="stateValue"
+                >
+                    L = 8 niveles
+                </span>
+            </div>
+
+            <div class="metrics">
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel0"
+                    >
+                        Bits por muestra
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue0"
+                    >
+                        3 bits
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel1"
+                    >
+                        Niveles
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue1"
+                    >
+                        8
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel2"
+                    >
+                        Paso
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue2"
+                    >
+                        0,3 V
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel3"
+                    >
+                        Error máximo
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue3"
+                    >
+                        ±0,15 V
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel4"
+                    >
+                        Muestreo
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue4"
+                    >
+                        8 kHz
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="metricLabel5"
+                    >
+                        Velocidad binaria
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="metricValue5"
+                    >
+                        24 kbit/s
+                    </span>
+                </article>
+            </div>
+
+            <section id="digitalizationControls">
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="signalAmplitude"
+                            >
+                                Amplitud de la señal
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                id="signalAmplitude"
+                                type="number"
+                                min="0.01"
+                                max="20"
+                                step="0.05"
+                                value="1"
+                            >
+
+                            <select aria-label="Unidad de amplitud">
+                                <option>V</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="signalFrequency"
+                            >
+                                Frecuencia de la señal
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                id="signalFrequency"
+                                type="number"
+                                min="0.001"
+                                max="1000000"
+                                step="any"
+                                value="1000"
+                            >
+
+                            <select
+                                id="signalFrequencyUnit"
+                                aria-label="Unidad de frecuencia"
+                            >
+                                <option value="Hz">Hz</option>
+                                <option value="kHz">kHz</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="samplingFrequency"
+                            >
+                                Frecuencia de muestreo
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                id="samplingFrequency"
+                                type="number"
+                                min="0.001"
+                                max="10000000"
+                                step="any"
+                                value="8000"
+                            >
+
+                            <select
+                                id="samplingFrequencyUnit"
+                                aria-label="Unidad de frecuencia de muestreo"
+                            >
+                                <option value="Hz">Hz</option>
+                                <option value="kHz">kHz</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="initialPhase"
+                            >
+                                Fase inicial
+                            </label>
+
+                            <output
+                                class="value-display"
+                                id="initialPhaseDisplay"
+                            >
+                                0°
+                            </output>
+                        </div>
+
+                        <input
+                            id="initialPhase"
+                            type="range"
+                            min="0"
+                            max="360"
+                            step="1"
+                            value="0"
+                        >
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="bitsPerSample"
+                            >
+                                Bits por muestra
+                            </label>
+                        </div>
+
+                        <select id="bitsPerSample">
+                            <option value="1">
+                                1 bit · 2 niveles
+                            </option>
+
+                            <option value="2">
+                                2 bits · 4 niveles
+                            </option>
+
+                            <option
+                                value="3"
+                                selected
+                            >
+                                3 bits · 8 niveles
+                            </option>
+
+                            <option value="4">
+                                4 bits · 16 niveles
+                            </option>
+
+                            <option value="5">
+                                5 bits · 32 niveles
+                            </option>
+
+                            <option value="6">
+                                6 bits · 64 niveles
+                            </option>
+
+                            <option value="7">
+                                7 bits · 128 niveles
+                            </option>
+
+                            <option value="8">
+                                8 bits · 256 niveles
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="quantizationLevels"
+                            >
+                                Cantidad de niveles
+                            </label>
+                        </div>
+
+                        <select id="quantizationLevels">
+                            <option value="2">
+                                2 niveles
+                            </option>
+
+                            <option value="4">
+                                4 niveles
+                            </option>
+
+                            <option
+                                value="8"
+                                selected
+                            >
+                                8 niveles
+                            </option>
+
+                            <option value="16">
+                                16 niveles
+                            </option>
+
+                            <option value="32">
+                                32 niveles
+                            </option>
+
+                            <option value="64">
+                                64 niveles
+                            </option>
+
+                            <option value="128">
+                                128 niveles
+                            </option>
+
+                            <option value="256">
+                                256 niveles
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="minimumVoltage"
+                            >
+                                Límite inferior del rango
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                id="minimumVoltage"
+                                type="number"
+                                step="0.05"
+                                value="-1.2"
+                            >
+
+                            <select aria-label="Unidad del límite inferior">
+                                <option>V</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="maximumVoltage"
+                            >
+                                Límite superior del rango
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                id="maximumVoltage"
+                                type="number"
+                                step="0.05"
+                                value="1.2"
+                            >
+
+                            <select aria-label="Unidad del límite superior">
+                                <option>V</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="digitalizationSpeed"
+                            >
+                                Velocidad visual
+                            </label>
+
+                            <output
+                                class="value-display"
+                                id="digitalizationSpeedDisplay"
+                            >
+                                1,0×
+                            </output>
+                        </div>
+
+                        <input
+                            id="digitalizationSpeed"
+                            type="range"
+                            min="0.2"
+                            max="2"
+                            step="0.1"
+                            value="1"
+                        >
+                    </div>
+                </div>
+
+                <section class="subpanel">
+                    <h2>Casos rápidos de digitalización</h2>
+
+                    <div class="preset-grid">
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-digital-preset="classExample"
+                        >
+                            0–8 V · 3 bits
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-digital-preset="basicRate"
+                        >
+                            8 kHz · 8 bits
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-digital-preset="fewBits"
+                        >
+                            Pocos niveles
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-digital-preset="moreBits"
+                        >
+                            Más precisión
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-digital-preset="saturation"
+                        >
+                            Saturación de rango
+                        </button>
+                    </div>
+                </section>
+
+                <section class="formula-panel">
+                    <h2>Relaciones de digitalización</h2>
+
+                    <div class="formula-grid">
+                        <div class="formula-item">
+                            <strong>Niveles y paso</strong>
+
+                            <code id="digitalFormula1">
+                                L = 2ⁿ · Δ = (Vmax − Vmin) / L
+                            </code>
+                        </div>
+
+                        <div class="formula-item">
+                            <strong>Error y código</strong>
+
+                            <code id="digitalFormula2">
+                                e = valor real − valor cuantificado
+                            </code>
+                        </div>
+
+                        <div class="formula-item">
+                            <strong>Velocidad binaria</strong>
+
+                            <span id="digitalFormula3">
+                                Rb = fs × n = 24 kbit/s
+                            </span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="subpanel">
+                    <h2>
+                        Muestras visibles y codificación binaria natural
+                    </h2>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>N.º</th>
+                                    <th>Tiempo</th>
+                                    <th>Valor real</th>
+                                    <th>Índice</th>
+                                    <th>Nivel representativo</th>
+                                    <th>Error</th>
+                                    <th>Código</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="sampleTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+
+            <section
+                id="shannonControls"
+                hidden
+            >
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="channelBandwidth"
+                            >
+                                Ancho de banda del canal
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                id="channelBandwidth"
+                                type="number"
+                                min="0.001"
+                                max="1000000000"
+                                step="any"
+                                value="3000"
+                            >
+
+                            <select id="channelBandwidthUnit">
+                                <option value="Hz">Hz</option>
+                                <option value="kHz">kHz</option>
+                                <option value="MHz">MHz</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="signalPower"
+                            >
+                                Potencia de señal
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                id="signalPower"
+                                type="number"
+                                min="0.000000001"
+                                step="any"
+                                value="31"
+                            >
+
+                            <select id="signalPowerUnit">
+                                <option value="W">
+                                    W
+                                </option>
+
+                                <option
+                                    value="mW"
+                                    selected
+                                >
+                                    mW
+                                </option>
+
+                                <option value="uW">
+                                    µW
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="noisePower"
+                            >
+                                Potencia de ruido
+                            </label>
+                        </div>
+
+                        <div class="input-with-unit">
+                            <input
+                                id="noisePower"
+                                type="number"
+                                min="0.000000001"
+                                step="any"
+                                value="1"
+                            >
+
+                            <select id="noisePowerUnit">
+                                <option value="W">
+                                    W
+                                </option>
+
+                                <option
+                                    value="mW"
+                                    selected
+                                >
+                                    mW
+                                </option>
+
+                                <option value="uW">
+                                    µW
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label
+                                class="control-label"
+                                for="shannonSpeed"
+                            >
+                                Velocidad visual
+                            </label>
+
+                            <output
+                                class="value-display"
+                                id="shannonSpeedDisplay"
+                            >
+                                1,0×
+                            </output>
+                        </div>
+
+                        <input
+                            id="shannonSpeed"
+                            type="range"
+                            min="0.2"
+                            max="2"
+                            step="0.1"
+                            value="1"
+                        >
+                    </div>
+                </div>
+
+                <section class="subpanel">
+                    <h2>Casos rápidos de Shannon-Hartley</h2>
+
+                    <div class="preset-grid">
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-shannon-preset="linear31"
+                        >
+                            3 kHz · S/N = 31
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-shannon-preset="snr20"
+                        >
+                            10 kHz · 20 dB
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-shannon-preset="lowSnr"
+                        >
+                            Canal ruidoso
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-shannon-preset="wideBand"
+                        >
+                            Mayor ancho de banda
+                        </button>
+
+                        <button
+                            type="button"
+                            class="preset-button"
+                            data-shannon-preset="insufficient"
+                        >
+                            Canal insuficiente
+                        </button>
+                    </div>
+                </section>
+
+                <section class="formula-panel">
+                    <h2>Capacidad teórica del canal</h2>
+
+                    <div class="formula-grid">
+                        <div class="formula-item">
+                            <strong>Relación señal a ruido</strong>
+
+                            <code id="shannonFormula1">
+                                S/N = S ÷ N
+                            </code>
+                        </div>
+
+                        <div class="formula-item">
+                            <strong>Conversión a decibeles</strong>
+
+                            <code id="shannonFormula2">
+                                SNRdB = 10 × log10(S/N)
+                            </code>
+                        </div>
+
+                        <div class="formula-item">
+                            <strong>Shannon-Hartley</strong>
+
+                            <span id="shannonFormula3">
+                                C = B × log2(1 + S/N)
+                            </span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="subpanel">
+                    <h2>
+                        Comparación teórica entre datos generados y capacidad
+                    </h2>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Variable</th>
+                                    <th>Resultado</th>
+                                    <th>Interpretación</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="comparisonTableBody"></tbody>
+                        </table>
+                    </div>
+                </section>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Digitalización funcional:</strong>
+                muestrear selecciona instantes, cuantificar aproxima amplitudes
+                y codificar asigna bits al índice del intervalo.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Representación:</strong>
+                las curvas muestran amplitud respecto al tiempo. No representan
+                la trayectoria física de la energía ni el diseño interno de un
+                conversor ADC.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/007_digitalizacion_capacidad_shannon.js"></script>
+</body>
+</html>

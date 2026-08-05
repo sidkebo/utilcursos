@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clase 3: El decibel | SIT-400</title>
+
+<!--
+    Simulador revisado a partir de la Clase 3 completa de SIT-400:
+    fórmulas de potencia, tensión y corriente, conversiones W↔dBW
+    y W↔dBm. :contentReference[oaicite:0]{index=0}
+-->
+
+<link rel="stylesheet" href="../css/003_decibel.css">
+</head>
+
+<body>
+<main class="page">
+    <header class="header">
+        <div class="course-badge">
+            SIT-400 · Clase 3
+        </div>
+
+        <h1>El Decibel en Telecomunicaciones</h1>
+
+        <p class="subtitle">
+            Comparación de potencia, tensión y corriente mediante una
+            escala logarítmica, con interpretación del signo y
+            conversiones básicas entre W, dBW y dBm.
+        </p>
+    </header>
+
+    <nav
+        class="mode-navigation"
+        aria-label="Tipos de relación en decibeles"
+    >
+        <button
+            type="button"
+            class="mode-button active"
+            data-mode="power"
+            aria-selected="true"
+        >
+            Relación de potencia
+        </button>
+
+        <button
+            type="button"
+            class="mode-button"
+            data-mode="voltage"
+            aria-selected="false"
+        >
+            Relación de tensión
+        </button>
+
+        <button
+            type="button"
+            class="mode-button"
+            data-mode="current"
+            aria-selected="false"
+        >
+            Relación de corriente
+        </button>
+    </nav>
+
+    <section class="simulation-panel">
+        <div class="canvas-header">
+            <span class="canvas-title" id="canvasTitle">
+                Escala lineal y escala logarítmica de potencia
+            </span>
+
+            <span
+                class="simulation-status"
+                id="simulationStatus"
+            >
+                Simulación activa
+            </span>
+        </div>
+
+        <div
+            class="canvas-container"
+            id="canvasContainer"
+        >
+            <canvas
+                id="simulationCanvas"
+                aria-label="Comparación visual entre escala lineal y escala logarítmica"
+            ></canvas>
+        </div>
+    </section>
+
+    <section class="dashboard">
+        <div class="metrics">
+            <article class="metric">
+                <span class="metric-label">
+                    Relación lineal
+                </span>
+
+                <span
+                    class="metric-value"
+                    id="ratioMetric"
+                >
+                    10 veces
+                </span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">
+                    Resultado
+                </span>
+
+                <span
+                    class="metric-value"
+                    id="dbMetric"
+                >
+                    +10,00 dB
+                </span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">
+                    Interpretación
+                </span>
+
+                <span
+                    class="metric-value"
+                    id="interpretationMetric"
+                >
+                    Aumento relativo
+                </span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">
+                    Factor de la fórmula
+                </span>
+
+                <span
+                    class="metric-value"
+                    id="factorMetric"
+                >
+                    10
+                </span>
+            </article>
+        </div>
+
+        <div class="controls-grid">
+            <div class="control-group">
+                <div class="control-heading">
+                    <label
+                        class="control-label"
+                        for="value1Input"
+                        id="value1Label"
+                    >
+                        Potencia inicial P1
+                    </label>
+                </div>
+
+                <div class="input-with-unit">
+                    <input
+                        type="number"
+                        id="value1Input"
+                        min="0.000000001"
+                        step="any"
+                        value="1"
+                    >
+
+                    <select
+                        id="unit1Select"
+                        aria-label="Unidad del primer valor"
+                    ></select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-heading">
+                    <label
+                        class="control-label"
+                        for="value2Input"
+                        id="value2Label"
+                    >
+                        Potencia final P2
+                    </label>
+                </div>
+
+                <div class="input-with-unit">
+                    <input
+                        type="number"
+                        id="value2Input"
+                        min="0.000000001"
+                        step="any"
+                        value="10"
+                    >
+
+                    <select
+                        id="unit2Select"
+                        aria-label="Unidad del segundo valor"
+                    ></select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="control-heading">
+                    <label
+                        class="control-label"
+                        for="animationSpeed"
+                    >
+                        Velocidad visual
+                    </label>
+
+                    <output
+                        class="value-display"
+                        id="animationSpeedDisplay"
+                    >
+                        1,0×
+                    </output>
+                </div>
+
+                <input
+                    type="range"
+                    id="animationSpeed"
+                    min="0.4"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                >
+            </div>
+
+            <div class="control-group">
+                <div class="control-heading">
+                    <span class="control-label">
+                        Orden de comparación
+                    </span>
+                </div>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="swapButton"
+                >
+                    Intercambiar valor 1 ↔ valor 2
+                </button>
+            </div>
+        </div>
+
+        <div
+            class="conditional-controls"
+            id="conditionalControls"
+            hidden
+        >
+            <div class="control-group">
+                <div class="control-heading">
+                    <label
+                        class="control-label"
+                        for="measurementType"
+                    >
+                        Tipo de medición para ambos valores
+                    </label>
+                </div>
+
+                <select id="measurementType">
+                    <option value="rms">
+                        RMS con RMS
+                    </option>
+
+                    <option value="peak">
+                        Pico con pico
+                    </option>
+
+                    <option value="peakToPeak">
+                        Pico a pico con pico a pico
+                    </option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <div class="control-heading">
+                    <label
+                        class="control-label"
+                        for="impedanceCondition"
+                    >
+                        Condición de las impedancias
+                    </label>
+                </div>
+
+                <select id="impedanceCondition">
+                    <option value="equal">
+                        Impedancias iguales
+                    </option>
+
+                    <option value="unknown">
+                        Impedancias desconocidas
+                    </option>
+
+                    <option value="different">
+                        Impedancias diferentes
+                    </option>
+                </select>
+            </div>
+        </div>
+
+        <div
+            class="validation-message"
+            id="validationMessage"
+            aria-live="polite"
+        ></div>
+
+        <section class="formula-panel">
+            <h2 class="formula-title">
+                Procedimiento de cálculo
+            </h2>
+
+            <div class="formula-grid">
+                <div class="formula-item">
+                    <strong>Fórmula</strong>
+                    <code id="formulaDisplay">
+                        dB = 10 × log10(P2 / P1)
+                    </code>
+                </div>
+
+                <div class="formula-item">
+                    <strong>Sustitución</strong>
+                    <code id="substitutionDisplay">
+                        dB = 10 × log10(10 W / 1 W)
+                    </code>
+                </div>
+
+                <div class="formula-item">
+                    <strong>Resultado técnico</strong>
+                    <code id="resultDisplay">
+                        +10,00 dB · aumento relativo
+                    </code>
+                </div>
+            </div>
+        </section>
+
+        <section class="examples-section">
+            <div class="section-heading">
+                <h2>Ejemplos rápidos de la Clase 3</h2>
+
+                <span>
+                    Cada botón cambia el modo y los valores
+                </span>
+            </div>
+
+            <div class="example-grid">
+                <button
+                    type="button"
+                    class="example-button"
+                    data-example="powerUp"
+                >
+                    1 W → 10 W
+                </button>
+
+                <button
+                    type="button"
+                    class="example-button"
+                    data-example="powerDown"
+                >
+                    10 W → 1 W
+                </button>
+
+                <button
+                    type="button"
+                    class="example-button"
+                    data-example="voltageDouble"
+                >
+                    1 V → 2 V
+                </button>
+
+                <button
+                    type="button"
+                    class="example-button"
+                    data-example="currentDown"
+                >
+                    20 mA → 2 mA
+                </button>
+
+                <button
+                    type="button"
+                    class="example-button"
+                    data-example="equal"
+                >
+                    Valores iguales
+                </button>
+            </div>
+        </section>
+
+        <section class="converter-panel">
+            <div class="section-heading">
+                <h2>Conversor de potencia</h2>
+
+                <span>
+                    Uso básico de dBW y dBm solicitado en la Clase 3
+                </span>
+            </div>
+
+            <div class="converter-grid">
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="converterType"
+                        >
+                            Tipo de conversión
+                        </label>
+                    </div>
+
+                    <select id="converterType">
+                        <option value="wToDbw">
+                            W → dBW
+                        </option>
+
+                        <option value="dbwToW">
+                            dBW → W
+                        </option>
+
+                        <option value="wToDbm">
+                            W → dBm
+                        </option>
+
+                        <option value="dbmToW">
+                            dBm → mW y W
+                        </option>
+                    </select>
+                </div>
+
+                <div class="control-group">
+                    <div class="control-heading">
+                        <label
+                            class="control-label"
+                            for="converterInput"
+                            id="converterInputLabel"
+                        >
+                            Potencia en W
+                        </label>
+                    </div>
+
+                    <input
+                        type="number"
+                        id="converterInput"
+                        step="any"
+                        value="10"
+                    >
+                </div>
+
+                <div class="control-group">
+                    <div class="control-heading">
+                        <span class="control-label">
+                            Resultado
+                        </span>
+                    </div>
+
+                    <div
+                        class="converter-output"
+                        id="converterOutput"
+                    >
+                        10 W = 10 dBW
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="converter-formula"
+                id="converterFormula"
+            >
+                dBW = 10 × log10(P en W)
+            </div>
+
+            <div class="converter-examples">
+                <button
+                    type="button"
+                    class="converter-example"
+                    data-converter="10wDbw"
+                >
+                    10 W → dBW
+                </button>
+
+                <button
+                    type="button"
+                    class="converter-example"
+                    data-converter="20dbwW"
+                >
+                    20 dBW → W
+                </button>
+
+                <button
+                    type="button"
+                    class="converter-example"
+                    data-converter="1wDbm"
+                >
+                    1 W → dBm
+                </button>
+
+                <button
+                    type="button"
+                    class="converter-example"
+                    data-converter="20dbmW"
+                >
+                    20 dBm → mW y W
+                </button>
+            </div>
+        </section>
+
+        <section class="reference-panel">
+            <div class="section-heading">
+                <h2>Equivalencias indispensables</h2>
+
+                <span>
+                    Referencias fijas de potencia
+                </span>
+            </div>
+
+            <div class="reference-grid">
+                <article class="reference-card">
+                    <strong>0 dBW</strong>
+                    <span>Equivale exactamente a 1 W</span>
+                </article>
+
+                <article class="reference-card">
+                    <strong>0 dBm</strong>
+                    <span>Equivale exactamente a 1 mW</span>
+                </article>
+
+                <article class="reference-card">
+                    <strong>1 W</strong>
+                    <span>Equivale a 30 dBm</span>
+                </article>
+
+                <article class="reference-card">
+                    <strong>dBm = dBW + 30</strong>
+                    <span>La diferencia proviene de 1 W = 1000 mW</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="errors-panel">
+            <div class="section-heading">
+                <h2>Errores que debe evitar el estudiante</h2>
+
+                <span>
+                    Correcciones fundamentales
+                </span>
+            </div>
+
+            <div class="errors-grid">
+                <div class="error-card">
+                    <strong>0 dB no significa ausencia de señal.</strong>
+                    Significa que los dos valores comparados son iguales.
+                </div>
+
+                <div class="error-card">
+                    <strong>Un dB negativo no es una potencia negativa.</strong>
+                    Indica que el segundo valor es menor que el primero o
+                    está por debajo de una referencia.
+                </div>
+
+                <div class="error-card">
+                    <strong>dB, dBW y dBm no son intercambiables.</strong>
+                    dB expresa una relación; dBW y dBm usan referencias
+                    fijas de potencia.
+                </div>
+
+                <div class="error-card">
+                    <strong>No se suman directamente dB y W.</strong>
+                    Antes debe convertirse la relación logarítmica a una
+                    relación lineal.
+                </div>
+            </div>
+        </section>
+
+        <div class="actions">
+            <button
+                type="button"
+                class="action-button"
+                id="pauseButton"
+            >
+                Pausar
+            </button>
+
+            <button
+                type="button"
+                class="action-button success"
+                id="continueButton"
+                disabled
+            >
+                Continuar
+            </button>
+
+            <button
+                type="button"
+                class="action-button secondary"
+                id="restartButton"
+            >
+                Reiniciar
+            </button>
+        </div>
+
+        <div
+            class="explanation"
+            id="explanation"
+        >
+            <strong>Relación de potencia:</strong>
+            el decibel compara P2 con P1 mediante una escala logarítmica.
+            Un resultado positivo indica que P2 es mayor; 0 dB indica
+            igualdad; y un resultado negativo indica que P2 es menor.
+        </div>
+
+        <div
+            class="technical-note"
+            id="technicalNote"
+        >
+            <strong>Nota didáctica:</strong>
+            las barras del gráfico lineal representan niveles relativos
+            y no dimensiones físicas. La escala logarítmica no cambia la
+            señal; solamente expresa de otra manera la relación numérica.
+            No se incluyen cascadas, dBV, dBu ni dBmV.
+        </div>
+    </section>
+</main>
+
+<script src="../js/003_decibel.js"></script>
+</body>
+</html>

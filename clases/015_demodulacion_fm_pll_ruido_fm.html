@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Clase 15: Demodulación FM, PLL y ruido en FM | SIT-400</title>
+
+    <link rel="stylesheet" href="../css/015_demodulacion_fm_pll_ruido_fm.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="badge">
+                SIT-400 · Clase 15
+            </div>
+
+            <h1>Demodulación FM, PLL y ruido en FM</h1>
+
+            <p class="subtitle">
+                Conversión de variaciones de frecuencia en tensión mediante
+                detectores directos y un lazo de enganche de fase, con
+                limitación de amplitud, filtrado de salida, deénfasis
+                conceptual y diagnóstico de enganche.
+            </p>
+        </header>
+
+        <nav
+            class="mode-tabs"
+            aria-label="Métodos de demodulación FM"
+        >
+            <button
+                type="button"
+                class="mode-button active"
+                data-mode="slope"
+            >
+                Detector de pendiente
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="discriminator"
+            >
+                Discriminador de frecuencia
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="ratio"
+            >
+                Detector de relación
+            </button>
+
+            <button
+                type="button"
+                class="mode-button"
+                data-mode="pll"
+            >
+                PLL · CD4046 funcional
+            </button>
+        </nav>
+
+        <section class="simulation">
+            <div class="simulation-header">
+                <span
+                    class="simulation-title"
+                    id="simulationTitle"
+                >
+                    Señal FM → limitador → detector de pendiente →
+                    filtro/deénfasis → señal recuperada
+                </span>
+
+                <span
+                    class="simulation-status"
+                    id="simulationStatus"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-wrapper"
+                id="canvasWrapper"
+            >
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulador de demodulación FM, PLL y ruido en FM"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div
+                class="banner"
+                id="stateBanner"
+            >
+                <div>
+                    <strong id="stateTitle">
+                        Detector de pendiente
+                    </strong>
+
+                    <small id="stateDescription">
+                        Una respuesta inclinada convierte cambios de frecuencia
+                        en cambios de amplitud y después en tensión recuperada.
+                    </small>
+                </div>
+
+                <span
+                    class="banner-tag"
+                    id="stateTag"
+                >
+                    Conversión f → V
+                </span>
+            </div>
+
+            <div
+                class="metrics"
+                id="metrics"
+            ></div>
+
+            <div class="controls">
+                <div class="control">
+                    <div class="control-header">
+                        <label for="carrierFrequency">
+                            Frecuencia central fᶜ
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="carrierFrequency"
+                            type="number"
+                            min="0.001"
+                            step="any"
+                            value="100"
+                        >
+
+                        <select id="carrierFrequencyUnit">
+                            <option>Hz</option>
+                            <option selected>kHz</option>
+                            <option>MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="frequencyDeviation">
+                            Desviación máxima Δf
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="frequencyDeviation"
+                            type="number"
+                            min="0"
+                            step="any"
+                            value="4"
+                        >
+
+                        <select id="frequencyDeviationUnit">
+                            <option>Hz</option>
+                            <option selected>kHz</option>
+                            <option>MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="modulatingFrequency">
+                            Frecuencia modulante fₘ
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="modulatingFrequency"
+                            type="number"
+                            min="0.001"
+                            step="any"
+                            value="1"
+                        >
+
+                        <select id="modulatingFrequencyUnit">
+                            <option>Hz</option>
+                            <option selected>kHz</option>
+                            <option>MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="captureRange">
+                            Rango de captura del PLL
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="captureRange"
+                            type="number"
+                            min="0"
+                            step="any"
+                            value="10"
+                        >
+
+                        <select id="captureRangeUnit">
+                            <option>Hz</option>
+                            <option selected>kHz</option>
+                            <option>MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="noiseLevel">
+                            Nivel de ruido
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="noiseLevelOutput"
+                        >
+                            15 %
+                        </output>
+                    </div>
+
+                    <input
+                        id="noiseLevel"
+                        type="range"
+                        min="0"
+                        max="100"
+                        step="1"
+                        value="15"
+                    >
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="outputFilter">
+                            Filtro de salida / deénfasis
+                        </label>
+                    </div>
+
+                    <select id="outputFilter">
+                        <option
+                            value="active"
+                            selected
+                        >
+                            Activo · conceptual
+                        </option>
+
+                        <option value="bypass">
+                            Bypass
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="control"
+                    id="detectorSensitivityControl"
+                >
+                    <div class="control-header">
+                        <label for="detectorSensitivity">
+                            Sensibilidad Kd
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="detectorSensitivity"
+                            type="number"
+                            min="0.001"
+                            step="any"
+                            value="0.2"
+                        >
+
+                        <select disabled>
+                            <option>V/kHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control"
+                    id="vcoSensitivityControl"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="vcoSensitivity">
+                            Sensibilidad Kᵥ꜀ₒ
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="vcoSensitivity"
+                            type="number"
+                            min="0.001"
+                            step="any"
+                            value="2"
+                        >
+
+                        <select disabled>
+                            <option>kHz/V</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div
+                    class="control"
+                    id="vcoOffsetControl"
+                    hidden
+                >
+                    <div class="control-header">
+                        <label for="vcoOffset">
+                            Desajuste inicial del VCO
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="vcoOffset"
+                            type="number"
+                            step="any"
+                            value="3"
+                        >
+
+                        <select disabled>
+                            <option>kHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="animationSpeed">
+                            Velocidad de animación
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="animationSpeedOutput"
+                        >
+                            1,0×
+                        </output>
+                    </div>
+
+                    <input
+                        id="animationSpeed"
+                        type="range"
+                        min="0.2"
+                        max="2"
+                        step="0.1"
+                        value="1"
+                    >
+                </div>
+            </div>
+
+            <section class="panel">
+                <h2>Casos rápidos de la Clase 15</h2>
+
+                <div class="presets">
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="cleanDirect"
+                    >
+                        Detector directo limpio
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="noisyDirect"
+                    >
+                        Detector con ruido alto
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="pllLocked"
+                    >
+                        PLL enganchado
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="pllOutside"
+                    >
+                        PLL fuera de captura
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="pllNoisy"
+                    >
+                        PLL con ruido fuerte
+                    </button>
+                </div>
+            </section>
+
+            <section class="panel formula-panel">
+                <h2>Relaciones funcionales utilizadas</h2>
+
+                <div class="formula-grid">
+                    <article class="formula-card">
+                        <strong>Señal FM de entrada</strong>
+                        <code id="formulaFm"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Frecuencia instantánea</strong>
+                        <code id="formulaInstant"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Detector directo</strong>
+                        <code id="formulaDetector"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>PLL como demodulador</strong>
+                        <code id="formulaPll"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Condición de captura usada</strong>
+                        <code id="formulaCapture"></code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Cadena de salida</strong>
+                        <code id="formulaOutput"></code>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Comparación de métodos de demodulación FM</h2>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Método</th>
+                                <th>Principio</th>
+                                <th>Salida útil</th>
+                                <th>Ventaja conceptual</th>
+                                <th>Limitación principal</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>Detector de pendiente</td>
+                                <td>
+                                    Usa una respuesta inclinada para convertir
+                                    frecuencia en amplitud y luego en tensión.
+                                </td>
+                                <td>
+                                    Tensión obtenida después de rectificar y
+                                    filtrar.
+                                </td>
+                                <td>
+                                    Permite visualizar fácilmente el principio
+                                    f → V.
+                                </td>
+                                <td>Linealidad y ajuste limitados.</td>
+                            </tr>
+
+                            <tr>
+                                <td>Discriminador de frecuencia</td>
+                                <td>
+                                    Produce una salida positiva o negativa según
+                                    la desviación respecto de fᶜ.
+                                </td>
+                                <td>
+                                    Tensión aproximadamente proporcional a
+                                    fᵢ − fᶜ.
+                                </td>
+                                <td>
+                                    Respuesta centrada alrededor de la
+                                    portadora.
+                                </td>
+                                <td>
+                                    Requiere centrado y linealidad adecuados.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>Detector de relación</td>
+                                <td>
+                                    Compara respuestas relacionadas y reduce
+                                    sensibilidad a variaciones de amplitud.
+                                </td>
+                                <td>
+                                    Tensión relacionada con la desviación de
+                                    frecuencia.
+                                </td>
+                                <td>
+                                    Mayor rechazo funcional de cambios de
+                                    amplitud.
+                                </td>
+                                <td>
+                                    Su circuito real requiere ajuste y
+                                    componentes.
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>PLL</td>
+                                <td>
+                                    El VCO sigue la entrada mediante comparador,
+                                    filtro y realimentación.
+                                </td>
+                                <td>
+                                    Tensión de control filtrada del VCO.
+                                </td>
+                                <td>Seguimiento por lazo cerrado.</td>
+                                <td>
+                                    Debe capturar y permanecer enganchado.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Ideas técnicas que no deben confundirse</h2>
+
+                <div class="concept-grid">
+                    <article class="concept-card">
+                        <strong>FM no usa envolvente como AM</strong>
+
+                        <span>
+                            La información está en la frecuencia instantánea.
+                            Un detector simple de envolvente no recupera
+                            correctamente la modulante.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>El limitador no elimina todo ruido</strong>
+
+                        <span>
+                            Reduce ruido de amplitud, pero no corrige
+                            perturbaciones de fase, frecuencia aparente o
+                            cruces por cero.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>
+                            Salida del VCO no es salida demodulada
+                        </strong>
+
+                        <span>
+                            En el PLL, la información recuperada se toma de la
+                            tensión de control filtrada.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>
+                            Captura no es seguimiento ilimitado
+                        </strong>
+
+                        <span>
+                            El rango de captura indica dónde el PLL puede
+                            adquirir enganche desde una condición no enganchada.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>
+                            Filtro de lazo y filtro de salida
+                        </strong>
+
+                        <span>
+                            El filtro de lazo forma parte del control. El filtro
+                            de salida limpia y acondiciona la señal recuperada.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>CD4046 sin pinout inventado</strong>
+
+                        <span>
+                            La variante exacta, alimentación, comparador, VCO y
+                            pines se verifican siempre en su hoja de datos.
+                        </span>
+                    </article>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Lectura del Canvas:</strong>
+                la primera gráfica muestra la señal FM con ruido de amplitud y
+                de fase/frecuencia; la segunda muestra el efecto del limitador;
+                la tercera compara la modulante original con la señal
+                recuperada.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Advertencia visual:</strong>
+                las ondas representan amplitud instantánea respecto al tiempo y
+                no la trayectoria física de la energía. Las curvas de
+                transferencia son conceptuales y normalizadas.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/015_demodulacion_fm_pll_ruido_fm.js"></script>
+</body>
+</html>

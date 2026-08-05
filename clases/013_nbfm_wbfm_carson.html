@@ -1,0 +1,518 @@
+<!DOCTYPE html> <html lang="es"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Clase 13: NBFM, WBFM y Regla de Carson | SIT-400</title>
+<!--
+    Base pedagógica: Clase 13 completa de SIT-400.
+    La clase relaciona el índice beta con NBFM, WBFM, componentes laterales
+    y el ancho de banda práctico estimado mediante la regla de Carson.
+    :contentReference[oaicite:0]{index=0}
+
+    Relaciones principales:
+    beta = delta_f / f_m
+    B_FM ≈ 2(delta_f + f_m) para una modulante senoidal.
+    Las líneas aparecen en f_c ± n·f_m y sus amplitudes dependen de J_n(beta).
+    :contentReference[oaicite:1]{index=1}
+    :contentReference[oaicite:2]{index=2}
+    :contentReference[oaicite:3]{index=3}
+-->
+
+<link rel="stylesheet" href="../css/013_nbfm_wbfm_carson.css">
+</head> <body> <main class="page"> <header class="header"> <div class="badge">SIT-400 · Clase 13</div>
+        <h1>NBFM, WBFM y Regla de Carson</h1>
+
+        <p class="subtitle">
+            Comparación entre FM de banda angosta y banda ancha,
+            representación temporal, espectro FM simplificado y estimación
+            del ancho de banda práctico mediante la regla de Carson.
+        </p>
+    </header>
+
+    <section class="simulation">
+        <div class="simulation-header">
+            <span class="simulation-title">
+                Señal FM en el tiempo, espectro simplificado y comparación NBFM/WBFM
+            </span>
+
+            <span class="simulation-status" id="simulationStatus">
+                Simulación activa
+            </span>
+        </div>
+
+        <div class="canvas-wrapper" id="canvasWrapper">
+            <canvas
+                id="simulationCanvas"
+                aria-label="Simulador educativo de NBFM, WBFM, espectro FM y regla de Carson"
+            ></canvas>
+        </div>
+    </section>
+
+    <section class="dashboard">
+        <div class="banner" id="stateBanner">
+            <div>
+                <strong id="stateTitle">NBFM clara</strong>
+
+                <small id="stateDescription">
+                    El índice beta es mucho menor que uno y el espectro práctico se concentra cerca de la portadora.
+                </small>
+            </div>
+
+            <span class="banner-tag" id="stateTag">
+                β = 0,20
+            </span>
+        </div>
+
+        <div class="metrics">
+            <article class="metric">
+                <span class="metric-label">Índice FM β</span>
+                <span class="metric-value" id="betaMetric">0,20</span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">Clasificación aproximada</span>
+                <span class="metric-value" id="classificationMetric">NBFM clara</span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">Ancho por Carson</span>
+                <span class="metric-value" id="carsonMetric">24 kHz</span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">Rango instantáneo</span>
+                <span class="metric-value" id="instantRangeMetric">98 kHz a 102 kHz</span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">Intervalo práctico de Carson</span>
+                <span class="metric-value" id="carsonRangeMetric">88 kHz a 112 kHz</span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">Separación entre líneas</span>
+                <span class="metric-value" id="spacingMetric">10 kHz</span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">Orden lateral cubierto</span>
+                <span class="metric-value" id="orderMetric">≈ 1 par</span>
+            </article>
+
+            <article class="metric">
+                <span class="metric-label">Frecuencia instantánea actual</span>
+                <span class="metric-value" id="instantFrequencyMetric">102 kHz</span>
+            </article>
+        </div>
+
+        <div class="controls">
+            <div class="control">
+                <div class="control-header">
+                    <label for="carrierFrequency">
+                        Frecuencia portadora
+                    </label>
+                </div>
+
+                <div class="input-unit">
+                    <input
+                        id="carrierFrequency"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="100"
+                    >
+
+                    <select
+                        id="carrierFrequencyUnit"
+                        aria-label="Unidad de frecuencia portadora"
+                    >
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-header">
+                    <label for="modulatingFrequency">
+                        Frecuencia modulante
+                    </label>
+                </div>
+
+                <div class="input-unit">
+                    <input
+                        id="modulatingFrequency"
+                        type="number"
+                        min="0.001"
+                        step="any"
+                        value="10"
+                    >
+
+                    <select
+                        id="modulatingFrequencyUnit"
+                        aria-label="Unidad de frecuencia modulante"
+                    >
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-header">
+                    <label for="frequencyDeviation">
+                        Desviación máxima Δf
+                    </label>
+                </div>
+
+                <div class="input-unit">
+                    <input
+                        id="frequencyDeviation"
+                        type="number"
+                        min="0"
+                        step="any"
+                        value="2"
+                    >
+
+                    <select
+                        id="frequencyDeviationUnit"
+                        aria-label="Unidad de desviación de frecuencia"
+                    >
+                        <option>Hz</option>
+                        <option selected>kHz</option>
+                        <option>MHz</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="control">
+                <div class="control-header">
+                    <label for="animationSpeed">
+                        Velocidad de animación
+                    </label>
+
+                    <output
+                        class="live-value"
+                        id="animationSpeedOutput"
+                    >
+                        1,0×
+                    </output>
+                </div>
+
+                <input
+                    id="animationSpeed"
+                    type="range"
+                    min="0.2"
+                    max="2"
+                    step="0.1"
+                    value="1"
+                >
+            </div>
+        </div>
+
+        <section class="panel">
+            <h2>Casos rápidos de la Clase 13</h2>
+
+            <div class="presets">
+                <button
+                    type="button"
+                    class="preset-button"
+                    data-preset="nbfm"
+                >
+                    NBFM: β = 0,2
+                </button>
+
+                <button
+                    type="button"
+                    class="preset-button"
+                    data-preset="wbfm"
+                >
+                    WBFM: β = 5
+                </button>
+
+                <button
+                    type="button"
+                    class="preset-button"
+                    data-preset="carsonBasic"
+                >
+                    Carson: 5 kHz + 1 kHz
+                </button>
+
+                <button
+                    type="button"
+                    class="preset-button"
+                    data-preset="spectrum"
+                >
+                    Espectro: 200 kHz, 10 kHz
+                </button>
+
+                <button
+                    type="button"
+                    class="preset-button"
+                    data-preset="transition"
+                >
+                    Zona de transición β ≈ 1
+                </button>
+
+                <button
+                    type="button"
+                    class="preset-button"
+                    data-preset="broadcastExample"
+                >
+                    Ejemplo: 75 kHz y 15 kHz
+                </button>
+            </div>
+        </section>
+
+        <section class="panel formula-panel">
+            <h2>Relaciones de cálculo</h2>
+
+            <div class="formula-grid">
+                <article class="formula-card">
+                    <strong>Índice FM senoidal</strong>
+
+                    <code id="betaFormula">
+                        β = Δf/fₘ = 2 kHz/10 kHz = 0,2
+                    </code>
+                </article>
+
+                <article class="formula-card">
+                    <strong>Regla de Carson</strong>
+
+                    <code id="carsonFormula">
+                        B₍FM₎ ≈ 2(Δf + fₘ) = 24 kHz
+                    </code>
+                </article>
+
+                <article class="formula-card">
+                    <strong>Carson usando β</strong>
+
+                    <code id="carsonBetaFormula">
+                        B₍FM₎ ≈ 2fₘ(β + 1)
+                    </code>
+                </article>
+
+                <article class="formula-card">
+                    <strong>Rango instantáneo</strong>
+
+                    <code id="instantRangeFormula">
+                        fᶜ − Δf a fᶜ + Δf
+                    </code>
+                </article>
+
+                <article class="formula-card">
+                    <strong>Ubicación de líneas</strong>
+
+                    <code id="lineLocationFormula">
+                        fᶜ ± n·fₘ, con n = 1, 2, 3...
+                    </code>
+                </article>
+
+                <article class="formula-card">
+                    <strong>Amplitudes espectrales</strong>
+
+                    <code id="besselFormula">
+                        AᶜJ₀(β) y AᶜJₙ(β); cálculo manual no obligatorio
+                    </code>
+                </article>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Primeras componentes del espectro actual</h2>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Orden</th>
+                            <th>Componente inferior</th>
+                            <th>Componente superior</th>
+                            <th>Coeficiente aproximado |Jₙ(β)|</th>
+                            <th>Interpretación visual</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="componentTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Comparación conceptual NBFM y WBFM</h2>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Aspecto</th>
+                            <th>NBFM</th>
+                            <th>WBFM</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>Índice β</td>
+                            <td>
+                                Muy pequeño o pequeño; β ≪ 1 define
+                                claramente banda angosta.
+                            </td>
+                            <td>
+                                Grande; β ≫ 1 define claramente banda
+                                ancha.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Componentes laterales significativas</td>
+                            <td>
+                                Pocas, concentradas cerca de fᶜ.
+                            </td>
+                            <td>
+                                Varias, distribuidas en un intervalo mayor.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Componente central</td>
+                            <td>
+                                Suele ser dominante cuando β es pequeño.
+                            </td>
+                            <td>
+                                No debe suponerse automáticamente dominante.
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Ancho práctico</td>
+                            <td>
+                                Si β ≪ 1, puede aproximarse a 2fₘ.
+                            </td>
+                            <td>
+                                Se estima con Carson: 2(Δf + fₘ).
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td>Interpretación</td>
+                            <td>
+                                Ocupa relativamente poco espectro.
+                            </td>
+                            <td>
+                                Ocupa más espectro; no significa que sea
+                                mejor en todos los casos.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h2>Ideas técnicas que no deben confundirse</h2>
+
+            <div class="concept-grid">
+                <article class="concept-card">
+                    <strong>Δf no es ancho de banda</strong>
+
+                    <span>
+                        Δf indica cuánto se aparta como máximo la frecuencia
+                        instantánea respecto de fᶜ.
+                    </span>
+                </article>
+
+                <article class="concept-card">
+                    <strong>Carson no usa fᶜ</strong>
+
+                    <span>
+                        La portadora ubica la señal en el espectro, pero el
+                        ancho depende de Δf y fₘ o fₘₘₐₓ.
+                    </span>
+                </article>
+
+                <article class="concept-card">
+                    <strong>Carson es una estimación</strong>
+
+                    <span>
+                        No representa el ancho matemático infinito ni
+                        incluye bandas de guarda, filtros reales o
+                        tolerancias.
+                    </span>
+                </article>
+
+                <article class="concept-card">
+                    <strong>NBFM puede tener más líneas</strong>
+
+                    <span>
+                        En FM ideal pueden existir muchas bandas laterales;
+                        en NBFM las lejanas suelen ser poco significativas.
+                    </span>
+                </article>
+
+                <article class="concept-card">
+                    <strong>Las alturas no son todas iguales</strong>
+
+                    <span>
+                        Las amplitudes dependen de Jₙ(β). El dibujo sin
+                        cálculo de Bessel debe tratarse como esquemático.
+                    </span>
+                </article>
+
+                <article class="concept-card">
+                    <strong>No se adelanta generación FM</strong>
+
+                    <span>
+                        Este simulador no incluye VCO, varactor, métodos
+                        directos o indirectos, demodulación ni PLL.
+                    </span>
+                </article>
+            </div>
+        </section>
+
+        <div class="actions">
+            <button
+                type="button"
+                class="action-button"
+                id="pauseButton"
+            >
+                Pausar
+            </button>
+
+            <button
+                type="button"
+                class="action-button success"
+                id="continueButton"
+                disabled
+            >
+                Continuar
+            </button>
+
+            <button
+                type="button"
+                class="action-button secondary"
+                id="restartButton"
+            >
+                Reiniciar
+            </button>
+        </div>
+
+        <div class="explanation" id="explanation">
+            <strong>Lectura del Canvas:</strong>
+            el primer panel relaciona la modulante, la frecuencia
+            instantánea y la señal FM temporal. El segundo panel ubica la
+            portadora y las líneas laterales separadas por fₘ. El tercer
+            panel compara una NBFM clara con una WBFM clara usando la misma
+            escala normalizada.
+        </div>
+
+        <div class="technical-note" id="technicalNote">
+            <strong>Advertencia visual:</strong>
+            el espectro es educativo y simplificado. Las alturas se
+            obtienen mediante una aproximación numérica de Jₙ(β), pero se
+            normalizan para facilitar la observación y no sustituyen un
+            análisis espectral profesional.
+        </div>
+    </section>
+</main>
+
+<script src="../js/013_nbfm_wbfm_carson.js"></script>
+</body> </html>

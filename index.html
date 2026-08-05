@@ -3,141 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Directorio de Cursos</title>
-    <style>
-        /* Estilos generales de la página */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f4f8; /* Color de fondo suave */
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
+    <meta name="description" content="Portal de simuladores y herramientas visuales para materias técnicas de Electrónica y Telecomunicaciones.">
+    <title>Portal de Simuladores Técnicos</title>
 
-        /* Estilo del encabezado */
-        header {
-            background-color: #1a365d; /* Azul oscuro */
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 2.5em;
-        }
-
-        header p {
-            margin-top: 10px;
-            font-size: 1.1em;
-            opacity: 0.8;
-        }
-
-        /* Contenedor de las tarjetas (Grid para que se adapte a pantallas) */
-        .contenedor {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-        }
-
-        /* Estilo de cada tarjeta (Materia) */
-        .tarjeta {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        /* Efecto al pasar el mouse sobre la tarjeta */
-        .tarjeta:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        }
-
-        /* Títulos de las materias */
-        .tarjeta h2 {
-            color: #2b6cb0; /* Azul más claro */
-            border-bottom: 2px solid #edf2f7;
-            padding-bottom: 12px;
-            margin-top: 0;
-        }
-
-        /* Lista de enlaces */
-        ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        li {
-            margin-bottom: 12px;
-        }
-
-        /* Estilo de los botones/enlaces */
-        a {
-            text-decoration: none;
-            color: #2d3748;
-            display: block;
-            padding: 12px 15px;
-            background-color: #edf2f7;
-            border-radius: 6px;
-            transition: background 0.2s ease, color 0.2s ease;
-            font-weight: 500;
-        }
-
-        /* Efecto al pasar el mouse por los enlaces */
-        a:hover {
-            background-color: #2b6cb0;
-            color: white;
-        }
-    </style>
+    <link rel="stylesheet" href="css/index.css">
+    <script src="js/index.js" defer></script>
 </head>
 <body>
+    <div class="background-grid" aria-hidden="true"></div>
 
-    <header>
-        <h1>Útiles para Cursos</h1>
-        <p>Directorio principal de material de estudio</p>
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="index.html" aria-label="Ir al inicio">
+                <span class="brand-mark">ST</span>
+                <span>
+                    <strong>Simuladores Técnicos</strong>
+                    <small>Electrónica y Telecomunicaciones</small>
+                </span>
+            </a>
+
+            <div class="institution-header" aria-label="Institución responsable">
+                <span class="institution-header-label">Institución: </span>
+                <strong>Instituto Tecnológico Industrial Comercial “Puerto Mejillones”</strong>
+            </div>
+        </div>
     </header>
 
-    <div class="contenedor">
-        
-        <!-- MATERIA 1: COD-600 -->
-        <div class="tarjeta">
-            <h2>COD-600</h2>
-            <ul>
-                <!-- Cambia el "https://google.com" por el enlace a tus subcarpetas en el futuro, ej: "cod-600/tema1.html" -->
-                <li><a href="https://google.com">Apuntes de Clase</a></li>
-                
-            </ul>
+    <main class="page-shell">
+        <section class="hero" aria-labelledby="mainTitle">
+            <div class="hero-copy">
+                <span class="eyebrow">Portal académico</span>
+                <h1 id="mainTitle">Herramientas visuales para el aprendizaje técnico</h1>
+                <p>
+                    Selecciona una materia para acceder a sus simuladores, comparadores,
+                    prácticas y materiales visuales de apoyo para la formación técnica.
+                </p>
+            </div>
+
+            <div class="hero-stats" aria-label="Resumen del portal">
+                <article>
+                    <span id="subjectCount">0</span>
+                    <small>Materias</small>
+                </article>
+                <article>
+                    <span id="resourceCount">0</span>
+                    <small>Recursos</small>
+                </article>
+            </div>
+        </section>
+
+        <section class="toolbar" aria-label="Herramientas de búsqueda y selección">
+            <label class="search-box" for="searchInput">
+                <span>Buscar</span>
+                <input
+                    id="searchInput"
+                    type="search"
+                    placeholder="Ej.: ruido, AM, Nyquist, televisión..."
+                    autocomplete="off"
+                >
+            </label>
+
+            <label class="select-box" for="subjectSelect">
+                <span>Materia activa</span>
+                <select id="subjectSelect"></select>
+            </label>
+
+            <button class="secondary-button" id="clearSearchButton" type="button">
+                Limpiar búsqueda
+            </button>
+        </section>
+
+        <section class="subject-section" aria-labelledby="subjectsTitle">
+            <div class="section-heading">
+                <div>
+                    <span class="section-kicker">Materias disponibles</span>
+                    <h2 id="subjectsTitle">Selecciona un área de estudio</h2>
+                </div>
+
+                <span class="section-note">Recursos académicos</span>
+            </div>
+
+            <div class="subject-grid" id="subjectGrid"></div>
+        </section>
+
+        <section class="resources-section" aria-labelledby="activeSubjectTitle">
+            <div class="active-subject-header">
+                <div class="active-subject-icon" id="activeSubjectIcon" aria-hidden="true">📡</div>
+
+                <div>
+                    <span class="section-kicker" id="activeSubjectCode">SIT-400</span>
+                    <h2 id="activeSubjectTitle">Sistemas de Telecomunicaciones</h2>
+                    <p id="activeSubjectDescription"></p>
+                </div>
+
+                <div class="resource-total">
+                    <strong id="visibleResourceCount">0</strong>
+                    <span>recursos visibles</span>
+                </div>
+            </div>
+
+            <div class="resource-grid" id="resourceGrid"></div>
+
+            <div class="empty-state" id="emptyState" hidden>
+                <strong>No se encontraron recursos</strong>
+                <p>Prueba otra palabra o selecciona una materia diferente.</p>
+            </div>
+        </section>
+
+        <section class="institution-section" aria-labelledby="institutionTitle">
+            <div class="institution-copy">
+                <span class="section-kicker">Institución responsable</span>
+                <h2 id="institutionTitle">Instituto Tecnológico Industrial Comercial “Puerto Mejillones”</h2>
+                <p>
+                    Portal de apoyo académico para estudiantes y docentes de áreas técnicas,
+                    con simuladores y recursos visuales organizados por materia.
+                </p>
+            </div>
+
+            <div class="institution-actions" aria-label="Información de contacto e institución">
+                <a
+                    class="institution-link location-link"
+                    href="https://maps.app.goo.gl/5We3Byqd2RFrdr6a8"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <span class="institution-link-icon" aria-hidden="true">⌖</span>
+                    <span>
+                        <small>Ubicación</small>
+                        <strong>Ver en Google Maps</strong>
+                    </span>
+                </a>
+
+                <a
+                    class="institution-link whatsapp-link"
+                    href="https://wa.me/59176404512"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    <span class="institution-link-icon" aria-hidden="true">✆</span>
+                    <span>
+                        <small>Consultas por WhatsApp</small>
+                        <strong>76404512</strong>
+                    </span>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <p>
+            Instituto Tecnológico Industrial Comercial “Puerto Mejillones” ·
+            Portal de simuladores técnicos · <span id="currentYear"></span>
+        </p>
+    </footer>
+
+    <noscript>
+        <div class="noscript-message">
+            Este índice necesita JavaScript para generar la lista de materias y recursos.
         </div>
-
-        <!-- MATERIA 2: SIT-400 -->
-        <div class="tarjeta">
-            <h2>SIT-400</h2>
-            <ul>
-                <li><a href="SIT-400/Radiacion de una Antena.html">Radiación de una Antena</a></li>
-                <li><a href="SIT-400/Transmision en Fibra Optica.html">Transmisión en Fibra Óptica</a></li>
-                <li><a href="SIT-400/Senales Analogicas y Digitales.html">Señales Analógicas y Digitales</a></li>
-                <li><a href="SIT-400/Tipos de Senales.html">Tipos de Señales</a></li>
-                <li><a href="https://google.com">Apuntes de Clase</a></li>
-            </ul>
-        </div>
-
-        <!-- MATERIA 3: MIC-400 -->
-        <div class="tarjeta">
-            <h2>MIC-400</h2>
-            <ul>
-                <li><a href="MIC-400/Selector.html">Selector de 5 Posiciones</a></li>
-                <li><a href="https://google.com">Apuntes de Clase</a></li>
-            </ul>
-        </div>
-
-    </div>
-
+    </noscript>
 </body>
 </html>

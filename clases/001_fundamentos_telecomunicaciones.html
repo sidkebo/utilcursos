@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clase 1: Fundamentos de Telecomunicaciones | SIT-400</title>
+
+    <link rel="stylesheet" href="../css/001_fundamentos_telecomunicaciones.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="course-badge">SIT-400 · Clase 1</div>
+            <h1>Fundamentos de Telecomunicaciones</h1>
+            <p class="subtitle">
+                Diferencia información, mensaje, señal y medio; compara señales analógicas y digitales;
+                y reconoce por qué un teléfono celular es un sistema mixto.
+            </p>
+        </header>
+
+        <nav class="mode-navigation" aria-label="Secciones del simulador">
+            <button type="button" class="mode-button active" data-mode="information" aria-selected="true">
+                1. Información, mensaje, señal y medio
+            </button>
+            <button type="button" class="mode-button" data-mode="compare" aria-selected="false">
+                2. Analógico vs. digital
+            </button>
+            <button type="button" class="mode-button" data-mode="mixed" aria-selected="false">
+                3. Sistema mixto: telefonía celular
+            </button>
+        </nav>
+
+        <section class="simulation-panel">
+            <div class="canvas-header">
+                <span class="canvas-title" id="canvasTitle">Recorrido de la información</span>
+                <span class="simulation-status" id="simulationStatus">Simulación activa</span>
+            </div>
+
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="simulationCanvas" aria-label="Simulación de fundamentos de telecomunicaciones"></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div class="metrics">
+                <article class="metric">
+                    <span class="metric-label" id="metricLabel1">Ejemplo</span>
+                    <span class="metric-value" id="metricValue1">Orden de control</span>
+                </article>
+                <article class="metric">
+                    <span class="metric-label" id="metricLabel2">Señal</span>
+                    <span class="metric-value" id="metricValue2">Pulsos eléctricos</span>
+                </article>
+                <article class="metric">
+                    <span class="metric-label" id="metricLabel3">Medio</span>
+                    <span class="metric-value" id="metricValue3">Cable</span>
+                </article>
+                <article class="metric">
+                    <span class="metric-label" id="metricLabel4">Falla posible</span>
+                    <span class="metric-value" id="metricValue4">Conexión abierta</span>
+                </article>
+            </div>
+
+            <section class="controls-section" id="informationControls">
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label class="control-label" for="exampleSelect">Ejemplo o sistema real</label>
+                        </div>
+                        <select id="exampleSelect">
+                            <optgroup label="Conceptos iniciales">
+                                <option value="command">Orden de control</option>
+                                <option value="voice">Conversación de voz</option>
+                                <option value="photo">Envío de una fotografía</option>
+                                <option value="measurement">Medición de temperatura</option>
+                            </optgroup>
+                            <optgroup label="Aplicaciones de la Clase 1">
+                                <option value="radio">Radio FM</option>
+                                <option value="cellular">Telefonía celular</option>
+                                <option value="wifi">Internet mediante Wi-Fi</option>
+                                <option value="fiber">Enlace de fibra óptica</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label class="control-label" for="informationSpeed">Velocidad visual</label>
+                            <output class="value-display" id="informationSpeedDisplay">1,0×</output>
+                        </div>
+                        <input type="range" id="informationSpeed" min="0.5" max="2" step="0.1" value="1">
+                    </div>
+                </div>
+            </section>
+
+            <section class="controls-section" id="comparisonControls" hidden>
+                <div class="controls-grid four-columns">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label class="control-label" for="analogAmplitude">Amplitud analógica</label>
+                            <output class="value-display" id="analogAmplitudeDisplay">3,0 V</output>
+                        </div>
+                        <input type="range" id="analogAmplitude" min="1" max="5" step="0.1" value="3">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label class="control-label" for="analogFrequency">Frecuencia analógica</label>
+                            <output class="value-display" id="analogFrequencyDisplay">2,0 Hz</output>
+                        </div>
+                        <input type="range" id="analogFrequency" min="0.5" max="5" step="0.1" value="2">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label class="control-label" for="bitRate">Velocidad binaria</label>
+                            <output class="value-display" id="bitRateDisplay">2,0 bit/s</output>
+                        </div>
+                        <input type="range" id="bitRate" min="0.5" max="8" step="0.1" value="2">
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label class="control-label" for="logicHigh">Nivel lógico alto</label>
+                            <output class="value-display" id="logicHighDisplay">5,0 V</output>
+                        </div>
+                        <input type="range" id="logicHigh" min="1.8" max="5" step="0.1" value="5">
+                    </div>
+                </div>
+
+                <div class="switch-control">
+                    <span class="switch-text">Mostrar bordes físicos simplificados en la señal digital</span>
+                    <label class="switch">
+                        <input type="checkbox" id="physicalDigital" checked>
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            </section>
+
+            <section class="controls-section" id="mixedControls" hidden>
+                <div class="controls-grid">
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label class="control-label" for="mixedStageSelect">Etapa que se desea explicar</label>
+                        </div>
+                        <select id="mixedStageSelect">
+                            <option value="0">1. Voz acústica</option>
+                            <option value="1">2. Micrófono y señal eléctrica</option>
+                            <option value="2">3. Procesamiento del teléfono A</option>
+                            <option value="3">4. Enlace de radio</option>
+                            <option value="4">5. Estación base y red</option>
+                            <option value="5">6. Teléfono B y recepción</option>
+                            <option value="6">7. Altavoz y sonido recuperado</option>
+                        </select>
+                    </div>
+
+                    <div class="control-group">
+                        <div class="control-heading">
+                            <label class="control-label" for="mixedSpeed">Velocidad del recorrido automático</label>
+                            <output class="value-display" id="mixedSpeedDisplay">1,0×</output>
+                        </div>
+                        <input type="range" id="mixedSpeed" min="0.5" max="2" step="0.1" value="1" disabled>
+                    </div>
+                </div>
+
+                <div class="switch-control">
+                    <span class="switch-text">
+                        Activar recorrido automático. Desactivado, la etapa seleccionada permanece fija para poder explicarla.
+                    </span>
+                    <label class="switch">
+                        <input type="checkbox" id="mixedAutomatic">
+                        <span class="switch-slider"></span>
+                    </label>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button type="button" class="action-button" id="pauseButton">Pausar</button>
+                <button type="button" class="action-button success" id="continueButton" disabled>Continuar</button>
+                <button type="button" class="action-button secondary" id="restartButton">Reiniciar</button>
+            </div>
+
+            <div class="explanation" id="explanation">
+                <strong>Información, mensaje, señal y medio:</strong>
+                la información es el contenido útil; el mensaje es la forma concreta de expresarlo;
+                la señal es la magnitud física que lo representa; y el medio es el camino por donde se propaga.
+            </div>
+
+            <div class="technical-note" id="technicalNote">
+                <strong>Nota didáctica:</strong>
+                telecomunicación significa comunicación de información a distancia mediante señales.
+                La animación representa una secuencia funcional y no tiempos reales de propagación.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/001_fundamentos_telecomunicaciones.js"></script>
+</body>
+</html>

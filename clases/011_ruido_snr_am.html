@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clase 11: Ruido y SNR en AM | SIT-400</title>
+
+    <!--
+        Base pedagógica: Clase 11 completa de SIT-400.
+
+        La clase diferencia ruido aleatorio, interferencia, fallas de conexión,
+        saturación y sobremodulación. También trabaja SNR con potencias y con
+        tensiones RMS bajo condiciones equivalentes.
+        :contentReference[oaicite:0]{index=0}
+        :contentReference[oaicite:1]{index=1}
+
+        Modelo AM base de la clase:
+        Ac = 1, fc = 20 Hz, fm = 2 Hz y m = 0,5.
+        :contentReference[oaicite:2]{index=2}
+    -->
+
+    <link rel="stylesheet" href="../css/011_ruido_snr_am.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="badge">
+                SIT-400 · Clase 11
+            </div>
+
+            <h1>Ruido y SNR en AM</h1>
+
+            <p class="subtitle">
+                Comparación entre una señal AM limpia y una señal recibida con
+                perturbaciones, observación de la envolvente recuperada,
+                cálculo de potencia relativa y diagnóstico técnico.
+            </p>
+        </header>
+
+        <section class="simulation">
+            <div class="simulation-header">
+                <span class="simulation-title">
+                    AM limpia, perturbación, recepción y envolvente recuperada
+                </span>
+
+                <span
+                    class="simulation-status"
+                    id="simulationStatus"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-wrapper"
+                id="canvasWrapper"
+            >
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulador educativo de ruido y SNR en AM"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div
+                class="banner"
+                id="stateBanner"
+            >
+                <div>
+                    <strong id="stateTitle">
+                        Ruido aleatorio
+                    </strong>
+
+                    <small id="stateDescription">
+                        La perturbación irregular se suma a la señal y vuelve
+                        menos uniforme la envolvente.
+                    </small>
+                </div>
+
+                <span
+                    class="banner-tag"
+                    id="stateTag"
+                >
+                    SNR alta
+                </span>
+            </div>
+
+            <div class="metrics">
+                <article class="metric">
+                    <span class="metric-label">
+                        Potencia relativa de señal
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="signalPowerMetric"
+                    >
+                        0,56 V² rel.
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="disturbancePowerLabel"
+                    >
+                        Potencia relativa de ruido
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="disturbancePowerMetric"
+                    >
+                        0,01 V² rel.
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        SNR lineal
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="snrLinearMetric"
+                    >
+                        56
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        SNR
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="snrDbMetric"
+                    >
+                        17,5 dB
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Amplitud tras atenuación
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="receivedAmplitudeMetric"
+                    >
+                        1 V pico
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span
+                        class="metric-label"
+                        id="effectiveParameterLabel"
+                    >
+                        Índice AM efectivo
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="effectiveParameterMetric"
+                    >
+                        0,50
+                    </span>
+                </article>
+            </div>
+
+            <div class="controls">
+                <div class="control">
+                    <div class="control-header">
+                        <label for="signalAmplitude">
+                            Amplitud de la portadora
+                        </label>
+                    </div>
+
+                    <input
+                        id="signalAmplitude"
+                        type="number"
+                        min="0.05"
+                        max="10"
+                        step="0.05"
+                        value="1"
+                    >
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="disturbanceType">
+                            Tipo de perturbación
+                        </label>
+                    </div>
+
+                    <select id="disturbanceType">
+                        <option value="random">
+                            Ruido aleatorio
+                        </option>
+
+                        <option value="impulsive">
+                            Ruido impulsivo
+                        </option>
+
+                        <option value="sinusoidal">
+                            Interferencia senoidal
+                        </option>
+
+                        <option value="saturation">
+                            Saturación
+                        </option>
+
+                        <option value="connection">
+                            Mala conexión
+                        </option>
+
+                        <option value="overmodulation">
+                            Sobremodulación
+                        </option>
+                    </select>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="controlMode">
+                            Ajuste de perturbación
+                        </label>
+                    </div>
+
+                    <select id="controlMode">
+                        <option value="manual">
+                            Nivel manual
+                        </option>
+
+                        <option value="target">
+                            SNR objetivo
+                        </option>
+                    </select>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="noiseLevel">
+                            Nivel de ruido base
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="noiseLevelOutput"
+                        >
+                            0,10 V
+                        </output>
+                    </div>
+
+                    <input
+                        id="noiseLevel"
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.01"
+                        value="0.1"
+                    >
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="targetSnr">
+                            SNR objetivo
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="targetSnrOutput"
+                        >
+                            20 dB
+                        </output>
+                    </div>
+
+                    <input
+                        id="targetSnr"
+                        type="range"
+                        min="-5"
+                        max="40"
+                        step="1"
+                        value="20"
+                        disabled
+                    >
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="attenuation">
+                            Atenuación de señal
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="attenuationOutput"
+                        >
+                            0 dB
+                        </output>
+                    </div>
+
+                    <input
+                        id="attenuation"
+                        type="range"
+                        min="0"
+                        max="30"
+                        step="0.5"
+                        value="0"
+                    >
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="interferenceIntensity">
+                            Intensidad de interferencia o falla
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="interferenceOutput"
+                        >
+                            0,35
+                        </output>
+                    </div>
+
+                    <input
+                        id="interferenceIntensity"
+                        type="range"
+                        min="0"
+                        max="1.5"
+                        step="0.01"
+                        value="0.35"
+                    >
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="animationSpeed">
+                            Velocidad visual
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="animationSpeedOutput"
+                        >
+                            1,0×
+                        </output>
+                    </div>
+
+                    <input
+                        id="animationSpeed"
+                        type="range"
+                        min="0.2"
+                        max="2"
+                        step="0.1"
+                        value="1"
+                    >
+                </div>
+            </div>
+
+            <section class="panel">
+                <h2>Casos rápidos de observación</h2>
+
+                <div class="presets">
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="clean"
+                    >
+                        AM limpia
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="low"
+                    >
+                        Ruido bajo
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="medium"
+                    >
+                        Ruido medio
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="high"
+                    >
+                        Ruido alto
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="impulsive"
+                    >
+                        Picos impulsivos
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="interference"
+                    >
+                        Interferencia periódica
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="saturation"
+                    >
+                        Saturación
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="overmodulation"
+                    >
+                        Sobremodulación
+                    </button>
+                </div>
+            </section>
+
+            <section class="panel formula-panel">
+                <h2>Cálculo de señal, perturbación y SNR</h2>
+
+                <div class="formula-grid">
+                    <article class="formula-card">
+                        <strong>Potencia relativa de señal</strong>
+
+                        <code id="signalPowerFormula">
+                            Ps = RMS(señal limpia)²
+                        </code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong id="disturbanceFormulaLabel">
+                            Potencia relativa de ruido
+                        </strong>
+
+                        <code id="disturbancePowerFormula">
+                            Pn = RMS(ruido)²
+                        </code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>SNR lineal</strong>
+
+                        <code id="snrLinearFormula">
+                            SNR = Ps / Pn
+                        </code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>SNR en decibeles</strong>
+
+                        <code id="snrDbFormula">
+                            SNRdB = 10 log10(Ps / Pn)
+                        </code>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Guía de diagnóstico del caso seleccionado</h2>
+
+                <div class="diagnostic-grid">
+                    <article class="diagnostic-card">
+                        <strong>Aspecto observado</strong>
+
+                        <span id="diagnosticSymptom">
+                            Variación irregular continua sobre la señal.
+                        </span>
+                    </article>
+
+                    <article class="diagnostic-card">
+                        <strong>Causa probable</strong>
+
+                        <span id="diagnosticCause">
+                            Ruido interno o externo de comportamiento aleatorio.
+                        </span>
+                    </article>
+
+                    <article class="diagnostic-card">
+                        <strong>Qué revisar</strong>
+
+                        <span id="diagnosticCheck">
+                            Alimentación, tierra, blindaje, cableado y fuentes
+                            cercanas.
+                        </span>
+                    </article>
+
+                    <article class="diagnostic-card">
+                        <strong>Cómo diferenciarlo</strong>
+
+                        <span id="diagnosticDifference">
+                            No mantiene una frecuencia periódica estable ni
+                            aparece solamente en los máximos.
+                        </span>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Comparación rápida de perturbaciones</h2>
+
+                <div class="guide-table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Condición</th>
+                                <th>Aspecto típico</th>
+                                <th>Efecto sobre la envolvente</th>
+                                <th>Revisión técnica inicial</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="diagnosticTableBody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Lectura del simulador:</strong>
+                la primera gráfica es la referencia AM limpia; la segunda
+                muestra únicamente la perturbación o el error equivalente; la
+                tercera es la señal observada; y la cuarta aproxima la salida
+                de un detector de envolvente.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Advertencia:</strong>
+                las frecuencias se reducen para visualizar el fenómeno. Las
+                curvas representan amplitud instantánea respecto al tiempo y
+                no la trayectoria física de la energía.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/011_ruido_snr_am.js"></script>
+</body>
+</html>

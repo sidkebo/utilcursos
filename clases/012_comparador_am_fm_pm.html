@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Clase 12: Comparador AM, FM y PM | SIT-400</title>
+
+    <!--
+        Base pedagógica: Clase 12 completa de SIT-400.
+
+        La clase diferencia AM, FM y PM: en AM cambia la amplitud; en FM
+        cambia directamente la frecuencia instantánea; en PM cambia
+        directamente la fase instantánea. En FM y PM la amplitud ideal
+        permanece constante. :contentReference[oaicite:0]{index=0}
+
+        El alcance excluye NBFM, WBFM, regla de Carson, espectro FM,
+        generación con VCO y demodulación con PLL.
+        :contentReference[oaicite:1]{index=1}
+
+        Relaciones empleadas:
+        fi,FM(t) = fc + Δf cos(2πfmt)
+        β = Δf / fm
+        sFM(t) = Ac cos[2πfct + β sin(2πfmt)]
+        sPM(t) = Ac cos[2πfct + Δφ cos(2πfmt)]
+        ΔfPM,max = Δφ·fm
+        :contentReference[oaicite:2]{index=2}
+        :contentReference[oaicite:3]{index=3}
+        :contentReference[oaicite:4]{index=4}
+        :contentReference[oaicite:5]{index=5}
+    -->
+
+    <link rel="stylesheet" href="../css/012_comparador_am_fm_pm.css">
+</head>
+
+<body>
+    <main class="page">
+        <header class="header">
+            <div class="badge">
+                SIT-400 · Clase 12
+            </div>
+
+            <h1>Comparador AM, FM y PM</h1>
+
+            <p class="subtitle">
+                Comparación temporal sincronizada entre modulante, portadora,
+                AM, FM y PM, con lectura de frecuencia instantánea, fase,
+                separación local entre ciclos y amplitud.
+            </p>
+        </header>
+
+        <section class="simulation">
+            <div class="simulation-header">
+                <span class="simulation-title">
+                    Cinco señales sincronizadas en el dominio del tiempo
+                </span>
+
+                <span
+                    class="simulation-status"
+                    id="simulationStatus"
+                >
+                    Simulación activa
+                </span>
+            </div>
+
+            <div
+                class="canvas-wrapper"
+                id="canvasWrapper"
+            >
+                <canvas
+                    id="simulationCanvas"
+                    aria-label="Simulador educativo comparador de AM, FM y PM"
+                ></canvas>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div
+                class="banner"
+                id="stateBanner"
+            >
+                <div>
+                    <strong id="stateTitle">
+                        Comparación válida
+                    </strong>
+
+                    <small id="stateDescription">
+                        AM modifica amplitud; FM modifica frecuencia instantánea;
+                        PM modifica fase instantánea.
+                    </small>
+                </div>
+
+                <span
+                    class="banner-tag"
+                    id="stateTag"
+                >
+                    Amplitud FM/PM constante
+                </span>
+            </div>
+
+            <div class="metrics">
+                <article class="metric">
+                    <span class="metric-label">
+                        Frecuencia instantánea FM
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="fmFrequencyMetric"
+                    >
+                        25 Hz
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Frecuencia instantánea PM
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="pmFrequencyMetric"
+                    >
+                        20 Hz
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Fase instantánea FM
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="fmPhaseMetric"
+                    >
+                        θ = 0 rad · Δθ = 0 rad
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Fase instantánea PM
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="pmPhaseMetric"
+                    >
+                        θ = 0,8 rad · Δθ = 0,8 rad
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Separación local de ciclos FM
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="fmPeriodMetric"
+                    >
+                        40 ms
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Separación local de ciclos PM
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="pmPeriodMetric"
+                    >
+                        50 ms
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Amplitud de envolvente AM
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="amAmplitudeMetric"
+                    >
+                        1,6 V pico
+                    </span>
+                </article>
+
+                <article class="metric">
+                    <span class="metric-label">
+                        Amplitud ideal FM y PM
+                    </span>
+
+                    <span
+                        class="metric-value"
+                        id="angularAmplitudeMetric"
+                    >
+                        1 V pico constante
+                    </span>
+                </article>
+            </div>
+
+            <div class="controls">
+                <div class="control">
+                    <div class="control-header">
+                        <label for="carrierFrequency">
+                            Frecuencia de portadora
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="carrierFrequency"
+                            type="number"
+                            min="0.001"
+                            step="any"
+                            value="20"
+                        >
+
+                        <select
+                            id="carrierFrequencyUnit"
+                            aria-label="Unidad de frecuencia de portadora"
+                        >
+                            <option selected>Hz</option>
+                            <option>kHz</option>
+                            <option>MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="modulatingFrequency">
+                            Frecuencia modulante
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="modulatingFrequency"
+                            type="number"
+                            min="0.001"
+                            step="any"
+                            value="2"
+                        >
+
+                        <select
+                            id="modulatingFrequencyUnit"
+                            aria-label="Unidad de frecuencia modulante"
+                        >
+                            <option selected>Hz</option>
+                            <option>kHz</option>
+                            <option>MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="modulatingAmplitude">
+                            Amplitud modulante
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="modulatingAmplitude"
+                            type="number"
+                            min="0.01"
+                            max="1000"
+                            step="0.05"
+                            value="1"
+                        >
+
+                        <select aria-label="Unidad de amplitud modulante">
+                            <option>V</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="frequencyDeviation">
+                            Desviación máxima de frecuencia
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="frequencyDeviation"
+                            type="number"
+                            min="0"
+                            step="any"
+                            value="5"
+                        >
+
+                        <select
+                            id="frequencyDeviationUnit"
+                            aria-label="Unidad de desviación de frecuencia"
+                        >
+                            <option selected>Hz</option>
+                            <option>kHz</option>
+                            <option>MHz</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="phaseDeviation">
+                            Desviación máxima de fase
+                        </label>
+                    </div>
+
+                    <div class="input-unit">
+                        <input
+                            id="phaseDeviation"
+                            type="number"
+                            min="0"
+                            max="20"
+                            step="0.05"
+                            value="0.8"
+                        >
+
+                        <select aria-label="Unidad de desviación de fase">
+                            <option>rad</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="control">
+                    <div class="control-header">
+                        <label for="animationSpeed">
+                            Velocidad de animación
+                        </label>
+
+                        <output
+                            class="live-value"
+                            id="animationSpeedOutput"
+                        >
+                            1,0×
+                        </output>
+                    </div>
+
+                    <input
+                        id="animationSpeed"
+                        type="range"
+                        min="0.2"
+                        max="2"
+                        step="0.1"
+                        value="1"
+                    >
+                </div>
+            </div>
+
+            <section class="panel">
+                <h2>Casos rápidos de la Clase 12</h2>
+
+                <div class="presets">
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="basic"
+                    >
+                        Comparación básica
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="fmRange"
+                    >
+                        FM: 100 kHz ± 5 kHz
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="fmIndex"
+                    >
+                        FM: β = 5
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="pmPhase"
+                    >
+                        PM: Δφ = 0,8 rad
+                    </button>
+
+                    <button
+                        type="button"
+                        class="preset-button"
+                        data-preset="pmFast"
+                    >
+                        PM: fase cambia más rápido
+                    </button>
+                </div>
+            </section>
+
+            <section class="panel formula-panel">
+                <h2>Relaciones utilizadas en la comparación</h2>
+
+                <div class="formula-grid">
+                    <article class="formula-card">
+                        <strong>Modulante normalizada</strong>
+
+                        <code id="modulatingFormula">
+                            xₘ(t) = cos(2πfₘt)
+                        </code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>FM: frecuencia instantánea</strong>
+
+                        <code id="fmFrequencyFormula">
+                            fᵢ(t) = fᶜ + Δf·xₘ(t)
+                        </code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>FM: índice y fase adicional</strong>
+
+                        <code id="fmPhaseFormula">
+                            β = Δf/fₘ · ΔθFM = β sin(2πfₘt)
+                        </code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>PM: fase adicional</strong>
+
+                        <code id="pmPhaseFormula">
+                            ΔθPM(t) = Δφ cos(2πfₘt)
+                        </code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>PM: variación de frecuencia</strong>
+
+                        <code id="pmFrequencyFormula">
+                            fᵢ,PM(t) = fᶜ − Δφfₘ sin(2πfₘt)
+                        </code>
+                    </article>
+
+                    <article class="formula-card">
+                        <strong>Sensibilidades equivalentes</strong>
+
+                        <code id="sensitivityFormula">
+                            kf = Δf/Aₘ · kp = Δφ/Aₘ
+                        </code>
+                    </article>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Comparación conceptual</h2>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Señal</th>
+                                <th>Parámetro que cambia directamente</th>
+                                <th>Qué permanece idealmente</th>
+                                <th>Qué observar en el gráfico</th>
+                                <th>Unidad principal</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            <tr>
+                                <td>AM</td>
+                                <td>Amplitud de la portadora.</td>
+                                <td>
+                                    Frecuencia y fase no se modulan
+                                    intencionalmente.
+                                </td>
+                                <td>Envolvente que sigue a la modulante.</td>
+                                <td>Índice sin unidad; amplitud en V.</td>
+                            </tr>
+
+                            <tr>
+                                <td>FM</td>
+                                <td>Frecuencia instantánea.</td>
+                                <td>Amplitud ideal constante.</td>
+                                <td>Ciclos más juntos o más separados.</td>
+                                <td>Δf en Hz; β sin unidad.</td>
+                            </tr>
+
+                            <tr>
+                                <td>PM</td>
+                                <td>Fase instantánea.</td>
+                                <td>Amplitud ideal constante.</td>
+                                <td>
+                                    Adelanto y atraso angular respecto a la
+                                    portadora.
+                                </td>
+                                <td>Δφ en rad; mₚ sin unidad.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>Ideas técnicas que deben mantenerse claras</h2>
+
+                <div class="concept-grid">
+                    <article class="concept-card">
+                        <strong>FM no es AM rápida</strong>
+
+                        <span>
+                            En FM no cambia la altura ideal de la señal; cambia
+                            la rapidez con que avanzan sus ciclos.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>PM no es un desfase fijo</strong>
+
+                        <span>
+                            El adelanto o atraso cambia continuamente siguiendo
+                            el valor instantáneo de la modulante.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>Δf no es ancho de banda</strong>
+
+                        <span>
+                            Δf es la desviación máxima respecto de fᶜ. No se
+                            aplica Carson ni se calcula ancho de banda aquí.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>La amplitud modulante no es Δf</strong>
+
+                        <span>
+                            Aₘ se mide en voltios. Δf se mide en hertz y depende
+                            de Aₘ junto con la sensibilidad FM.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>La fase se expresa en radianes</strong>
+
+                        <span>
+                            Δφ lleva unidad rad. El índice mₚ toma el mismo valor
+                            numérico cuando Δφ está expresada en radianes.
+                        </span>
+                    </article>
+
+                    <article class="concept-card">
+                        <strong>FM y PM están relacionadas</strong>
+
+                        <span>
+                            La frecuencia es la rapidez de cambio de la fase,
+                            pero FM controla frecuencia y PM controla fase.
+                        </span>
+                    </article>
+                </div>
+            </section>
+
+            <div class="actions">
+                <button
+                    type="button"
+                    class="action-button"
+                    id="pauseButton"
+                >
+                    Pausar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button success"
+                    id="continueButton"
+                    disabled
+                >
+                    Continuar
+                </button>
+
+                <button
+                    type="button"
+                    class="action-button secondary"
+                    id="restartButton"
+                >
+                    Reiniciar
+                </button>
+            </div>
+
+            <div
+                class="explanation"
+                id="explanation"
+            >
+                <strong>Lectura del Canvas:</strong>
+                las cinco gráficas comparten el mismo eje temporal y el mismo
+                cursor. En AM se observa una envolvente variable; en FM se
+                observa separación variable entre ciclos; en PM se observa un
+                adelanto o atraso variable respecto a la portadora.
+            </div>
+
+            <div
+                class="technical-note"
+                id="technicalNote"
+            >
+                <strong>Advertencia visual:</strong>
+                las ondas representan amplitud instantánea respecto al tiempo,
+                no la trayectoria física seguida por la energía. Las escalas se
+                adaptan al tamaño de la pantalla.
+            </div>
+        </section>
+    </main>
+
+    <script src="../js/012_comparador_am_fm_pm.js"></script>
+</body>
+</html>
