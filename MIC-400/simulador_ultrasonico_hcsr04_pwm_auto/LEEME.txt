@@ -1,0 +1,48 @@
+SIMULADOR HC-SR04, PWM Y MOTOR DC
+================================
+
+LÓGICA IMPLEMENTADA
+
+1. Distancia <= 10 cm:
+   - El motor se detiene en el punto crítico de 10 cm.
+   - Espera 1,5 segundos.
+   - Invierte el giro hacia 70 cm.
+
+2. Distancia > 10 cm y <= 30 cm:
+   - Motor al 15%.
+   - PWM aproximado: 38/255.
+
+3. Distancia > 30 cm y <= 70 cm:
+   - Motor al 50%.
+   - PWM aproximado: 128/255.
+
+4. Distancia > 70 cm:
+   - Motor al 80%.
+   - PWM aproximado: 204/255.
+   - Se utiliza para corregir una posición inicial superior a 70 cm.
+
+PUNTOS CRÍTICOS
+
+- 10 cm.
+- 70 cm.
+
+En ambos puntos el motor se detiene durante 1,5 segundos,
+invierte el sentido de giro y continúa el ciclo.
+
+
+POSICIÓN INICIAL DESCONOCIDA
+
+- Si inicia por encima de 70 cm, avanza directamente hasta 10 cm.
+  No se detiene al pasar por 70 cm.
+
+- Si inicia por debajo de 10 cm, retrocede directamente hasta 70 cm.
+  No se detiene al pasar por 10 cm.
+
+- Si inicia entre 10 cm y 70 cm, comienza avanzando hacia 10 cm.
+
+Después de resolver la posición inicial, repite indefinidamente:
+
+10 cm -> pausa -> 70 cm -> pausa -> 10 cm.
+
+
+
