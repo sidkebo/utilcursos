@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador ESP32 - 3 Pulsadores y 3 LEDs</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <main class="contenedor">
+
+    <h1>Simulador ESP32</h1>
+    <p class="subtitulo">Control de 3 LEDs mediante pulsadores</p>
+
+    <section class="panel">
+      <h2>LEDs</h2>
+
+      <div class="fila">
+        <div class="elemento">
+          <div class="led" id="led1"></div>
+          <p>LED 1</p>
+        </div>
+
+        <div class="elemento">
+          <div class="led" id="led2"></div>
+          <p>LED 2</p>
+        </div>
+
+        <div class="elemento">
+          <div class="led" id="led3"></div>
+          <p>LED 3</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Pulsadores</h2>
+
+      <div class="fila">
+        <div class="elemento">
+          <button class="boton" id="boton1" type="button">1</button>
+          <p>Botón 1</p>
+        </div>
+
+        <div class="elemento">
+          <button class="boton" id="boton2" type="button">2</button>
+          <p>Botón 2</p>
+        </div>
+
+        <div class="elemento">
+          <button class="boton" id="boton3" type="button">3</button>
+          <p>Botón 3</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
