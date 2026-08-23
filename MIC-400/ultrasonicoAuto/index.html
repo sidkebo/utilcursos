@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Simulador de control PWM de un motor DC con ESP32 y sensor ultrasónico HC-SR04.">
+  <title>Simulador HC-SR04 y Motor DC</title>
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+  <main class="aplicacion">
+    <header class="encabezado">
+      <div>
+        <p class="encabezado__etiqueta">LABORATORIO ESP32</p>
+        <h1>Control PWM de un motor DC con HC-SR04</h1>
+        <p class="encabezado__descripcion">
+          El ESP32 regula la velocidad y el sentido de giro del motor según la
+          distancia medida. El automóvil repite el ciclo entre 10 cm y 70 cm.
+        </p>
+
+        <div class="autor-recurso">
+          <span class="autor-recurso__etiqueta">AUTOR</span>
+          <span class="autor-recurso__nombre">Eduardo Balderrama</span>
+          <span class="autor-recurso__separador">•</span>
+          <a href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+        </div>
+      </div>
+
+      <button class="boton-tema" id="btnTema" type="button" aria-label="Cambiar a tema oscuro">
+        <span id="iconoTema" aria-hidden="true">☾</span>
+        <span id="textoTema">Oscuro</span>
+      </button>
+    </header>
+
+    <section class="barra-controles" aria-label="Controles de la simulación">
+      <div class="grupo-botones">
+        <button class="boton boton--principal" id="btnIniciar" type="button">▶ Iniciar</button>
+        <button class="boton boton--secundario" id="btnPausar" type="button">⏸ Pausar</button>
+        <button class="boton boton--secundario" id="btnReiniciar" type="button">↻ Reiniciar</button>
+      </div>
+
+      <div class="grupo-configuracion">
+        <label class="campo">
+          <span>Distancia inicial</span>
+          <span class="campo__entrada">
+            <input id="distanciaInicial" type="number" min="0" max="200" step="0.1" value="70">
+            <small>cm</small>
+          </span>
+        </label>
+
+        <label class="campo campo--fijo">
+          <span>PWM</span>
+          <span class="campo__entrada">
+            <input id="pwmControl" type="text" value="0 / 255" readonly>
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <section class="pruebas-rapidas" aria-label="Casos rápidos de prueba">
+      <span>Casos de prueba:</span>
+      <button type="button" data-distancia="5">5 cm</button>
+      <button type="button" data-distancia="10">10 cm</button>
+      <button type="button" data-distancia="20">20 cm</button>
+      <button type="button" data-distancia="50">50 cm</button>
+      <button type="button" data-distancia="70">70 cm</button>
+      <button type="button" data-distancia="100">100 cm</button>
+      <button type="button" data-distancia="120">120 cm</button>
+      <button type="button" data-distancia="200">200 cm</button>
+    </section>
+
+    <p class="ayuda-arrastre">
+      ↔ Arrastra el automóvil horizontalmente para cambiar su posición inicial.
+      También puedes ingresar una distancia exacta.
+    </p>
+
+    <section class="contenido">
+      <section class="escenario-contenedor">
+        <div class="escenario">
+          <svg id="escenaSVG" class="escena-svg" viewBox="0 0 1200 620" role="img" aria-label="Automóvil controlado por distancia y PWM">
+            <defs>
+              <linearGradient id="fondoEscena" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" class="fondo-stop fondo-stop--inicio"></stop>
+                <stop offset="100%" class="fondo-stop fondo-stop--fin"></stop>
+              </linearGradient>
+
+              <linearGradient id="paredGradiente" x1="0" y1="0" x2="1" y2="0">
+                <stop offset="0%" class="pared-stop pared-stop--inicio"></stop>
+                <stop offset="100%" class="pared-stop pared-stop--fin"></stop>
+              </linearGradient>
+
+              <linearGradient id="carreteraGradiente" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" class="carretera-stop carretera-stop--inicio"></stop>
+                <stop offset="100%" class="carretera-stop carretera-stop--fin"></stop>
+              </linearGradient>
+
+              <pattern id="rejillaPared" width="36" height="36" patternUnits="userSpaceOnUse">
+                <path d="M 36 0 L 0 0 0 36" class="rejilla-pared" fill="none"></path>
+              </pattern>
+
+              <pattern id="rejillaPiso" width="70" height="45" patternUnits="userSpaceOnUse" patternTransform="skewX(-18)">
+                <path d="M 70 0 L 0 0 0 45" class="rejilla-piso" fill="none"></path>
+              </pattern>
+
+              <marker id="puntaAzul" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+                <path d="M 0 0 L 12 6 L 0 12 z" class="punta-flecha"></path>
+              </marker>
+
+              <filter id="sombraAuto" x="-35%" y="-50%" width="180%" height="220%">
+                <feDropShadow dx="0" dy="10" stdDeviation="8" flood-color="#111827" flood-opacity="0.30"></feDropShadow>
+              </filter>
+
+              <filter id="sombraSuave" x="-30%" y="-30%" width="160%" height="180%">
+                <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#111827" flood-opacity="0.18"></feDropShadow>
+              </filter>
+            </defs>
+
+            <rect class="escena-fondo" x="0" y="0" width="1200" height="620" rx="26" fill="url(#fondoEscena)"></rect>
+            <rect class="panel-laboratorio" x="35" y="32" width="1130" height="420" rx="22" filter="url(#sombraSuave)"></rect>
+            <rect x="35" y="32" width="1130" height="420" rx="22" fill="url(#rejillaPared)" opacity="0.32"></rect>
+
+            <g class="cabecera-escena">
+              <rect x="65" y="58" width="410" height="62" rx="15"></rect>
+              <circle cx="92" cy="89" r="8" class="indicador-cabecera"></circle>
+              <text x="113" y="84" class="cabecera-escena__titulo">SENSOR HC-SR04 + CONTROL PWM</text>
+              <text x="113" y="105" class="cabecera-escena__subtitulo">Ciclo automático entre 10 cm y 70 cm</text>
+            </g>
+
+            <!-- Pared -->
+            <g id="paredReferencia" filter="url(#sombraSuave)">
+              <rect x="62" y="142" width="92" height="330" rx="10" class="pared-bloque" fill="url(#paredGradiente)"></rect>
+              <rect x="70" y="150" width="76" height="314" rx="8" fill="url(#rejillaPared)" opacity="0.55"></rect>
+              <rect x="146" y="142" width="8" height="330" rx="2" class="pared-canto-luz"></rect>
+              <rect x="62" y="142" width="7" height="330" rx="2" class="pared-canto-sombra"></rect>
+              <g class="ladrillos" opacity="0.35">
+                <line x1="70" y1="182" x2="146" y2="182"></line>
+                <line x1="70" y1="222" x2="146" y2="222"></line>
+                <line x1="70" y1="262" x2="146" y2="262"></line>
+                <line x1="70" y1="302" x2="146" y2="302"></line>
+                <line x1="70" y1="342" x2="146" y2="342"></line>
+                <line x1="70" y1="382" x2="146" y2="382"></line>
+                <line x1="70" y1="422" x2="146" y2="422"></line>
+                <line x1="108" y1="162" x2="108" y2="202"></line>
+                <line x1="88" y1="202" x2="88" y2="242"></line>
+                <line x1="128" y1="202" x2="128" y2="242"></line>
+                <line x1="108" y1="242" x2="108" y2="282"></line>
+                <line x1="88" y1="282" x2="88" y2="322"></line>
+                <line x1="128" y1="282" x2="128" y2="322"></line>
+                <line x1="108" y1="322" x2="108" y2="362"></line>
+                <line x1="88" y1="362" x2="88" y2="402"></line>
+                <line x1="128" y1="362" x2="128" y2="402"></line>
+                <line x1="108" y1="402" x2="108" y2="442"></line>
+              </g>
+            </g>
+
+            <text x="108" y="270" class="texto-pared" text-anchor="middle" transform="rotate(-90 108 270)">PARED</text>
+
+            <!-- Regla desde 0 cm hasta 120 cm, ampliada físicamente -->
+            <g class="regla">
+              <line x1="154" y1="172" x2="1030" y2="172" class="regla__linea"></line>
+
+              <line x1="154" y1="154" x2="154" y2="190" class="regla__marca regla__marca--principal"></line>
+              <line x1="227" y1="154" x2="227" y2="190" class="regla__marca regla__marca--parada"></line>
+              <line x1="373" y1="154" x2="373" y2="190" class="regla__marca regla__marca--lenta"></line>
+              <line x1="519" y1="162" x2="519" y2="182" class="regla__marca"></line>
+              <line x1="665" y1="154" x2="665" y2="190" class="regla__marca regla__marca--media"></line>
+              <line x1="811" y1="162" x2="811" y2="182" class="regla__marca"></line>
+              <line x1="884" y1="162" x2="884" y2="182" class="regla__marca"></line>
+              <line x1="1030" y1="154" x2="1030" y2="190" class="regla__marca regla__marca--principal"></line>
+
+              <text x="154" y="146" class="regla__numero" text-anchor="middle">0</text>
+              <text x="227" y="146" class="regla__numero regla__numero--parada" text-anchor="middle">10</text>
+              <text x="373" y="146" class="regla__numero regla__numero--lenta" text-anchor="middle">30</text>
+              <text x="519" y="146" class="regla__numero" text-anchor="middle">50</text>
+              <text x="665" y="146" class="regla__numero regla__numero--media" text-anchor="middle">70</text>
+              <text x="811" y="146" class="regla__numero" text-anchor="middle">90</text>
+              <text x="884" y="146" class="regla__numero" text-anchor="middle">100</text>
+              <text x="1030" y="146" class="regla__numero" text-anchor="middle">120 cm</text>
+            </g>
+
+            <!-- Zonas de control -->
+            <g class="zonas-control">
+              <rect x="154" y="220" width="73" height="214" rx="10" class="zona zona--parada"></rect>
+              <rect x="227" y="220" width="146" height="214" rx="10" class="zona zona--lenta"></rect>
+              <rect x="373" y="220" width="292" height="214" rx="10" class="zona zona--media"></rect>
+              <rect x="665" y="220" width="365" height="214" rx="10" class="zona zona--maxima"></rect>
+
+              <text x="190.5" y="246" class="zona__texto" text-anchor="middle">≤ 10</text>
+              <text x="300.0" y="246" class="zona__texto" text-anchor="middle">15%</text>
+              <text x="519.0" y="246" class="zona__texto" text-anchor="middle">50%</text>
+              <text x="847.5" y="246" class="zona__texto" text-anchor="middle">80%</text>
+            </g>
+
+            <line id="limite10" class="linea-limite linea-limite--parada" x1="227" y1="198" x2="227" y2="474"></line>
+            <line id="limite30" class="linea-limite linea-limite--lenta" x1="373" y1="198" x2="373" y2="474"></line>
+            <line id="limite70" class="linea-limite linea-limite--media" x1="665" y1="198" x2="665" y2="474"></line>
+
+            <g id="badgeMovimiento" class="badge-movimiento" filter="url(#sombraSuave)">
+              <rect x="458" y="292" width="310" height="58" rx="17"></rect>
+              <circle id="badgePunto" cx="488" cy="321" r="7"></circle>
+              <text id="textoDireccionEscena" x="510" y="327" class="badge-movimiento__texto">Pausa inicial en 70 cm</text>
+            </g>
+
+            <line id="flechaMovimiento" class="flecha-movimiento" x1="665" y1="384" x2="465" y2="384" marker-end="url(#puntaAzul)"></line>
+
+            <path d="M 35 452 L 1165 452 L 1130 590 L 70 590 Z" fill="url(#carreteraGradiente)"></path>
+            <path d="M 35 452 L 1165 452 L 1130 590 L 70 590 Z" fill="url(#rejillaPiso)" opacity="0.38"></path>
+            <line x1="70" y1="480" x2="1130" y2="480" class="borde-pista"></line>
+
+            <ellipse id="sombraAutoSuelo" class="sombra-auto-suelo" cx="931" cy="487" rx="68" ry="12"></ellipse>
+
+            <polygon id="conoSensor" class="cono-sensor" points="877,438 154,386 154,490"></polygon>
+            <line id="rayoSensor" class="rayo-sensor" x1="877" y1="438" x2="154" y2="438"></line>
+
+            <image id="auto" href="img/auto.png" x="855.8" y="402" width="150" height="76" preserveAspectRatio="xMidYMid meet" filter="url(#sombraAuto)"></image>
+
+            <g id="sensorAuto" filter="url(#sombraSuave)">
+              <rect id="sensorAutoCuerpo" class="sensor-auto" x="875" y="433" width="15" height="10" rx="4"></rect>
+              <circle id="sensorAutoLente1" class="sensor-auto__lente" cx="880" cy="438" r="1.6"></circle>
+              <circle id="sensorAutoLente2" class="sensor-auto__lente" cx="885" cy="438" r="1.6"></circle>
+            </g>
+
+            <path id="ondaSensor1" class="onda-sensor onda-sensor--1" d="M 867 430 Q 849 438 867 446"></path>
+            <path id="ondaSensor2" class="onda-sensor onda-sensor--2" d="M 859 422 Q 831 438 859 454"></path>
+            <path id="ondaSensor3" class="onda-sensor onda-sensor--3" d="M 851 414 Q 813 438 851 462"></path>
+
+            <g id="etiquetaAuto" filter="url(#sombraSuave)">
+              <rect id="etiquetaAutoFondo" class="etiqueta-auto__fondo" x="875" y="350" width="132" height="50" rx="12"></rect>
+              <text id="etiquetaAutoTexto" class="etiqueta-auto__texto" x="941" y="371" text-anchor="middle">70.0 cm</text>
+              <text id="etiquetaAutoVelocidad" class="etiqueta-auto__velocidad" x="941" y="390" text-anchor="middle">Velocidad: 0%</text>
+            </g>
+
+            <!-- Área interactiva para arrastrar el automóvil -->
+            <rect
+              id="arrastreAuto"
+              class="arrastre-auto"
+              x="835"
+              y="338"
+              width="190"
+              height="150"
+              rx="24"
+              tabindex="0"
+              role="slider"
+              aria-label="Posición del automóvil"
+              aria-valuemin="0"
+              aria-valuemax="120"
+              aria-valuenow="70"
+            >
+              <title>Arrastra el automóvil horizontalmente</title>
+            </rect>
+          </svg>
+        </div>
+
+        <div class="linea-posicion" aria-label="Distancia medida">
+          <div class="linea-posicion__cabecera">
+            <span>0 cm</span>
+            <strong>Distancia medida por el HC-SR04</strong>
+            <span>120 cm+</span>
+          </div>
+          <div class="linea-posicion__pista">
+            <div class="linea-posicion__zonas">
+              <span class="pos-zona pos-zona--parada"></span>
+              <span class="pos-zona pos-zona--lenta"></span>
+              <span class="pos-zona pos-zona--media"></span>
+              <span class="pos-zona pos-zona--maxima"></span>
+            </div>
+            <div class="linea-posicion__auto" id="marcadorRecorrido">●</div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel-informacion" aria-live="polite">
+        <article class="tarjeta tarjeta--destacada">
+          <span class="tarjeta__etiqueta">DISTANCIA ACTUAL</span>
+          <div class="distancia">
+            <strong id="distanciaActual">100.0</strong>
+            <span>cm</span>
+          </div>
+          <div class="barra-distancia"><div id="barraDistancia"></div></div>
+        </article>
+
+        <article class="tarjeta tarjeta--motor">
+          <span class="tarjeta__etiqueta">SALIDA DEL MOTOR</span>
+          <div class="motor-porcentaje">
+            <strong id="velocidadMotor">100</strong><span>%</span>
+          </div>
+          <div class="pwm-barra"><div id="barraPWM"></div></div>
+          <p class="tarjeta__descripcion" id="detallePWM">PWM de 8 bits: 255 de 255.</p>
+        </article>
+
+        <article class="tarjeta">
+          <span class="tarjeta__etiqueta">ESTADO</span>
+          <div class="estado-principal">
+            <span class="estado-principal__punto" id="puntoEstado"></span>
+            <strong id="estadoActual">Listo para iniciar</strong>
+          </div>
+          <p class="tarjeta__descripcion" id="descripcionEstado">Distancia mayor a 70 cm: motor al 80% hacia 10 cm.</p>
+        </article>
+
+        <article class="tarjeta tarjeta--doble">
+          <div>
+            <span class="tarjeta__etiqueta">DIRECCIÓN</span>
+            <strong id="direccionActual">Hacia 10 cm</strong>
+          </div>
+          <div>
+            <span class="tarjeta__etiqueta">PAUSA / CICLOS</span>
+            <strong><span id="pausaRestante">0.0 s</span> · <span id="ciclosCompletados">0</span></strong>
+          </div>
+        </article>
+
+        <article class="tarjeta tarjeta--reglas">
+          <span class="tarjeta__etiqueta">LÓGICA DE CONTROL</span>
+          <div class="regla-control" id="reglaParada"><strong>10 cm y 70 cm</strong><span>Pausa 1,5 s e inversión de giro</span></div>
+          <div class="regla-control" id="regla15"><strong>&gt; 10 a 30 cm</strong><span>Motor al 15%</span></div>
+          <div class="regla-control" id="regla50"><strong>&gt; 30 a 70 cm</strong><span>Motor al 50%</span></div>
+          <div class="regla-control" id="regla100"><strong>&gt; 70 cm</strong><span>Motor al 80% hacia 10 cm</span></div>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <script src="js/simulador.js"></script>
+</body>
+</html>
