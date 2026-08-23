@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador PWM</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <h1>PWM</h1>
+      <p>Simulador didáctico para enseñar duty cycle, frecuencia y resolución PWM.</p>
+      <div class="author-banner">
+        <span class="author-label">AUTOR</span>
+        <span class="author-name">Eduardo Balderrama</span>
+        <span class="author-divider">•</span>
+        <span class="author-mail"><a href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a></span>
+      </div>
+    </header>
+
+    <section class="panel config-panel">
+      <div class="config-header">
+        <h2>Configuración PWM</h2>
+      </div>
+
+      <div class="config-controls">
+        <div class="control-group">
+          <div class="control-head">
+            <label for="duty">Duty Cycle</label>
+            <span id="dutyText">50 %</span>
+          </div>
+          <input id="duty" class="duty-sync" type="range" min="0" max="100" step="1" value="50">
+        </div>
+
+        <div class="control-group">
+          <div class="control-head">
+            <label for="frequency">Frecuencia</label>
+            <span id="freqText">1 kHz</span>
+          </div>
+          <input id="frequency" type="range" min="1" max="10000" step="1" value="1000">
+          <div class="preset-row" id="presetRow">
+            <button type="button" class="preset-btn" data-freq="1">1</button>
+            <button type="button" class="preset-btn" data-freq="10">10</button>
+            <button type="button" class="preset-btn" data-freq="50">50</button>
+            <button type="button" class="preset-btn" data-freq="100">100</button>
+            <button type="button" class="preset-btn" data-freq="500">500</button>
+            <button type="button" class="preset-btn" data-freq="1000">1k</button>
+            <button type="button" class="preset-btn" data-freq="5000">5k</button>
+            <button type="button" class="preset-btn" data-freq="10000">10k</button>
+          </div>
+        </div>
+
+        <div class="control-group compact">
+          <div class="control-head">
+            <label for="resolution">Resolución PWM</label>
+            <span id="resText">8 bits</span>
+          </div>
+          <select id="resolution">
+            <option value="8" selected>8 bits</option>
+            <option value="10">10 bits</option>
+            <option value="12">12 bits</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="summary-row">
+        <div class="info-card">
+          <span class="label">Periodo (T)</span>
+          <strong id="periodText">1.000 ms</strong>
+        </div>
+        <div class="info-card">
+          <span class="label">Tiempo ON (Ton)</span>
+          <strong id="tonText">500.000 µs</strong>
+        </div>
+        <div class="info-card">
+          <span class="label">Tiempo OFF (Toff)</span>
+          <strong id="toffText">500.000 µs</strong>
+        </div>
+        <div class="info-card">
+          <span class="label">Valor PWM</span>
+          <strong id="ledcText">128 / 255</strong>
+          <small id="ledcPercentText">(50.20 %)</small>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="signals-grid">
+      <article class="panel signal-panel">
+        <div class="panel-header signal-header">
+          <h2>Vista a escala real</h2>
+          <div class="mini-led-group"><span class="mini-led" id="miniLed1"></span><span class="mini-led-label">LED</span></div>
+        </div>
+        <p class="panel-note">Esta gráfica usa una ventana temporal real. Al cambiar la frecuencia, cambia la cantidad de pulsos visibles.</p>
+        <div class="remote-control"><input id="slider-real" class="duty-sync" type="range" min="0" max="100" step="1" value="50"></div>
+        <div class="duty-info" id="realDutyInfo">Duty = 50% | Valor PWM = 128/255</div>
+        <div class="canvas-wrap"><canvas id="realScaleCanvas" width="920" height="270"></canvas></div>
+        <div class="panel-footer"><span id="windowText" class="badge">Ventana: 5.000 ms</span></div>
+      </article>
+
+      <article class="panel signal-panel">
+        <div class="panel-header signal-header">
+          <h2>Vista ampliada de un periodo</h2>
+          <div class="mini-led-group"><span class="mini-led" id="miniLed2"></span><span class="mini-led-label">LED</span></div>
+        </div>
+        <p class="panel-note">Aquí se ve un solo periodo completo. Es la referencia más clara para explicar Ton, Toff y duty cycle.</p>
+        <div class="remote-control"><input id="slider-zoom" class="duty-sync" type="range" min="0" max="100" step="1" value="50"></div>
+        <div class="duty-info" id="zoomDutyInfo">Duty = 50% | Valor PWM = 128/255</div>
+        <div class="canvas-wrap"><canvas id="singlePeriodCanvas" width="920" height="290"></canvas></div>
+        <div class="panel-footer"><span class="badge">Zoom: 1 periodo</span></div>
+      </article>
+
+      <article class="panel signal-panel">
+        <div class="panel-header signal-header">
+          <h2>RESOLUCIÓN DIGITAL PWM</h2>
+          <div class="mini-led-group"><span class="mini-led" id="miniLed3"></span><span class="mini-led-label">LED</span></div>
+        </div>
+        <p class="panel-note">Esta escala muestra cómo se representa digitalmente el duty cycle según la resolución seleccionada.</p>
+        <div class="duty-info" id="resolutionDutyInfo">Duty = 50% | Valor PWM = 128/255</div>
+        <div class="remote-control"><input id="slider-resolution" class="duty-sync" type="range" min="0" max="100" step="1" value="50"></div>
+        <div class="canvas-wrap"><canvas id="resolutionCanvas" width="920" height="230"></canvas></div>
+      </article>
+
+      <article class="panel signal-panel">
+        <div class="panel-header signal-header">
+          <h2>RELACIÓN SEÑAL PWM Y VALOR DIGITAL</h2>
+          <div class="mini-led-group"><span class="mini-led" id="miniLed4"></span><span class="mini-led-label">LED</span></div>
+        </div>
+        <p class="panel-note">Esta vista relaciona la señal PWM con su valor digital para mostrar cómo el porcentaje de trabajo se traduce en una representación numérica según la resolución seleccionada.</p>
+        <div class="remote-control"><input id="slider-unified" class="duty-sync" type="range" min="0" max="100" step="1" value="50"></div>
+        <div class="duty-info" id="unifiedDutyInfo">Duty = 50% | Valor PWM = 128/255</div>
+        <div class="canvas-wrap"><canvas id="unifiedCanvas" width="920" height="260"></canvas></div>
+      </article>
+    </section>
+  </main>
+  <script src="js/pwm.js"></script>
+</body>
+</html>
