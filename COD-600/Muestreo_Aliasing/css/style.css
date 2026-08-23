@@ -1,0 +1,57 @@
+
+body{
+background:#111827;
+color:white;
+font-family:Arial;
+padding:20px;
+}
+
+.container{
+background:#1f2937;
+padding:25px;
+border-radius:15px;
+}
+
+button{
+padding:10px;
+margin:5px;
+background:#374151;
+color:white;
+border-radius:6px;
+}
+
+#info{
+margin-top:15px;
+padding:10px;
+background:#111827;
+}
+
+canvas{
+background:#06152d;
+margin-top:20px;
+}
+
+.author-banner {
+background:#17263d;
+border:1px solid rgba(255,214,79,0.45);
+border-radius:12px;
+padding:12px 18px;
+margin:15px auto;
+width:fit-content;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+font-size:0.95rem;
+}
+.author-label {
+background:rgba(255,214,79,0.18);
+color:#ffd64f;
+border-radius:999px;
+padding:4px 10px;
+font-weight:bold;
+}
+.author-name {font-weight:bold;color:white;}
+.author-divider {color:#ffd64f;}
+.author-mail a {color:#a8d7ff;text-decoration:none;}
+@media(max-width:600px){.author-banner{flex-wrap:wrap;}.author-divider{display:none;}}
