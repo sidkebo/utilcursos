@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COD-600 | Muestreo, aliasing y cuantificación ADC</title>
+  <link rel="stylesheet" href="css/estudio_clases3_4.css">
+<style>
+.author-box{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  width:max-content;
+  max-width:100%;
+  margin:12px auto 0;
+  padding:9px 16px;
+  border:1px solid #8b7624;
+  border-radius:13px;
+  background:#15202c;
+  color:#eef3f8;
+  font-size:.9rem;
+}
+.author-tag{
+  display:inline-block;
+  padding:4px 9px;
+  border:1px solid #8b7624;
+  border-radius:999px;
+  background:#3a3a23;
+  color:#ffd84d;
+  font-weight:800;
+  letter-spacing:.05em;
+}
+.author-box a{
+  color:#78b7ff;
+  text-decoration:none;
+  font-weight:700;
+}
+.author-box a:hover{
+  text-decoration:underline;
+}
+.author-dot{
+  color:#f2c94c;
+}
+
+.detail-steps-caption{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:14px;
+  margin-bottom:8px;
+}
+.detail-steps-caption strong{color:#e8eef5;font-size:.82rem;}
+.detail-steps-caption span{color:#7f93a7;font-size:.7rem;}
+.detail-steps-box{height:280px;}
+@media(max-width:720px){.detail-steps-box{height:250px}}
+
+.quant-inline-controls{
+  margin-top:14px;
+  margin-bottom:14px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(6,13,24,.55);
+}
+.quant-inline-head{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:10px;
+}
+.quant-inline-head strong{color:#e8eef5;font-size:.84rem;}
+.quant-inline-head span{color:#7f93a7;font-size:.72rem;}
+.compact-controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.compact-controls label>span{
+  display:block;
+  color:#9fb4c8;
+  font-size:.75rem;
+  margin-bottom:6px;
+}
+.compact-controls .range-row strong{
+  min-width:74px;
+  text-align:right;
+  color:#e8eef5;
+}
+@media(max-width:800px){
+  .compact-controls{grid-template-columns:1fr;}
+}
+
+</style>
+  <link rel="stylesheet" href="css/complemento_filtro_temporizacion.css?v=1">
+
+<style>
+.adc-fixed-caption{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:14px;
+  margin-bottom:8px;
+}
+.adc-fixed-caption strong{
+  color:#e8eef5;
+  font-size:.82rem;
+}
+.adc-fixed-caption span{
+  color:#7f93a7;
+  font-size:.7rem;
+}
+.adc-fixed-box{
+  height:360px;
+}
+@media(max-width:720px){
+  .adc-fixed-box{height:310px}
+}
+</style>
+
+</head>
+<body>
+<header class="topbar">
+  <div>
+    <div class="eyebrow">CONTROL DIGITAL · COD-600</div>
+    <h1>LAB-COD-01 · Muestreo, aliasing y cuantificación ADC</h1>
+    <p>Simulaciones didácticas independientes de la adquisición real del ESP32.</p>
+  </div>
+  <span class="badge simulation">SOLO SIMULACIÓN</span>
+</header>
+
+<div class="author-box">
+  <span class="author-tag">AUTOR</span>
+  <strong>Eduardo Balderrama</strong>
+  <span class="author-dot">•</span>
+  <a href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+</div>
+
+
+<main>
+  <section class="panel notice">
+    <h2>Separación entre el ESP32 real y esta página</h2>
+    <div class="flow">
+      <div>
+        <strong>Práctica real</strong>
+        <span>ESP32 → ADC → muestreo → Serial → página de medición</span>
+      </div>
+      <div class="arrow">≠</div>
+      <div>
+        <strong>Esta página</strong>
+        <span>Simulación teórica para comprender muestreo, aliasing y cuantificación</span>
+      </div>
+    </div>
+    <p>
+      Esta página <strong>no abre el puerto Serial, no genera muestras para el ESP32,
+      no modifica Ts y no reemplaza la página de medición real</strong>.
+    </p>
+  </section>
+
+  <section class="panel" id="aliasingPanel">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">MUESTREO DIGITAL</div>
+        <h2>Muestreo suficiente, límite y aliasing</h2>
+        <p>Modifique la frecuencia de la señal y la frecuencia de muestreo para observar qué representan las muestras.</p>
+      </div>
+      <span class="badge simulation">SIMULACIÓN</span>
+    </div>
+
+    <div class="controls two">
+      <label>
+        <span>Frecuencia de la señal f</span>
+        <div class="range-row">
+          <input id="signalFreq" type="range" min="0.5" max="100" step="0.5" value="4">
+          <strong id="signalFreqOut">4.0 Hz</strong>
+        </div>
+      </label>
+      <label>
+        <span>Frecuencia de muestreo fs</span>
+        <div class="range-row">
+          <input id="sampleFreq" type="range" min="1" max="500" step="1" value="10">
+          <strong id="sampleFreqOut">10 Hz</strong>
+        </div>
+      </label>
+    </div>
+
+    <div class="presets">
+      <span>Ensayos:</span>
+      <button id="presetGood">Suficiente</button>
+      <button id="presetLimit">Límite teórico</button>
+      <button id="presetAlias">Aliasing</button>
+    </div>
+
+    <div class="metrics six">
+      <div><span>f</span><strong id="mF">—</strong></div>
+      <div><span>2 x f</span><strong id="m2F">—</strong></div>
+      <div><span>fs</span><strong id="mFs">—</strong></div>
+      <div><span>Ts</span><strong id="mTs">—</strong></div>
+      <div><span>f aparente</span><strong id="mAlias">—</strong></div>
+      <div><span>Resultado</span><strong id="mCondition">—</strong></div>
+    </div>
+
+    <div id="aliasStatus" class="status"></div>
+
+    <div class="canvas-box">
+      <canvas id="aliasCanvas"></canvas>
+    </div>
+
+    <div class="legend">
+      <span><i class="line original"></i> señal original</span>
+      <span><i class="dot sample"></i> muestras</span>
+      <span><i class="line apparent"></i> señal aparente por aliasing</span>
+    </div>
+
+    <div class="formula">
+      <code>fs >= 2 x fmax</code>
+      <code>Ts = 1 / fs</code>
+    </div>
+
+    <div class="activity">
+      <strong>Prueba recomendada:</strong>
+      use primero f = 4 Hz y fs = 10 Hz. Después cambie a f = 8 Hz manteniendo fs = 10 Hz.
+      En el segundo caso la señal real es de 8 Hz, pero las muestras son compatibles con una señal aparente cercana a 2 Hz.
+    </div>
+  </section>
+
+  <section class="panel" id="quantPanel">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">CONVERSIÓN ANALÓGICA-DIGITAL</div>
+        <h2>Resolución, cuantificación y saturación</h2>
+        <p>Modelo matemático ideal de un ADC de 9 bits, como el utilizado en LAB-COD-01.</p>
+      </div>
+      <span class="badge simulation">MODELO IDEAL</span>
+    </div>
+
+    <div class="fixed-config">
+      <div><span>Resolución</span><strong>9 bits</strong></div>
+      <div><span>Niveles</span><strong>512</strong></div>
+      <div><span>Códigos</span><strong>0 ... 511</strong></div>
+    </div>
+
+    <div class="controls two">
+      <label>
+        <span>Vin simulada</span>
+        <div class="range-row">
+          <input id="vin" type="range" min="0" max="3.6" step="0.001" value="1.650">
+          <strong id="vinOut">1.650 V</strong>
+        </div>
+      </label>
+      <label>
+        <span>Escala completa ideal VFS</span>
+        <div class="range-row">
+          <input id="vfs" type="range" min="2.5" max="3.3" step="0.1" value="3.3">
+          <strong id="vfsOut">3.3 V</strong>
+        </div>
+      </label>
+    </div>
+
+    <div class="metrics five">
+      <div><span>Código ideal</span><strong id="qCode">—</strong></div>
+      <div><span>V cuantizada</span><strong id="qVoltage">—</strong></div>
+      <div><span>Error del modelo</span><strong id="qError">—</strong></div>
+      <div><span>Porcentaje digital</span><strong id="qPercent">—</strong></div>
+      <div><span>Estado</span><strong id="qState">—</strong></div>
+    </div>
+
+    <div id="quantStatus" class="status"></div>
+
+    <div class="adc-fixed-caption">
+      <strong>Curva fija de cuantificación</strong>
+      <span>
+        Eje horizontal fijo: Vin de 0 a 3,6 V. Eje vertical fijo: ADC de 0 a 511.
+        La línea amarilla recorre realmente la gráfica y VFS modifica el punto donde comienza la saturación.
+      </span>
+    </div>
+
+    <div class="canvas-box adc-fixed-box">
+      <canvas id="quantCanvas"></canvas>
+    </div>
+    <div class="quant-inline-controls">
+      <div class="quant-inline-head">
+        <strong>Control rápido junto a las gráficas</strong>
+        <span>
+          Es un duplicado compacto de los controles superiores para ajustar Vin y VFS sin perder de vista las dos gráficas.
+        </span>
+      </div>
+      <div class="compact-controls">
+        <label>
+          <span>Vin simulada</span>
+          <div class="range-row">
+            <input id="vinMid" type="range" min="0" max="3.6" step="0.001" value="1.650">
+            <strong id="vinMidOut">1.650 V</strong>
+          </div>
+        </label>
+        <label>
+          <span>Escala completa ideal VFS</span>
+          <div class="range-row">
+            <input id="vfsMid" type="range" min="2.5" max="3.3" step="0.1" value="3.3">
+            <strong id="vfsMidOut">3.3 V</strong>
+          </div>
+        </label>
+      </div>
+    </div>
+
+    <div class="detail-steps-caption">
+      <strong>Detalle local de cuantificación</strong>
+      <span>
+        Se muestran bloques fijos de 7 escalones. El marcador amarillo recorre el bloque;
+        solo cuando sale de esos 7 códigos la vista pasa al siguiente bloque.
+      </span>
+    </div>
+
+    <div class="canvas-box detail-steps-box">
+      <canvas id="quantDetailCanvas"></canvas>
+    </div>
+
+    <div class="formula">
+      <code>ADC ideal = (Vin / VFS) x 511</code>
+      <code>ADC% = (ADC / 511) x 100</code>
+    </div>
+
+    <div class="warning">
+      <strong>No confundir con el ESP32 real:</strong>
+      esta curva es ideal. La función <code>analogReadMilliVolts()</code>, la atenuación y las características reales
+      del ADC del ESP32 hacen que VinADC no sea simplemente esta fórmula aplicada a la lectura ADC.
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">REPASO APLICADO</div>
+        <h2>Qué debe poder explicar el estudiante</h2>
+      </div>
+    </div>
+    <div class="questions">
+      <div><strong>1</strong><span>¿Qué ocurre con Ts cuando aumenta fs?</span></div>
+      <div><strong>2</strong><span>¿Cuándo existe riesgo de aliasing?</span></div>
+      <div><strong>3</strong><span>¿Por qué 9 bits producen 512 niveles pero el código máximo es 511?</span></div>
+      <div><strong>4</strong><span>¿Qué significa que dos tensiones próximas produzcan el mismo código ADC?</span></div>
+      <div><strong>5</strong><span>¿Qué significa saturación en el modelo del ADC?</span></div>
+    </div>
+  </section>
+
+  <section class="panel complemento-panel" id="filtroMemoriaPanel">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">PROMEDIO MÓVIL N = 5</div>
+        <h2>Memoria circular de 5 muestras e indiceFiltro</h2>
+        <p>
+          Simulación paso a paso del mismo principio utilizado en el programa del ESP32:
+          se reemplaza la muestra más antigua sin desplazar todo el arreglo.
+        </p>
+      </div>
+      <span class="badge simulation">SIMULACIÓN DEL ALGORITMO</span>
+    </div>
+
+    <div class="memoria-controls">
+      <label>
+        <span>Nueva muestra ADC</span>
+        <input id="memNuevaMuestra" type="number" min="0" max="511" step="1" value="270">
+      </label>
+      <button id="memAplicar">Aplicar nueva muestra</button>
+      <button id="memPaso">Paso automático</button>
+      <button id="memReiniciar">Reiniciar ejemplo</button>
+    </div>
+
+    <div class="memoria-status" id="memEstado">
+      Estado inicial del buffer circular.
+    </div>
+
+    <div class="memoria-grid" id="memoriaGrid">
+      <div class="memoria-cell" data-index="0"><span>muestras[0]</span><strong>250</strong></div>
+      <div class="memoria-cell" data-index="1"><span>muestras[1]</span><strong>255</strong></div>
+      <div class="memoria-cell" data-index="2"><span>muestras[2]</span><strong>260</strong></div>
+      <div class="memoria-cell" data-index="3"><span>muestras[3]</span><strong>258</strong></div>
+      <div class="memoria-cell" data-index="4"><span>muestras[4]</span><strong>262</strong></div>
+    </div>
+
+    <div class="memoria-info-grid">
+      <div><span>indiceFiltro</span><strong id="memIndice">0</strong></div>
+      <div><span>Muestra que sale</span><strong id="memSale">250</strong></div>
+      <div><span>sumaMuestras</span><strong id="memSuma">1285</strong></div>
+      <div><span>ADCf</span><strong id="memPromedio">257.0</strong></div>
+    </div>
+
+    <div class="memoria-operacion">
+      <div>
+        <span>1. Restar muestra antigua</span>
+        <code id="memPasoResta">1285 - 250 = 1035</code>
+      </div>
+      <div>
+        <span>2. Escribir nueva muestra</span>
+        <code id="memPasoEscritura">muestras[0] = 270</code>
+      </div>
+      <div>
+        <span>3. Sumar muestra nueva</span>
+        <code id="memPasoSuma">1035 + 270 = 1305</code>
+      </div>
+      <div>
+        <span>4. Calcular promedio</span>
+        <code id="memPasoPromedio">1305 / 5 = 261.0</code>
+      </div>
+    </div>
+
+    <div class="activity">
+      <strong>Idea clave:</strong>
+      el arreglo no se desplaza. <code>indiceFiltro</code> indica qué posición contiene la muestra
+      más antigua que debe ser sustituida. Después avanza 0 → 1 → 2 → 3 → 4 → 0.
+    </div>
+  </section>
+
+  <section class="panel complemento-panel" id="ruidoFiltroPanel">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">RUIDO Y FILTRADO</div>
+        <h2>Efecto del promedio móvil sobre una medición</h2>
+        <p>
+          Compare una lectura directa con el promedio móvil de 5 muestras.
+          Puede introducir fluctuación o aplicar un cambio brusco de la entrada.
+        </p>
+      </div>
+      <span class="badge simulation">SIMULACIÓN</span>
+    </div>
+
+    <div class="controls three">
+      <label>
+        <span>Valor medio ADC</span>
+        <div class="range-row">
+          <input id="ruidoMedia" type="range" min="50" max="460" step="1" value="260">
+          <strong id="ruidoMediaOut">260</strong>
+        </div>
+      </label>
+      <label>
+        <span>Amplitud de fluctuación</span>
+        <div class="range-row">
+          <input id="ruidoAmp" type="range" min="0" max="80" step="1" value="18">
+          <strong id="ruidoAmpOut">±18</strong>
+        </div>
+      </label>
+      <label>
+        <span>Velocidad de simulación</span>
+        <div class="range-row">
+          <input id="ruidoVel" type="range" min="80" max="700" step="20" value="180">
+          <strong id="ruidoVelOut">180 ms</strong>
+        </div>
+      </label>
+    </div>
+
+    <div class="presets">
+      <button id="ruidoRun">RUN</button>
+      <button id="ruidoStop">STOP</button>
+      <button id="ruidoEstable">Entrada estable</button>
+      <button id="ruidoSubir">Cambio brusco ↑</button>
+      <button id="ruidoBajar">Cambio brusco ↓</button>
+      <button id="ruidoReset">Reiniciar</button>
+    </div>
+
+    <div class="metrics five">
+      <div><span>ADC actual</span><strong id="ruidoAdcActual">—</strong></div>
+      <div><span>ADCf actual</span><strong id="ruidoAdcfActual">—</strong></div>
+      <div><span>ADC pico a pico</span><strong id="ruidoAdcPP">—</strong></div>
+      <div><span>ADCf pico a pico</span><strong id="ruidoAdcfPP">—</strong></div>
+      <div><span>Ventana del filtro</span><strong id="ruidoVentana">—</strong></div>
+    </div>
+
+    <div class="canvas-box">
+      <canvas id="ruidoCanvas"></canvas>
+    </div>
+
+    <div class="legend">
+      <span><i class="line original"></i> ADC directo</span>
+      <span><i class="line filtro-line"></i> ADC filtrado N = 5</span>
+    </div>
+
+    <div class="activity">
+      <strong>Observe dos efectos:</strong>
+      con entrada estable, el promedio móvil reduce la fluctuación visible.
+      Cuando ocurre un cambio brusco, la salida filtrada tarda varias muestras en seguir a la lectura directa.
+    </div>
+  </section>
+
+  <section class="panel complemento-panel" id="temporizacionPanel">
+    <div class="section-head">
+      <div>
+        <div class="eyebrow">TEMPORIZACIÓN DEL CONTROLADOR</div>
+        <h2>Comparación entre Ts y tiempo de procesamiento</h2>
+        <p>
+          Simulación conceptual del tiempo disponible dentro de un periodo de muestreo.
+          No mide el ESP32 real; la práctica real ya dispone de Proc medido por el microcontrolador.
+        </p>
+      </div>
+      <span class="badge simulation">SIMULACIÓN TEMPORAL</span>
+    </div>
+
+    <div class="controls two">
+      <label>
+        <span>Periodo de muestreo Ts</span>
+        <div class="range-row">
+          <input id="tempTs" type="range" min="1" max="500" step="1" value="100">
+          <strong id="tempTsOut">100 ms</strong>
+        </div>
+      </label>
+      <label>
+        <span>Tiempo de procesamiento Proc</span>
+        <div class="range-row">
+          <input id="tempProc" type="range" min="1" max="200000" step="100" value="8300">
+          <strong id="tempProcOut">8.300 ms</strong>
+        </div>
+      </label>
+    </div>
+
+    <div class="metrics five">
+      <div><span>Ts</span><strong id="tempMTs">—</strong></div>
+      <div><span>Proc</span><strong id="tempMProc">—</strong></div>
+      <div><span>Ocupación</span><strong id="tempOcupacion">—</strong></div>
+      <div><span>Margen</span><strong id="tempMargen">—</strong></div>
+      <div><span>Condición</span><strong id="tempCondicion">—</strong></div>
+    </div>
+
+    <div id="tempStatus" class="status"></div>
+
+    <div class="temp-bar-wrap">
+      <div class="temp-axis">
+        <span>0</span>
+        <span id="tempAxisEnd">Ts</span>
+      </div>
+      <div class="temp-bar">
+        <div class="temp-proc" id="tempProcBar">
+          <span>Proc</span>
+        </div>
+        <div class="temp-free" id="tempFreeBar">
+          <span>Tiempo disponible</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="formula">
+      <code>Ocupación = (Proc / Ts) x 100</code>
+      <code>Margen = Ts - Proc</code>
+    </div>
+
+    <div class="activity">
+      <strong>Interpretación:</strong>
+      si Proc es mucho menor que Ts, el cálculo termina con margen.
+      Si Proc se aproxima a Ts, queda poco tiempo disponible.
+      Si Proc supera Ts, el procesamiento ya no cabe dentro del periodo definido.
+    </div>
+  </section>
+
+</main>
+
+<script src="js/estudio_clases3_4.js"></script>
+<script src="js/complemento_filtro_temporizacion.js?v=1"></script>
+</body>
+</html>

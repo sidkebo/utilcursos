@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COD-600 | LAB-COD-01</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:#080e14;color:#e8eef5;font-family:Arial,Helvetica,sans-serif;display:grid;place-items:center}
+    main{width:min(900px,calc(100% - 32px))}
+    .eyebrow{color:#45d4ff;font-size:.75rem;font-weight:800;letter-spacing:.12em}
+    h1{margin:7px 0 5px;font-size:1.8rem}
+    .subtitle{margin:0 0 26px;color:#8ea1b4;line-height:1.5}
+    .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .card{display:block;padding:22px;min-height:190px;border:1px solid #2c4052;border-radius:14px;background:#111a24;color:inherit;text-decoration:none;transition:.15s ease}
+    .card:hover{border-color:#45d4ff;transform:translateY(-2px)}
+    .tag{display:inline-block;padding:5px 9px;margin-bottom:14px;border-radius:999px;font-size:.66rem;font-weight:800}
+    .real .tag{border:1px solid #82f28f;color:#82f28f}
+    .study .tag{border:1px solid #ffd166;color:#ffd166}
+    .card h2{margin:0 0 9px;font-size:1.1rem}
+    .card p{margin:0;color:#91a4b7;line-height:1.5;font-size:.86rem}
+    .important{margin-top:18px;padding:12px 14px;border:1px solid #253747;border-radius:10px;background:#0b131b;color:#778b9e;font-size:.78rem;line-height:1.5}
+    @media(max-width:700px){.cards{grid-template-columns:1fr}}
+  
+.author-box{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  width:max-content;
+  max-width:100%;
+  margin:12px auto 0;
+  padding:9px 16px;
+  border:1px solid #8b7624;
+  border-radius:13px;
+  background:#15202c;
+  color:#eef3f8;
+  font-size:.9rem;
+}
+.author-tag{
+  display:inline-block;
+  padding:4px 9px;
+  border:1px solid #8b7624;
+  border-radius:999px;
+  background:#3a3a23;
+  color:#ffd84d;
+  font-weight:800;
+  letter-spacing:.05em;
+}
+.author-box a{
+  color:#78b7ff;
+  text-decoration:none;
+  font-weight:700;
+}
+.author-box a:hover{
+  text-decoration:underline;
+}
+.author-dot{
+  color:#f2c94c;
+}
+
+</style>
+</head>
+<body>
+<main>
+  <div class="eyebrow">CONTROL DIGITAL · COD-600</div>
+  <h1>LAB-COD-01</h1>
+  <p class="subtitle">Seleccione el recurso que desea utilizar.</p>
+<div class="author-box">
+  <span class="author-tag">AUTOR</span>
+  <strong>Eduardo Balderrama</strong>
+  <span class="author-dot">•</span>
+  <a href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+</div>
+
+
+  <div class="cards">
+    <a class="card real" href="practica_medicion.html">
+      <span class="tag">ESP32 REAL</span>
+      <h2>Práctica de medición</h2>
+      <p>Conexión Web Serial, recepción de datos reales del ESP32, gráfica ADC/ADCf, registro de puntos y cursores.</p>
+    </a>
+
+    <a class="card study" href="muestreo_aliasing_adc.html">
+      <span class="tag">SIMULACIÓN</span>
+      <h2>Muestreo, aliasing y cuantificación ADC</h2>
+      <p>Muestreo suficiente e insuficiente, aliasing, frecuencia aparente, resolución, cuantificación y saturación ideal del ADC.</p>
+    </a>
+  </div>
+
+  <div class="important">
+    Las páginas son independientes. La práctica real conserva su Web Serial original y la página de estudio no abre ni modifica el puerto del ESP32.
+  </div>
+</main>
+</body>
+</html>

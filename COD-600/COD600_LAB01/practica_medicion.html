@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COD-600 | LAB-COD-01 | Práctica de medición</title>
+  <link rel="stylesheet" href="css/styles.css?v=student-v1">
+<style>
+.author-box{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  width:max-content;
+  max-width:100%;
+  margin:12px auto 0;
+  padding:9px 16px;
+  border:1px solid #8b7624;
+  border-radius:13px;
+  background:#15202c;
+  color:#eef3f8;
+  font-size:.9rem;
+}
+.author-tag{
+  display:inline-block;
+  padding:4px 9px;
+  border:1px solid #8b7624;
+  border-radius:999px;
+  background:#3a3a23;
+  color:#ffd84d;
+  font-weight:800;
+  letter-spacing:.05em;
+}
+.author-box a{
+  color:#78b7ff;
+  text-decoration:none;
+  font-weight:700;
+}
+.author-box a:hover{
+  text-decoration:underline;
+}
+.author-dot{
+  color:#f2c94c;
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <small>CONTROL DIGITAL · COD-600</small>
+    <h1>LAB-COD-01 · Práctica de medición con ESP32</h1>
+    <p id="headerInfo">El ESP32 realiza la adquisición y el muestreo. La página solamente recibe, registra y grafica los datos.</p>
+  </div>
+  <div id="modeBadge">SIMULACIÓN</div>
+</header>
+
+<div class="author-box">
+  <span class="author-tag">AUTOR</span>
+  <strong>Eduardo Balderrama</strong>
+  <span class="author-dot">•</span>
+  <a href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+</div>
+
+
+<main>
+  <section class="panel controls">
+    <h2>Conexión con el ESP32</h2>
+    <div class="tabs student-hide">
+      <button class="tab active" data-mode="sim">Simulación</button>
+      <button class="tab" data-mode="serial">Serial ESP32</button>
+      <button class="tab" data-mode="paste">Pegar terminal</button>
+    </div>
+
+    <div id="simBox" class="student-hide">
+      <label>Potenciómetro <span id="potText">50 %</span></label>
+      <input id="pot" type="range" min="0" max="100" value="50">
+      <label>Ts <span id="tsText">100 ms</span></label>
+      <input id="ts" type="range" min="50" max="1000" step="50" value="100">
+      <div class="buttons">
+        <button id="start">Iniciar</button>
+        <button id="pause">Pausar</button>
+        <button id="reset">Reiniciar</button>
+      </div>
+    </div>
+
+    <div id="serialBox" class="hidden">
+      <p class="student-serial-note">Conecte el ESP32 para trabajar únicamente con datos reales. Cierre antes el Monitor Serial de Arduino IDE.</p>
+
+      <div class="serial-actions">
+        <button id="connect">Conectar ESP32</button>
+        <button id="disconnect">Desconectar</button>
+      </div>
+
+      <div class="serial-extra-actions">
+        <button id="resetEsp32">Reiniciar ESP32</button>
+        <button id="clearSerialData">Limpiar gráfica/datos</button>
+      </div>
+
+      <div class="serial-diagnostics">
+        <div><span>Estado</span><strong id="serialState">Desconectado</strong></div>
+        <div><span>Bytes RX</span><strong id="serialBytes">0</strong></div>
+        <div><span>Fragmentos RX</span><strong id="serialChunks">0</strong></div>
+        <div><span>Líneas recibidas</span><strong id="serialLines">0</strong></div>
+        <div><span>Líneas válidas</span><strong id="serialValid">0</strong></div>
+        <div><span>Líneas ignoradas</span><strong id="serialRejected">0</strong></div>
+        <div><span>VID:PID</span><strong id="serialUsbInfo">—</strong></div>
+        <div><span>Último k válido</span><strong id="serialLastK">—</strong></div>
+      </div>
+
+      <div class="serial-raw student-hide">
+        <span>Monitor serial crudo (últimas líneas)</span>
+        <pre id="serialRawMonitor">Esperando datos...</pre>
+      </div>
+    </div>
+
+    <div id="pasteBox" class="hidden student-hide">
+      <textarea id="terminalInput" rows="7" placeholder="Pegue aquí líneas del terminal..."></textarea>
+      <button id="parse">Procesar datos</button>
+    </div>
+  </section>
+
+  <section class="panel student-hide" id="flowPanel">
+    <div class="flow-title-row">
+      <div>
+        <h2>Flujo del programa</h2>
+        <p id="flowModeNote" class="flow-note">
+          Representación didáctica del orden de ejecución del programa.
+        </p>
+      </div>
+      <span id="flowModeBadge" class="flow-mode-badge">ANIMADO</span>
+    </div>
+
+    <div class="flow">
+      <div class="step" data-step="wait">Esperar Ts</div>
+      <span>→</span>
+      <div class="step" data-step="pulse">GPIO25 HIGH</div>
+      <span>→</span>
+      <div class="step" data-step="adc">analogRead()</div>
+      <span>→</span>
+      <div class="step" data-step="mv">analogReadMilliVolts()</div>
+      <span>→</span>
+      <div class="step" data-step="filter">Promedio N=5</div>
+      <span>→</span>
+      <div class="step" data-step="scale">Escalamiento</div>
+      <span>→</span>
+      <div class="step" data-step="end">GPIO25 LOW</div>
+    </div>
+
+    <div class="pulse-row" id="pulseRow">
+      <strong><span id="indicatorLabel">GPIO25</span>: <span id="gpio">LOW</span></strong>
+      <div class="pulse-track" id="pulseTrack"><div id="pulse"></div></div>
+    </div>
+
+    <div id="serialSampleInfo" class="serial-sample-info hidden">
+      <div class="serial-sample-dot"></div>
+      <div>
+        <strong id="serialSampleTitle">Recepción Serial activa</strong>
+        <small id="serialSampleText">Esperando una muestra válida del ESP32...</small>
+      </div>
+    </div>
+  </section>
+
+  <section class="metrics student-live-metrics">
+    <div class="metric"><span>k</span><strong id="k">—</strong><small>Número de muestra</small></div>
+    <div class="metric"><span>t</span><strong id="studentT">—</strong><small>Tiempo desde el inicio</small></div>
+    <div class="metric accent"><span>ADC</span><strong id="adc">—</strong><small>Código ADC recibido</small></div>
+    <div class="metric"><span>ADCf</span><strong id="adcf">—</strong><small>Código filtrado recibido</small></div>
+    <div class="metric"><span>VinADC</span><strong id="vin">—</strong><small id="vinNote">Valor recibido</small></div>
+    <div class="metric"><span>Proc</span><strong id="proc">—</strong><small id="procNote">Medido por el ESP32</small></div>
+
+    <!-- Datos que siguen existiendo para el parser, pero no se muestran al alumno. -->
+    <div class="student-support-hidden">
+      <strong id="adcp">—</strong>
+      <strong id="adcfp">—</strong>
+      <strong id="dt">—</strong>
+    </div>
+  </section>
+
+  <section class="panel timing-panel student-hide">
+    <div class="timing-title">
+      <div>
+        <h2>Comprobación temporal</h2>
+        <p>Verifica si la adquisición y el procesamiento terminan antes de la siguiente muestra.</p>
+      </div>
+      <span id="timingState" class="timing-state waiting">ESPERANDO DATOS</span>
+    </div>
+
+    <div class="timing-grid">
+      <div>
+        <span>Periodo disponible Ts</span>
+        <strong id="timingTs">100000 us</strong>
+      </div>
+      <div>
+        <span>Tiempo utilizado Proc</span>
+        <strong id="timingProc">180 us</strong>
+      </div>
+      <div>
+        <span>Ocupación del periodo</span>
+        <strong id="timingUsage">0.18 %</strong>
+      </div>
+      <div>
+        <span>Margen disponible</span>
+        <strong id="timingMargin">99820 us</strong>
+      </div>
+    </div>
+
+    <div class="timing-comparison">
+      <code id="timingEquation">Proc = 180 us &lt; Ts = 100000 us</code>
+    </div>
+
+    <div class="timing-visualization">
+      <div class="timing-visual-head">
+        <div>
+          <h3>Representación temporal</h3>
+          <p id="timingVisualNote">
+            En simulación se representa el comportamiento programado.
+          </p>
+        </div>
+        <span id="timingVisualBadge" class="timing-visual-badge">SIMULACIÓN</span>
+      </div>
+
+      <div class="timing-diagrams">
+        <div class="timing-diagram">
+          <div class="timing-diagram-title">
+            <strong>Periodo entre muestras</strong>
+            <span id="periodLabel">Ts = 100.000 ms</span>
+          </div>
+
+          <div class="period-wave">
+            <div class="sample-marker start"></div>
+            <div id="periodPulse" class="period-pulse"></div>
+            <div class="sample-marker end"></div>
+          </div>
+
+          <div class="period-axis">
+            <span>muestra k</span>
+            <span id="periodAxisLabel">dT = 100.000 ms</span>
+            <span>muestra k+1</span>
+          </div>
+
+          <small>
+            El pulso real es muy estrecho respecto a Ts; por eso se marca visualmente con un ancho mínimo.
+          </small>
+        </div>
+
+        <div class="timing-diagram">
+          <div class="timing-diagram-title">
+            <strong>GPIO25 — pulso ampliado</strong>
+            <span id="procLabel">Proc ≈ 180 us</span>
+          </div>
+
+          <div class="zoom-wave">
+            <div class="zoom-low left"></div>
+            <div id="zoomHigh" class="zoom-high"></div>
+            <div class="zoom-low right"></div>
+          </div>
+
+          <div class="zoom-axis">
+            <span>LOW</span>
+            <span id="zoomProcLabel">HIGH durante ≈ 180 us</span>
+            <span>LOW</span>
+          </div>
+
+          <small>
+            Vista ampliada: muestra la duración aproximada del bloque de adquisición/procesamiento; no está a escala respecto a Ts.
+          </small>
+        </div>
+      </div>
+
+      <div class="timing-disclaimer" id="timingDisclaimer">
+        En modo Serial esta señal se reconstruye con dT y Proc enviados por el ESP32. No sustituye una medición eléctrica con osciloscopio o analizador lógico.
+      </div>
+
+      <div class="scope-lab">
+        <div class="scope-head">
+          <div>
+            <h3>Osciloscopio didáctico de GPIO25</h3>
+            <p>
+              Manipule la base de tiempo, disparo y cursores sobre una señal reconstruida con dT y Proc.
+            </p>
+          </div>
+          <span id="scopeSourceBadge" class="scope-source-badge">SIMULACIÓN</span>
+        </div>
+
+        <div class="scope-toolbar">
+          <div class="scope-group scope-run">
+            <span class="scope-group-title">Adquisición</span>
+            <div class="scope-buttons">
+              <button id="scopeRun" class="scope-active" data-help="RUN: actualiza continuamente la pantalla con cada nueva muestra recibida. Úselo para observar la señal en tiempo real.">RUN</button>
+              <button id="scopeStop" data-help="STOP: congela la pantalla del osciloscopio para poder analizar la señal y colocar los cursores con calma. El ESP32 puede seguir enviando datos.">STOP</button>
+              <button id="scopeSingle" data-help="SINGLE: espera una sola muestra nueva, la captura y congela la pantalla. Equivale a una captura única de un osciloscopio.">SINGLE</button>
+              <button id="scopeAuto" data-help="AUTO: ajusta automáticamente la base de tiempo y la posición del disparo para que la señal se vea de forma útil.">AUTO</button>
+            </div>
+          </div>
+
+          <div class="scope-group">
+            <label for="scopeView">Vista</label>
+            <select id="scopeView" data-help="Vista: elija Periodo completo para medir Ts o Pulso ampliado para observar mejor el tiempo Proc.">
+              <option value="period">Periodo completo</option>
+              <option value="pulse">Pulso ampliado</option>
+            </select>
+          </div>
+
+          <div class="scope-group">
+            <label for="scopeTimeDiv">TIME / DIV</label>
+            <select id="scopeTimeDiv" data-help="TIME/DIV: cambia la escala horizontal. Cada división de la rejilla representa el tiempo seleccionado. Menor valor = mayor acercamiento.">
+              <option value="auto">AUTO</option>
+              <option value="10">10 us/div</option>
+              <option value="20">20 us/div</option>
+              <option value="50">50 us/div</option>
+              <option value="100">100 us/div</option>
+              <option value="200">200 us/div</option>
+              <option value="500">500 us/div</option>
+              <option value="1000">1 ms/div</option>
+              <option value="2000">2 ms/div</option>
+              <option value="5000">5 ms/div</option>
+              <option value="10000">10 ms/div</option>
+              <option value="20000">20 ms/div</option>
+              <option value="50000">50 ms/div</option>
+            </select>
+          </div>
+
+          <div class="scope-group">
+            <label for="scopeTriggerEdge">TRIGGER</label>
+            <select id="scopeTriggerEdge" data-help="TRIGGER: selecciona el flanco usado como referencia. Flanco ↑ toma LOW→HIGH; Flanco ↓ toma HIGH→LOW.">
+              <option value="rising">Flanco ↑</option>
+              <option value="falling">Flanco ↓</option>
+            </select>
+          </div>
+
+          <div class="scope-group scope-trigger-pos">
+            <label for="scopeTriggerPos">Posición trigger <strong id="scopeTriggerPosText">20 %</strong></label>
+            <input id="scopeTriggerPos" data-help="Posición trigger: mueve horizontalmente el punto de disparo dentro de la pantalla. No modifica la señal, solo dónde se muestra." type="range" min="10" max="90" value="20">
+          </div>
+
+          <label class="scope-check">
+            <input id="scopePersistence" data-help="Persistencia: superpone varias trazas recientes para observar pequeñas variaciones de dT o Proc entre muestras." type="checkbox">
+            Persistencia
+          </label>
+        </div>
+
+        <div class="scope-screen-wrap">
+          <div class="scope-screen-top">
+            <span id="scopeState">RUN</span>
+            <span id="scopeTimeDivReadout">AUTO</span>
+            <span id="scopeTriggerReadout">TRIG ↑ 20 %</span>
+            <span id="scopeSampleReadout">k=0</span>
+          </div>
+
+          <canvas id="scopeCanvas" data-help="Pantalla del osciloscopio: haga clic una vez para mover el Cursor A y otra vez para mover el Cursor B. Los siguientes clics alternan entre ambos." width="1200" height="420"
+                  aria-label="Osciloscopio didáctico reconstruido de GPIO25"></canvas>
+
+          <div class="scope-screen-bottom">
+            <span>CH1: GPIO25 reconstruido</span>
+            <span>Niveles lógicos: LOW / HIGH</span>
+            <span id="scopeFrozenNote">Actualización en vivo</span>
+          </div>
+        </div>
+
+        <div class="scope-cursors">
+          <div class="scope-cursor-controls">
+            <div>
+              <label for="cursorA">Cursor A <strong id="cursorAText">20 %</strong></label>
+              <input id="cursorA" data-help="Cursor A: marcador temporal manual. Muévalo hasta el primer punto de la medición que desea realizar." type="range" min="0" max="100" step="0.1" value="20">
+            </div>
+            <div>
+              <label for="cursorB">Cursor B <strong id="cursorBText">70 %</strong></label>
+              <input id="cursorB" data-help="Cursor B: segundo marcador temporal. La página calcula Δt entre A y B." type="range" min="0" max="100" step="0.1" value="70">
+            </div>
+          </div>
+
+          <div class="scope-buttons scope-measure-buttons">
+            <button id="scopeMeasureProc" data-help="Cursores → Proc: cambia a Pulso ampliado y coloca A y B aproximadamente en el inicio y final del pulso para medir Proc.">Cursores → Proc</button>
+            <button id="scopeMeasureTs" data-help="Cursores → Ts: cambia a Periodo completo y coloca A y B entre dos muestras consecutivas para medir Ts.">Cursores → Ts</button>
+            <button id="scopeResetCursors" data-help="Centrar cursores: devuelve A y B a posiciones intermedias para iniciar una nueva medición manual.">Centrar cursores</button>
+          </div>
+
+          <p class="scope-cursor-hint">
+            También puede hacer clic sobre la pantalla: el primer clic mueve A y el siguiente mueve B.
+          </p>
+        </div>
+
+        <div class="scope-measurements">
+          <div><span>Periodo T</span><strong id="scopeMeasureT">—</strong></div>
+          <div><span>Frecuencia</span><strong id="scopeMeasureF">—</strong></div>
+          <div><span>Ancho PW+</span><strong id="scopeMeasurePW">—</strong></div>
+          <div><span>Duty+</span><strong id="scopeMeasureDuty">—</strong></div>
+          <div><span>Cursores Δt</span><strong id="scopeMeasureDt">—</strong></div>
+          <div><span>1 / Δt</span><strong id="scopeMeasureInvDt">—</strong></div>
+        </div>
+
+        <div class="scope-history">
+          <span id="scopeHistoryStats">Historial: esperando muestras...</span>
+          <span class="scope-warning">
+            La forma de onda es reconstruida matemáticamente; no sustituye al osciloscopio físico.
+          </span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="chart-head">
+      <div>
+        <h2>Registro de muestras ADC y ADCf</h2>
+        <p class="chart-subtitle">Datos recibidos directamente desde el ESP32.</p>
+      </div>
+      <div class="chart-legend">
+        <span><i class="legend-adc"></i> ADC directo</span>
+        <span><i class="legend-adcf"></i> ADC filtrado</span>
+      </div>
+    </div>
+
+    <div class="chart-controls student-hide" id="chartControls">
+      <div class="chart-control-main">
+        <div class="chart-control-row">
+          <label for="potQuick">Potenciómetro <strong id="potQuickText">50 %</strong></label>
+          <input id="potQuick" type="range" min="0" max="100" value="50">
+        </div>
+
+        <div class="quick-values">
+          <button class="quick-pot" data-value="0">0 %</button>
+          <button class="quick-pot" data-value="25">25 %</button>
+          <button class="quick-pot" data-value="50">50 %</button>
+          <button class="quick-pot" data-value="75">75 %</button>
+          <button class="quick-pot" data-value="100">100 %</button>
+        </div>
+
+        <div class="chart-control-row">
+          <label for="tsQuick">Ts <strong id="tsQuickText">100 ms</strong> · <span id="fsQuickText">fs = 10.00 Hz</span></label>
+          <input id="tsQuick" type="range" min="50" max="1000" step="50" value="100">
+        </div>
+
+        <div class="chart-action-row">
+          <button id="startQuick">Iniciar</button>
+          <button id="pauseQuick">Pausar</button>
+          <button id="resetQuick">Reiniciar</button>
+        </div>
+      </div>
+
+      <div class="step-tests">
+        <span class="step-tests-title">Ensayos de cambio rápido</span>
+        <div class="step-test-buttons">
+          <button class="step-test" data-from="25" data-to="75">25 → 75 %</button>
+          <button class="step-test" data-from="75" data-to="25">75 → 25 %</button>
+          <button class="step-test" data-from="0" data-to="100">0 → 100 %</button>
+          <button class="step-test" data-from="100" data-to="0">100 → 0 %</button>
+        </div>
+        <small id="stepTestStatus">Use estos botones para provocar un cambio controlado y observar el retardo de ADCf.</small>
+      </div>
+    </div>
+
+    <div id="chartStatus" class="chart-status student-hide">
+      ADC y ADCf coinciden porque la entrada está estable.
+    </div>
+
+    <div id="dataSummary" class="data-summary student-hide">
+      <span>Muestras: <strong id="sampleCount">0</strong></span>
+      <span>Rango: <strong id="sampleRange">—</strong></span>
+      <span>Ts: <strong id="detectedTs">—</strong></span>
+      <span>fs: <strong id="detectedFs">—</strong></span>
+    </div>
+
+    <canvas id="chart" width="1200" height="320"></canvas>
+
+    <p class="chart-help student-hide">
+      ADC cambia primero. ADCf tarda varias muestras porque utiliza el promedio móvil N = 5.
+    </p>
+  </section>
+
+
+  <section class="panel student-record-panel">
+    <div class="student-record-head">
+      <div>
+        <h2>Registro de mediciones</h2>
+        <p>Guarde hasta cinco puntos de trabajo. La página registra únicamente los valores recibidos; los cálculos deben realizarse aparte.</p>
+      </div>
+      <span id="studentRecordCount">0 / 5</span>
+    </div>
+
+    <div class="student-record-controls">
+      <input id="studentPointLabel" type="text" maxlength="30"
+             placeholder="Referencia: mínimo, 25 %, posición media...">
+      <button id="studentRecordPoint">Registrar punto actual</button>
+      <button id="studentClearRecords">Borrar registros</button>
+    </div>
+
+    <div class="student-record-status" id="studentRecordStatus">
+      Conecte el ESP32 y espere una muestra válida.
+    </div>
+
+    <div class="student-table-wrap">
+      <table class="student-record-table">
+        <thead>
+          <tr>
+            <th>Punto</th>
+            <th>Referencia</th>
+            <th>k</th>
+            <th>t (ms)</th>
+            <th>ADC</th>
+            <th>ADCf</th>
+            <th>VinADC (mV)</th>
+            <th>Proc (us)</th>
+          </tr>
+        </thead>
+        <tbody id="studentRecordsBody">
+          <tr class="student-empty-row">
+            <td colspan="8">Sin mediciones registradas.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel sample-measure-panel">
+    <div class="sample-measure-head">
+      <div>
+        <h2>Selección de muestras con cursores</h2>
+        <p>
+          Seleccione dos muestras reales del ESP32. Registre los valores de A y B y realice los cálculos solicitados en su práctica.
+        </p>
+      </div>
+      <span id="sampleMeasureBadge" class="sample-measure-badge">DATOS DISCRETOS</span>
+    </div>
+
+    <div class="measure-purpose student-hide">
+      <span class="measure-purpose-title">¿Qué desea medir?</span>
+      <div class="measure-purpose-buttons">
+        <button id="measureTsMode"
+                data-help="Medir Ts: guía para seleccionar dos muestras consecutivas y comprobar el periodo de muestreo y la frecuencia fs.">
+          Medir Ts
+        </button>
+        <button id="measureChangeMode"
+                data-help="Medir un cambio: seleccione el inicio y el final de una variación para obtener Δk, Δt, ΔADC y ΔADCf.">
+          Medir un cambio
+        </button>
+        <button id="measureFreeMode"
+                class="active"
+                data-help="Medición libre: permite colocar A y B en cualquier par de muestras reales del registro.">
+          Medición libre
+        </button>
+      </div>
+    </div>
+
+    <div class="measure-guide student-hide" id="measureGuide">
+      <div class="measure-step current" id="measureStep1">
+        <span class="measure-step-number">1</span>
+        <div>
+          <strong>Capturar</strong>
+          <small id="measureStep1Text">Congele una zona de interés.</small>
+        </div>
+      </div>
+      <div class="measure-step" id="measureStep2">
+        <span class="measure-step-number">2</span>
+        <div>
+          <strong>Cursor A</strong>
+          <small id="measureStep2Text">Seleccione el inicio.</small>
+        </div>
+      </div>
+      <div class="measure-step" id="measureStep3">
+        <span class="measure-step-number">3</span>
+        <div>
+          <strong>Cursor B</strong>
+          <small id="measureStep3Text">Seleccione el final.</small>
+        </div>
+      </div>
+      <div class="measure-step" id="measureStep4">
+        <span class="measure-step-number">4</span>
+        <div>
+          <strong>Resultado</strong>
+          <small id="measureStep4Text">La página calculará las diferencias.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="sample-measure-toolbar">
+      <div class="sample-measure-group">
+        <label for="sampleSeries">Visualizar</label>
+        <select id="sampleSeries" data-help="Selecciona qué secuencia discreta desea observar: ADC directo, ADC filtrado o ambas.">
+          <option value="both">ADC + ADCf</option>
+          <option value="adc">Solo ADC</option>
+          <option value="adcf">Solo ADCf</option>
+        </select>
+      </div>
+
+      <div class="sample-measure-group">
+        <label for="sampleWindow">Ventana</label>
+        <select id="sampleWindow" data-help="Define cuántas muestras recientes se muestran en la gráfica de medición. No modifica los datos del ESP32.">
+          <option value="60">Últimas 60 muestras</option>
+          <option value="120" selected>Últimas 120 muestras</option>
+          <option value="240">Últimas 240 muestras</option>
+          <option value="all">Todas disponibles</option>
+        </select>
+      </div>
+
+      <div class="sample-measure-actions">
+        <button id="sampleCaptureButton"
+                data-help="Capturar para medir: congela únicamente esta gráfica de medición. El ESP32 y el resto de la página continúan recibiendo datos. Después puede colocar los cursores A y B sin que la señal se desplace.">
+          Capturar para medir
+        </button>
+        <button id="sampleLiveButton"
+                class="sample-live-active"
+                data-help="Volver a tiempo real: elimina la captura de medición, limpia los cursores y comienza una gráfica nueva con las muestras que lleguen desde ese momento.">
+          Volver a tiempo real
+        </button>
+        <button id="sampleCursorAButton" data-help="Activa el Cursor A. El siguiente clic sobre la gráfica seleccionará la muestra real más cercana.">Seleccionar A</button>
+        <button id="sampleCursorBButton" data-help="Activa el Cursor B. El siguiente clic sobre la gráfica seleccionará la muestra real más cercana.">Seleccionar B</button>
+        <button id="sampleClearCursors" data-help="Elimina las selecciones A y B y limpia solamente las mediciones entre cursores. La señal capturada permanece.">Quitar cursores</button>
+      </div>
+    </div>
+
+    <div class="sample-canvas-wrap">
+      <canvas id="sampleMeasureCanvas" data-help="Haga clic cerca de un punto. El cursor activo se ajustará a la muestra real más cercana; nunca mide valores intermedios de la línea." width="1200" height="360"
+              aria-label="Gráfica interactiva de medición de muestras ADC y ADC filtrado"></canvas>
+      <div class="sample-canvas-help">
+        <strong id="sampleMeasureState">TIEMPO REAL:</strong>
+        <span id="sampleMeasureInstruction">
+          la gráfica se actualiza con cada muestra. Pulse «Capturar para medir» antes de colocar los cursores.
+        </span>
+      </div>
+    </div>
+
+    <div class="measure-result-banner student-hide" id="measureResultBanner">
+      <div>
+        <span>Estado de la medición</span>
+        <strong id="measureResultMain">Esperando captura</strong>
+      </div>
+      <div class="measure-result-mini">
+        <span>Δk <strong id="measureTopDeltaK">—</strong></span>
+        <span>Δt <strong id="measureTopDeltaT">—</strong></span>
+        <span id="measureTopExtraLabel">Resultado</span>
+        <strong id="measureTopExtra">—</strong>
+      </div>
+    </div>
+
+    <div class="sample-cursor-panels">
+      <article class="sample-cursor-card cursor-a">
+        <div class="sample-cursor-title">
+          <span>Cursor A</span>
+          <strong id="sampleAStatus">Sin seleccionar</strong>
+        </div>
+        <div class="sample-cursor-data">
+          <div><span>k</span><strong id="sampleAK">—</strong></div>
+          <div><span>t</span><strong id="sampleAT">—</strong></div>
+          <div><span>ADC</span><strong id="sampleAAdc">—</strong></div>
+          <div><span>ADCf</span><strong id="sampleAAdcf">—</strong></div>
+        </div>
+        <div class="sample-nudge">
+          <button id="sampleAPrev">← A</button>
+          <button id="sampleANext">A →</button>
+        </div>
+      </article>
+
+      <article class="sample-cursor-card cursor-b">
+        <div class="sample-cursor-title">
+          <span>Cursor B</span>
+          <strong id="sampleBStatus">Sin seleccionar</strong>
+        </div>
+        <div class="sample-cursor-data">
+          <div><span>k</span><strong id="sampleBK">—</strong></div>
+          <div><span>t</span><strong id="sampleBT">—</strong></div>
+          <div><span>ADC</span><strong id="sampleBAdc">—</strong></div>
+          <div><span>ADCf</span><strong id="sampleBAdcf">—</strong></div>
+        </div>
+        <div class="sample-nudge">
+          <button id="sampleBPrev">← B</button>
+          <button id="sampleBNext">B →</button>
+        </div>
+      </article>
+    </div>
+
+    <div class="sample-delta-grid student-hide">
+      <div><span>Δk</span><strong id="sampleDeltaK">—</strong></div>
+      <div><span>Δt</span><strong id="sampleDeltaT">—</strong></div>
+      <div><span>ΔADC</span><strong id="sampleDeltaAdc">—</strong></div>
+      <div><span>ΔADCf</span><strong id="sampleDeltaAdcf">—</strong></div>
+      <div><span>Ts promedio A→B</span><strong id="sampleMeanTs">—</strong></div>
+      <div><span>fs promedio A→B</span><strong id="sampleMeanFs">—</strong></div>
+    </div>
+
+    <div class="sample-interval-stats student-hide">
+      <div>
+        <span>ADC mínimo</span>
+        <strong id="sampleAdcMin">—</strong>
+      </div>
+      <div>
+        <span>ADC máximo</span>
+        <strong id="sampleAdcMax">—</strong>
+      </div>
+      <div>
+        <span>ADCf mínimo</span>
+        <strong id="sampleAdcfMin">—</strong>
+      </div>
+      <div>
+        <span>ADCf máximo</span>
+        <strong id="sampleAdcfMax">—</strong>
+      </div>
+      <div>
+        <span>Muestras A→B</span>
+        <strong id="sampleIntervalCount">—</strong>
+      </div>
+    </div>
+
+    <div class="sample-measure-note">
+      <strong>Importante:</strong>
+      los cursores muestran valores crudos de las muestras seleccionadas. Esta versión no entrega automáticamente Δt, Ts, fs, porcentajes ni diferencias entre A y B.
+    </div>
+  </section>
+
+  <section class="panel student-hide">
+    <h2>Memoria del promedio móvil</h2>
+    <div id="memory" class="memory"></div>
+    <p class="formula">ADCf = (x1 + x2 + x3 + x4 + x5) / 5</p>
+  </section>
+
+  <section class="panel theory student-hide">
+    <h2>Qué representa cada dato</h2>
+    <div class="theory-grid">
+      <div><strong>ADC</strong><p>Código ADC directo.</p></div>
+      <div><strong>ADCf</strong><p>Código ADC filtrado.</p></div>
+      <div><strong>VinADC</strong><p>Tensión aproximada obtenida mediante analogReadMilliVolts().</p></div>
+      <div><strong>ADC%</strong><p>Porcentaje de la escala digital 0...511.</p></div>
+      <div><strong>ADCf%</strong><p>Porcentaje filtrado de la escala digital.</p></div>
+      <div><strong>dT</strong><p>Tiempo real entre muestras.</p></div>
+      <div><strong>Proc</strong><p>Tiempo de adquisición y procesamiento.</p></div>
+      <div><strong>GPIO25</strong><p>Punto de prueba físico del bloque de procesamiento. Debe verificarse con osciloscopio o analizador lógico.</p></div>
+    </div>
+    <div class="equations">
+      <code>Niveles = 2^9 = 512</code>
+      <code>ADCmax = 511</code>
+      <code>fs = 1 / Ts</code>
+      <code>ADC% = (ADC / 511) x 100</code>
+    </div>
+  </section>
+
+  <section class="panel student-hide">
+    <h2>Última línea procesada</h2>
+    <pre id="line">Esperando datos...</pre>
+  </section>
+</main>
+<script src="js/app.js?v=student-v1"></script>
+
+  <div id="helpTooltip" class="help-tooltip" role="tooltip" aria-hidden="true"></div>
+
+</body>
+</html>

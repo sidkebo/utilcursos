@@ -1,0 +1,87 @@
+COD-600 - LAB-COD-01
+
+ABRIR SIEMPRE:
+  index.html
+
+PÁGINAS:
+1) index.html
+   Portada principal y selector.
+
+2) practica_medicion.html
+   Página real del ESP32.
+   Su contenido es idéntico al index.html funcional anterior.
+
+3) muestreo_aliasing_adc.html
+   Página independiente de simulación.
+   No usa Web Serial.
+
+ARCHIVOS DE LA PRÁCTICA REAL:
+- js/app.js: sin cambios
+- css/styles.css: sin cambios
+
+
+AUTOR MOSTRADO EN TODAS LAS PÁGINAS:
+Eduardo Balderrama
+sidkebo@gmail.com
+
+CRITERIO DE TÍTULOS:
+Las páginas y secciones usan el nombre del tema, no etiquetas como "Clase 3" o "Clase 4".
+
+
+RANGO AMPLIADO DEL SIMULADOR DE MUESTREO/ALIASING:
+- Frecuencia de la señal f: 0,5 Hz a 100 Hz.
+- Frecuencia de muestreo fs: 1 Hz a 500 Hz.
+
+Solo se modificaron los límites de los dos controles de frecuencia
+de la página muestreo_aliasing_adc.html.
+La práctica real con ESP32 no fue modificada.
+
+
+COMPLEMENTO AÑADIDO EN muestreo_aliasing_adc.html
+=================================================
+Se añadieron tres bloques independientes:
+1. Memoria circular de 5 muestras e indiceFiltro.
+2. Ruido y efecto del promedio móvil N = 5.
+3. Comparación Ts frente a tiempo de procesamiento Proc.
+
+IMPORTANTE:
+- No se modificó practica_medicion.html.
+- No se modificó js/app.js.
+- No se modificó css/styles.css.
+- No se modificó js/estudio_clases3_4.js.
+- No se modificó css/estudio_clases3_4.css.
+- Los nuevos bloques usan archivos separados:
+    css/complemento_filtro_temporizacion.css
+    js/complemento_filtro_temporizacion.js
+
+
+PROPUESTA VISUAL PARA LA CUANTIFICACIÓN
+=======================================
+Se añadió un navegador fijo de la escala ADC 0...511 ANTES de la
+gráfica ampliada original.
+
+El navegador:
+- no hace zoom;
+- el marcador amarillo recorre realmente 0...511;
+- muestra la pequeña ventana que la gráfica ampliada está observando;
+- permite entender por qué la línea de la gráfica ampliada parece regresar
+  hacia el centro cuando cambia el código.
+
+La gráfica ampliada original NO fue modificada.
+La práctica real con ESP32 NO fue modificada.
+
+
+AJUSTE VISUAL ADC - GRÁFICA FIJA DEFINITIVA
+===========================================
+Solo se cambió la representación de cuantificación:
+
+- Se retiró el navegador ADC redundante.
+- Se retiró "Ventana ampliada mostrada abajo".
+- La gráfica queda fija:
+    X = Vin de 0 a 3,6 V
+    Y = ADC de 0 a 511
+- Al mover Vin, la línea amarilla recorre físicamente toda la gráfica.
+- Al mover VFS, cambia la pendiente de la conversión y el inicio de saturación.
+- Si Vin > VFS, el código permanece en ADC = 511 y se muestra la zona saturada.
+
+Todo el resto del paquete permanece igual.
