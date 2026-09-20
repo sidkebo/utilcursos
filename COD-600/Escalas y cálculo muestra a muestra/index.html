@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>COD-600 | Escalas y ecuación en diferencias</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main class="app">
+
+  <header class="topbar">
+    <div>
+      <span class="course">COD-600</span>
+      <h1>Escala y ecuación en diferencias</h1>
+    </div>
+    <div class="equation">y[k] = 0,8 × y[k-1] + 0,2 × u[k]</div>
+  </header>
+
+
+  <div class="author-box" aria-label="Datos del autor">
+    <span class="author-tag">AUTOR</span>
+    <strong>Eduardo Balderrama</strong>
+    <span class="author-dot">•</span>
+    <a href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+  </div>
+
+  <section class="panel scale-panel">
+    <div class="section-head">
+      <h2>1. Escala de trabajo</h2>
+      <span id="scaleText">0 a 100 %</span>
+    </div>
+
+    <div class="scale-controls">
+      <label>Min
+        <input id="minInput" type="number" value="0">
+      </label>
+
+      <label>Max
+        <input id="maxInput" type="number" value="100">
+      </label>
+
+      <label>Unidad
+        <select id="unitSelect">
+          <option value="%">%</option>
+          <option value="°C">°C</option>
+          <option value="V">V</option>
+          <option value="mV">mV</option>
+          <option value="A">A</option>
+          <option value="mA">mA</option>
+          <option value="rpm">rpm</option>
+          <option value="">Sin unidad</option>
+          <option value="__other__">Otra...</option>
+        </select>
+      </label>
+
+      <label id="otherUnitWrap" class="hidden">Otra unidad
+        <input id="otherUnitInput" type="text" maxlength="10" placeholder="Ej. Pa">
+      </label>
+
+      <button id="applyCustom" class="btn neutral">Aplicar</button>
+    </div>
+
+    <div class="scale-track-wrap">
+      <span id="minLabel">0 %</span>
+      <div class="scale-track">
+        <div class="fill"></div>
+        <div id="markerPrev" class="marker prev">
+          <b id="markerPrevText">20 %</b>
+          <small>y[k-1]</small>
+        </div>
+        <div id="markerInput" class="marker input">
+          <b id="markerInputText">100 %</b>
+          <small>u[k]</small>
+        </div>
+        <div id="markerOut" class="marker out">
+          <b id="markerOutText">36 %</b>
+          <small>y[k]</small>
+        </div>
+      </div>
+      <span id="maxLabel">100 %</span>
+    </div>
+  </section>
+
+  <section class="main-grid">
+
+    <div class="panel controls-panel">
+      <div class="section-head">
+        <h2>2. Valores de la muestra</h2>
+        <span>Muestra k = <b id="kLabel">1</b></span>
+      </div>
+
+      <div class="value-row">
+        <div class="value-box prev-box">
+          <label>Salida anterior y[k-1]</label>
+          <strong id="prevDisplay">20 %</strong>
+          <input id="prevSlider" type="range" min="0" max="100" value="20">
+          <input id="prevNumber" type="number" value="20">
+        </div>
+
+        <div class="value-box input-box">
+          <label>Entrada actual u[k]</label>
+          <strong id="inputDisplay">100 %</strong>
+          <input id="inputSlider" type="range" min="0" max="100" value="100">
+          <input id="inputNumber" type="number" value="100">
+        </div>
+      </div>
+
+      <div class="coherence" id="coherence">
+        Ambos valores están dentro de la escala 0 a 100 %.
+      </div>
+    </div>
+
+    <div class="panel calc-panel">
+      <div class="section-head">
+        <h2>3. Cálculo</h2>
+        <span>80 % anterior + 20 % entrada</span>
+      </div>
+
+      <div class="calc-lines">
+        <div id="calcLine1">y[k] = 0,8 × 20 + 0,2 × 100</div>
+        <div id="calcLine2">y[k] = 16 + 20</div>
+        <div id="calcLine3" class="result">y[k] = 36 %</div>
+      </div>
+
+      <div class="buttons">
+        <button id="calculateBtn" class="btn primary">Calcular siguiente muestra</button>
+        <button id="resetBtn" class="btn neutral">Reiniciar</button>
+      </div>
+
+      <div class="auto-info">
+        Al calcular, el resultado pasa automáticamente a ser la nueva <b>y[k-1]</b>.
+      </div>
+    </div>
+
+  </section>
+
+  <section class="panel history-panel">
+    <div class="section-head">
+      <h2>4. Secuencia calculada</h2>
+      <span>La salida anterior se actualiza automáticamente</span>
+    </div>
+
+    <div class="history-layout">
+      <table>
+        <thead>
+          <tr>
+            <th>k</th>
+            <th>u[k]</th>
+            <th>y[k-1]</th>
+            <th>y[k]</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+
+      <div class="key">
+        <b>Idea clave:</b>
+        al inicio eliges valores dentro de la escala.
+        Después, cada nueva salida la calcula la ecuación y se usa como memoria en la siguiente muestra.
+      </div>
+    </div>
+  </section>
+
+</main>
+<script src="js/script.js"></script>
+</body>
+</html>
