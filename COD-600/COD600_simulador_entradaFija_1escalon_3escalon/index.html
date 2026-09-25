@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>COD-600 | Fija, un escalón y tres escalones</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="title-wrap">
+        <p class="eyebrow">COD-600 · Control Digital</p>
+        <h1>Condición inicial y cambios de entrada</h1>
+        <p class="subtitle">Compare una condición inicial correcta e incorrecta usando una entrada fija, un escalón o una secuencia de tres escalones.</p>
+      </div>
+      <div class="equation-card">
+        <span>Ecuación base:</span>
+        <strong>y[k] = 0,8 · y[k−1] + 0,2 · u[k]</strong>
+      </div>
+      <div class="author-strip" aria-label="Datos del autor">
+        <span class="author-tag">AUTOR</span>
+        <span class="author-name">Eduardo Balderrama</span>
+        <span class="author-sep">•</span>
+        <a class="author-mail" href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+      </div>
+    </header>
+
+    <section class="dashboard-grid">
+      <aside class="left-rail">
+        <section class="controls-card side-card">
+          <div class="section-head compact">
+            <div>
+              <p class="kicker">Controles</p>
+              <h2>Configuración</h2>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="inputMode">Tipo de entrada</label>
+            <select id="inputMode">
+              <option value="fixed">Fija</option>
+              <option value="oneStep">Un escalón</option>
+              <option value="threeSteps">Tres escalones</option>
+            </select>
+          </div>
+
+          <div class="field" id="fixedInputField">
+            <label for="inputValue">Valor de entrada fija u[k]</label>
+            <input id="inputValue" type="number" min="-200" max="200" step="1" value="100" aria-describedby="fixedInputHelp">
+            <small id="fixedInputHelp" class="field-help">Editable: ingrese el valor constante que desee para u[k].</small>
+          </div>
+
+          <div id="oneStepFields" class="step-fields hidden">
+            <div class="field">
+              <label for="oneStepInitial">Valor inicial</label>
+              <input id="oneStepInitial" type="number" min="-200" max="200" step="1" value="0">
+            </div>
+            <div class="field">
+              <label for="oneStepFinal">Nuevo valor</label>
+              <input id="oneStepFinal" type="number" min="-200" max="200" step="1" value="100">
+            </div>
+            <div class="field full-width">
+              <label for="oneStepAt">Cambio en k</label>
+              <input id="oneStepAt" type="number" min="0" max="30" step="1" value="4">
+            </div>
+          </div>
+
+          <div id="stepInputFields" class="multi-step-fields hidden">
+            <div class="field step-value-initial">
+              <label for="stepInitial">Valor inicial</label>
+              <input id="stepInitial" type="number" min="-200" max="200" step="1" value="0">
+            </div>
+
+            <div class="step-row">
+              <div class="step-number">1</div>
+              <div class="field">
+                <label for="step1Value">Nuevo valor</label>
+                <input id="step1Value" type="number" min="-200" max="200" step="1" value="100">
+              </div>
+              <div class="field">
+                <label for="step1At">Cambio en k</label>
+                <input id="step1At" type="number" min="0" max="28" step="1" value="4">
+              </div>
+            </div>
+
+            <div class="step-row">
+              <div class="step-number">2</div>
+              <div class="field">
+                <label for="step2Value">Nuevo valor</label>
+                <input id="step2Value" type="number" min="-200" max="200" step="1" value="40">
+              </div>
+              <div class="field">
+                <label for="step2At">Cambio en k</label>
+                <input id="step2At" type="number" min="1" max="29" step="1" value="8">
+              </div>
+            </div>
+
+            <div class="step-row">
+              <div class="step-number">3</div>
+              <div class="field">
+                <label for="step3Value">Nuevo valor</label>
+                <input id="step3Value" type="number" min="-200" max="200" step="1" value="80">
+              </div>
+              <div class="field">
+                <label for="step3At">Cambio en k</label>
+                <input id="step3At" type="number" min="2" max="30" step="1" value="12">
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="correctInit">Condición inicial correcta y[-1]</label>
+            <input id="correctInit" type="number" min="-200" max="200" step="1" value="0">
+          </div>
+
+          <div class="field">
+            <label for="wrongInit">Condición inicial incorrecta y[-1]</label>
+            <input id="wrongInit" type="number" min="-200" max="200" step="1" value="75">
+          </div>
+
+          <div class="buttons side-buttons">
+            <button id="stepBtn" class="primary" type="button">Siguiente muestra</button>
+            <button id="autoBtn" type="button">Ejecutar</button>
+            <button id="resetBtn" type="button">Reiniciar</button>
+          </div>
+        </section>
+
+        <section class="summary-card side-card">
+          <div class="section-head compact">
+            <div>
+              <p class="kicker">Resumen</p>
+              <h2>Estado actual</h2>
+            </div>
+          </div>
+          <div class="summary-stack">
+            <div class="mini-box">
+              <span>Muestra actual</span>
+              <strong id="sampleIndex">k = −1</strong>
+            </div>
+            <div class="mini-box good-box">
+              <span>Memoria correcta</span>
+              <strong id="correctStatus">0,0</strong>
+            </div>
+            <div class="mini-box bad-box">
+              <span>Memoria incorrecta</span>
+              <strong id="errorStatus">75,0</strong>
+            </div>
+            <div class="mini-box diff-box">
+              <span>Diferencia actual</span>
+              <strong id="differenceValue">0,000</strong>
+            </div>
+          </div>
+        </section>
+
+        <button id="lowerStepBtn" class="primary lower-step-btn" type="button">Siguiente muestra</button>
+
+        <aside class="explanation-card side-card">
+          <p class="kicker">Qué observar</p>
+          <h2>Interpretación</h2>
+          <div class="explain-body" id="explainBody"></div>
+          <div class="warning">
+            <strong>Idea clave</strong>
+            <span id="keyIdea"></span>
+          </div>
+        </aside>
+      </aside>
+
+      <section class="right-stage">
+        <section class="chart-card">
+          <div class="section-head">
+            <div>
+              <p class="kicker">Gráfica conjunta</p>
+              <h2>Comparación de señales</h2>
+            </div>
+            <div class="legend">
+              <span><i class="dot input-dot"></i>Entrada u[k]</span>
+              <span><i class="dot correct-dot"></i>Salida correcta</span>
+              <span><i class="dot error-dot"></i>Salida incorrecta</span>
+            </div>
+          </div>
+          <canvas id="chart" width="1400" height="420" aria-label="Gráfica conjunta de entrada y salidas"></canvas>
+        </section>
+
+        <section class="compare-grid">
+          <article class="compare-card correct-card">
+            <div class="compare-head">
+              <div class="badge ok">✓</div>
+              <div>
+                <p class="kicker">Caso correcto</p>
+                <h2>Ejecución correcta</h2>
+              </div>
+            </div>
+            <div class="formula-box">
+              <span class="formula-label">Ecuación usada</span>
+              <strong>y[k] = 0,8 · y[k−1] + 0,2 · u[k]</strong>
+            </div>
+            <div class="state-grid">
+              <div class="state-item"><span>u[k]</span><strong id="correctInput">100,0</strong></div>
+              <div class="state-item"><span>y[k−1]</span><strong id="correctPrev">0,0</strong></div>
+              <div class="state-item emphasis good-emphasis"><span>y[k]</span><strong id="correctCurrent">—</strong></div>
+            </div>
+            <div class="substitution-box good-substitution">
+              <span class="sub-label">Sustitución actual</span>
+              <p id="correctSubstitution">Aún no se calculó ninguna muestra.</p>
+            </div>
+            <div class="code-box">
+              <code>y[k] = 0,8 * y[k-1] + 0,2 * u[k]</code>
+              <code>y[-1] = <span id="correctInitDisplay">0</span></code>
+            </div>
+          </article>
+
+          <article class="compare-card error-card">
+            <div class="compare-head">
+              <div class="badge bad">!</div>
+              <div>
+                <p class="kicker">Caso incorrecto</p>
+                <h2>Ejecución con error</h2>
+              </div>
+            </div>
+            <div class="formula-box bad-formula">
+              <span class="formula-label">Ecuación usada</span>
+              <strong>y[k] = 0,8 · y[k−1] + 0,2 · u[k]</strong>
+            </div>
+            <div class="state-grid">
+              <div class="state-item"><span>u[k]</span><strong id="errorInput">100,0</strong></div>
+              <div class="state-item bad-memory"><span>y[k−1]</span><strong id="errorPrev">75,0</strong></div>
+              <div class="state-item emphasis bad-emphasis"><span>y[k]</span><strong id="errorCurrent">—</strong></div>
+            </div>
+            <div class="substitution-box bad-substitution">
+              <span class="sub-label">Sustitución actual</span>
+              <p id="errorSubstitution">Aún no se calculó ninguna muestra.</p>
+            </div>
+            <div class="code-box error-code">
+              <code>y[k] = 0,8 * y[k-1] + 0,2 * u[k]</code>
+              <code>y[-1] = <span id="wrongInitDisplay">75</span>  // ERROR</code>
+            </div>
+          </article>
+        </section>
+
+        <article class="table-card">
+          <div class="section-head compact">
+            <div><p class="kicker">Datos</p><h2>Tabla comparativa</h2></div>
+            <span class="mini-note">Se muestran hasta 16 muestras.</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>k</th><th>u[k]</th><th>y correcta</th><th>y incorrecta</th><th>diferencia</th></tr>
+              </thead>
+              <tbody id="dataBody"><tr class="empty-row"><td colspan="5">Pulse “Siguiente muestra” para iniciar.</td></tr></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </section>
+  </main>
+  <script src="js/app.js"></script>
+</body>
+</html>
