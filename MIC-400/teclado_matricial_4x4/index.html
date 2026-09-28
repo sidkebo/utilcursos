@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teclado matricial 4x4 - Simulador interactivo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow">Simulador interactivo</p>
+      <h1>Funcionamiento de un teclado matricial 4×4</h1>
+      <p class="subtitle">Barrido de filas en <strong>LOW</strong> y lectura de columnas con <strong>INPUT_PULLUP</strong>.</p>
+
+      <div class="author-card" aria-label="Datos del autor">
+        <span class="author-tag">AUTOR</span>
+        <span class="author-name">Eduardo Balderrama</span>
+        <a class="author-mail" href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+      </div>
+    </div>
+
+    <div class="logic-legend" aria-label="Leyenda de niveles lógicos">
+      <span class="logic logic-high">HIGH = 1</span>
+      <span class="logic logic-low">LOW = 0</span>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="control-panel card" aria-labelledby="controlTitle">
+      <div class="section-heading compact">
+        <div>
+          <p class="section-kicker">Controles</p>
+          <h2 id="controlTitle">Control del barrido</h2>
+        </div>
+        <span id="modeBadge" class="badge">Manual</span>
+      </div>
+
+      <div class="button-row">
+        <button id="nextBtn" class="btn btn-primary">Siguiente fila</button>
+        <button id="autoBtn" class="btn">Iniciar barrido automático</button>
+        <button id="resetBtn" class="btn btn-ghost">Reiniciar</button>
+      </div>
+
+      <div class="speed-control">
+        <label for="speedRange">Velocidad del barrido</label>
+        <input id="speedRange" type="range" min="1" max="100" step="1" value="45">
+        <output id="speedValue">45% · 96 ms/fila · 24 ms/col</output>
+      </div>
+
+      <div class="toggle-row">
+        <label class="toggle-control" for="columnSweepToggle">
+          <input id="columnSweepToggle" type="checkbox" checked>
+          <span class="toggle-pill"></span>
+          <span>Mostrar barrido de columnas</span>
+        </label>
+      </div>
+
+      <p class="control-help">Desliza hacia la derecha para acelerar. Puedes pulsar directamente cualquier tecla del teclado: cuando el barrido llegue a su fila y a su columna, la detectará y la agregará al registro de la derecha. Vuelve a pulsar la misma tecla para soltarla.</p>
+    </section>
+
+    <section class="simulator-grid">
+      <article class="card matrix-card" aria-labelledby="matrixTitle">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Vista interna</p>
+            <h2 id="matrixTitle">Matriz de interruptores</h2>
+          </div>
+          <div id="scanCounter" class="counter">Fila activa: L1</div>
+        </div>
+
+        <div class="column-status-wrap">
+          <div class="column-spacer"></div>
+          <div id="columnStatuses" class="column-statuses" aria-label="Estados de columnas"></div>
+        </div>
+
+        <div class="matrix-stage" id="matrixStage" aria-label="Matriz 4 por 4 del teclado"></div>
+
+        <div class="matrix-note">
+          <strong>Regla:</strong> solo una fila se lleva a <span class="inline-low">LOW</span> por vez. Las columnas permanecen en <span class="inline-high">HIGH</span> salvo que una tecla cierre el camino hacia la fila activa.
+        </div>
+      </article>
+
+      <article class="card keypad-card" aria-labelledby="keypadTitle">
+        <div class="section-heading">
+          <div>
+            <p class="section-kicker">Vista física</p>
+            <h2 id="keypadTitle">Teclado 4×4</h2>
+          </div>
+          <div id="pressedBadge" class="counter neutral">Tecla: ninguna</div>
+        </div>
+
+        <div class="status-strip">
+          <div class="status-box">
+            <span>Fila activa</span>
+            <strong id="activeRowText">L1 = LOW</strong>
+          </div>
+          <div class="status-box">
+            <span>Resultado</span>
+            <strong id="resultText">Sin tecla detectada</strong>
+          </div>
+        </div>
+
+        <div class="keypad-main-grid">
+          <div class="keypad-zone">
+            <div class="keypad-layout">
+              <div class="row-labels" id="rowLabels" aria-hidden="true"></div>
+              <div class="keypad" id="keypad" aria-label="Teclado matricial 4 por 4"></div>
+            </div>
+            <div class="column-labels" id="columnLabels" aria-hidden="true"></div>
+          </div>
+
+          <aside class="history-panel" aria-labelledby="historyTitle">
+            <div class="history-heading">
+              <span class="section-kicker">Registro</span>
+              <h3 id="historyTitle">Teclas detectadas</h3>
+            </div>
+            <div class="history-table-wrap">
+              <table class="history-table">
+                <thead>
+                  <tr><th>Tecla</th></tr>
+                </thead>
+                <tbody id="historyBody">
+                  <tr class="history-empty"><td>—</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </aside>
+        </div>
+
+        <div class="keypad-note" id="explanation" aria-live="polite"></div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    Simulación educativa del principio de escaneo de un teclado matricial 4×4.
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
