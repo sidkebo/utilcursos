@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIT-400 | Transmisión digital y Shannon</title>
+  <link rel="stylesheet" href="css/styles.css?v=3">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="hero">
+      <div>
+        <div class="course-tag">SIT-400</div>
+        <h1>Transmisión digital y Shannon</h1>
+        <p class="subtitle">Explora, mueve valores y observa qué cambia.</p>
+      </div>
+      <div class="formula-pill" aria-label="Fórmula de velocidad binaria">
+        R<sub>b</sub> = f<sub>s</sub> × n
+      </div>
+    </header>
+
+    <div class="author-card" aria-label="Datos del autor">
+      <span class="author-badge">AUTOR</span>
+      <strong>Eduardo Balderrama</strong>
+      <span class="author-separator">•</span>
+      <a href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+    </div>
+
+    <nav class="tabs" aria-label="Secciones interactivas">
+      <button class="tab-btn active" data-tab="quant">1. Cuantificación</button>
+      <button class="tab-btn" data-tab="rb">2. Velocidad binaria</button>
+      <button class="tab-btn" data-tab="shannon">3. Shannon</button>
+      <button class="tab-btn" data-tab="compare">4. Comparar Rb y C</button>
+    </nav>
+
+    <section id="quant" class="tab-panel active-panel">
+      <div class="section-title-row">
+        <div>
+          <h2>1. Cuantificación</h2>
+          <p>Mueve la muestra y cambia los bits.</p>
+        </div>
+        <div class="mini-formula">L = 2<sup>n</sup> &nbsp;·&nbsp; Δ = (Vmax − Vmin) / L</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel controls-panel">
+          <label class="control-label" for="qBits">Bits por muestra: <strong id="qBitsOut">3</strong></label>
+          <input id="qBits" type="range" min="1" max="5" value="3" step="1">
+
+          <label class="control-label" for="qSample">Valor de la muestra: <strong id="qSampleOut">3,7 V</strong></label>
+          <input id="qSample" type="range" min="0" max="10" value="3.7" step="0.1">
+
+          <div class="inline-note">Rango fijo para esta demostración: <strong>0 V ≤ V &lt; 8 V</strong></div>
+        </div>
+
+        <div class="result-grid">
+          <article class="metric"><span>Niveles</span><strong id="qLevels">8</strong></article>
+          <article class="metric"><span>Paso Δ</span><strong id="qDelta">1 V</strong></article>
+          <article class="metric"><span>Índice</span><strong id="qIndex">3</strong></article>
+          <article class="metric"><span>Código</span><strong id="qCode">011</strong></article>
+          <article class="metric"><span>Representado</span><strong id="qRep">3,5 V</strong></article>
+          <article class="metric"><span>Error</span><strong id="qError">0,2 V</strong></article>
+        </div>
+      </div>
+
+      <div class="panel visual-panel">
+        <div class="visual-title">Escalones de cuantificación</div>
+        <svg id="quantSvg" viewBox="0 0 900 340" role="img" aria-label="Escalones de cuantificación y muestra">
+          <line x1="70" y1="285" x2="840" y2="285" class="axis" />
+          <line x1="70" y1="35" x2="70" y2="285" class="axis" />
+          <g id="quantSteps"></g>
+          <line id="sampleGuide" x1="0" y1="40" x2="0" y2="285" class="sample-guide" />
+          <circle id="realDot" r="7" class="real-dot" />
+          <circle id="repDot" r="7" class="rep-dot" />
+          <text id="realLabel" class="svg-label"></text>
+          <text id="repLabel" class="svg-label"></text>
+          <text x="70" y="318" class="svg-axis-label">0 V</text>
+          <text x="810" y="318" class="svg-axis-label">8 V</text>
+        </svg>
+        <div class="legend-row">
+          <span><i class="legend-dot real"></i>Muestra real</span>
+          <span><i class="legend-dot rep"></i>Valor representado</span>
+        </div>
+        <div id="qStatus" class="status-box ok">Dentro del rango</div>
+      </div>
+    </section>
+
+    <section id="rb" class="tab-panel">
+      <div class="section-title-row">
+        <div>
+          <h2>2. Velocidad binaria</h2>
+          <p>Cambia f<sub>s</sub> y n. Observa cómo cambia R<sub>b</sub>.</p>
+        </div>
+        <div class="mini-formula">R<sub>b</sub> = f<sub>s</sub> × n</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel controls-panel">
+          <label class="control-label" for="rbFs">f<sub>s</sub>: <strong id="rbFsOut">8000 muestras/s</strong></label>
+          <input id="rbFs" type="range" min="1000" max="20000" value="8000" step="1000">
+
+          <label class="control-label" for="rbBits">n: <strong id="rbBitsOut">8 bits/muestra</strong></label>
+          <input id="rbBits" type="range" min="1" max="16" value="8" step="1">
+        </div>
+
+        <div class="panel calculation-panel">
+          <div class="calc-line" id="rbCalc1">R<sub>b</sub> = 8000 × 8</div>
+          <div class="calc-line result" id="rbCalc2">R<sub>b</sub> = 64 000 bit/s</div>
+          <div class="big-result" id="rbCalc3">64 kbit/s</div>
+        </div>
+      </div>
+
+      <div class="panel bar-panel">
+        <div class="bar-label-row"><span>Velocidad binaria</span><strong id="rbBarText">64 kbit/s</strong></div>
+        <div class="track"><div id="rbBar" class="fill rb-fill"></div></div>
+      </div>
+    </section>
+
+    <section id="shannon" class="tab-panel">
+      <div class="section-title-row">
+        <div>
+          <h2>3. Shannon-Hartley</h2>
+          <p>Mueve ancho de banda y SNR.</p>
+        </div>
+        <div class="mini-formula">C = B × log<sub>2</sub>(1 + S/N)</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="panel controls-panel">
+          <label class="control-label" for="shB">B: <strong id="shBOut">10 kHz</strong></label>
+          <input id="shB" type="range" min="1" max="30" value="10" step="1">
+
+          <label class="control-label" for="shSnr">SNR: <strong id="shSnrOut">20 dB</strong></label>
+          <input id="shSnr" type="range" min="0" max="40" value="20" step="1">
+        </div>
+
+        <div class="panel calculation-panel">
+          <div class="calc-line" id="shLine1">S/N = 100</div>
+          <div class="calc-line" id="shLine2">C = 10 000 × log₂(101)</div>
+          <div class="big-result" id="shResult">66,6 kbit/s</div>
+        </div>
+      </div>
+
+      <div class="two-cards">
+        <article class="relationship-card"><span>↑ B</span><strong>↑ C</strong></article>
+        <article class="relationship-card"><span>↑ SNR</span><strong>↑ C</strong></article>
+      </div>
+    </section>
+
+    <section id="compare" class="tab-panel">
+      <div class="section-title-row">
+        <div>
+          <h2>4. Comparar R<sub>b</sub> y C</h2>
+          <p>Aquí la interacción es directa: ajusta los 4 valores y observa si el canal alcanza.</p>
+        </div>
+        <div class="mini-formula">R<sub>b</sub> ≤ C ?</div>
+      </div>
+
+      <div class="compare-layout">
+        <div class="panel controls-panel compare-controls">
+          <h3>Datos de la señal</h3>
+
+          <div class="compare-control-block">
+            <label class="control-label" for="cmpFs">f<sub>s</sub>: <strong id="cmpFsOut">8000 muestras/s</strong></label>
+            <div class="range-number-row">
+              <input id="cmpFs" type="range" min="1000" max="20000" value="8000" step="100">
+              <input id="cmpFsNumber" class="number-input" type="number" min="1" max="1000000000" value="8000" step="1" aria-label="Frecuencia de muestreo">
+            </div>
+          </div>
+
+          <div class="compare-control-block">
+            <label class="control-label" for="cmpBits">n: <strong id="cmpBitsOut">8 bits/muestra</strong></label>
+            <div class="range-number-row">
+              <input id="cmpBits" type="range" min="1" max="16" value="8" step="1">
+              <input id="cmpBitsNumber" class="number-input" type="number" min="1" max="1024" value="8" step="1" aria-label="Bits por muestra">
+            </div>
+          </div>
+
+          <h3>Datos del canal</h3>
+
+          <div class="compare-control-block">
+            <label class="control-label" for="cmpB">B: <strong id="cmpBOut">10 kHz</strong></label>
+            <div class="range-number-row">
+              <input id="cmpB" type="range" min="0.1" max="100" value="10" step="0.1">
+              <input id="cmpBNumber" class="number-input" type="number" min="0.000001" max="1000000000" value="10" step="0.000001" aria-label="Ancho de banda en kilohertz">
+            </div>
+          </div>
+
+          <div class="compare-control-block">
+            <label class="control-label" for="cmpSnr">SNR: <strong id="cmpSnrOut">20 dB</strong></label>
+            <div class="range-number-row">
+              <input id="cmpSnr" type="range" min="0" max="60" value="20" step="0.1">
+              <input id="cmpSnrNumber" class="number-input" type="number" min="-200" max="3000" value="20" step="0.000001" aria-label="Relación señal a ruido en decibeles">
+            </div>
+          </div>
+
+          <div class="preset-row">
+            <button id="presetBad" type="button" class="secondary-btn">Ejemplo insuficiente</button>
+            <button id="presetGood" type="button" class="secondary-btn">Ejemplo suficiente</button>
+          </div>
+        </div>
+
+        <div class="compare-results">
+          <div class="compare-cards">
+            <article class="metric compare-metric"><span>R<sub>b</sub></span><strong id="cmpRb">64 kbit/s</strong></article>
+            <article class="metric compare-metric"><span>C</span><strong id="cmpC">66,6 kbit/s</strong></article>
+          </div>
+
+          <div class="panel bar-panel">
+            <div class="bar-label-row"><span>R<sub>b</sub></span><strong id="cmpRbText">64 kbit/s</strong></div>
+            <div class="track"><div id="cmpRbBar" class="fill rb-fill"></div></div>
+
+            <div class="bar-label-row second"><span>C</span><strong id="cmpCText">66,6 kbit/s</strong></div>
+            <div class="track"><div id="cmpCBar" class="fill c-fill"></div></div>
+          </div>
+
+          <div id="compareDecision" class="decision good">
+            <div id="compareExpression" class="decision-expression">64 ≤ 66,6 kbit/s</div>
+            <div id="compareMessage">El canal no queda descartado por Shannon.</div>
+          </div>
+
+          <div class="panel solver-panel">
+            <div class="solver-heading">
+              <div>
+                <h3>Encontrar el valor necesario</h3>
+                <p>Usa los valores actuales. El botón calcula el límite y lo aplica automáticamente.</p>
+              </div>
+            </div>
+            <div class="solver-buttons">
+              <button id="solveB" type="button" class="solver-btn">B mínimo</button>
+              <button id="solveSnr" type="button" class="solver-btn">SNR mínimo</button>
+              <button id="solveFs" type="button" class="solver-btn">f<sub>s</sub> máximo</button>
+              <button id="solveBits" type="button" class="solver-btn">n máximo</button>
+            </div>
+            <div id="solverResult" class="solver-result" aria-live="polite">
+              Elige un botón para calcular y aplicar un valor límite.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer-note">SIT-400 · Herramienta didáctica interactiva</footer>
+  </main>
+
+  <script src="js/app.js?v=3"></script>
+</body>
+</html>
