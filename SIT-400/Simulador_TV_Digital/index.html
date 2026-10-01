@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Televisión Digital</title>
+    <link rel="stylesheet" href="css/tv-digital.css">
+</head>
+
+<body>
+
+<header>
+    <div class="titulo">
+        <h1>Simulador de Televisión Digital</h1>
+        <p>ISDB-Tb, segmentos, cobertura, Transport Stream, intervalo de guarda y diagnóstico</p>
+    </div>
+
+    <div class="autor">
+        <span class="autor-etiqueta">AUTOR</span>
+        <span class="autor-nombre">Eduardo Balderrama</span>
+        <span class="autor-separador">•</span>
+        <a class="autor-email" href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+    </div>
+</header>
+
+<div class="barra-superior">
+    <a class="volver" href="/">← VOLVER AL MENÚ PRINCIPAL</a>
+</div>
+
+<div class="layout">
+
+    <aside class="panel panel-lateral">
+        <h2>Parámetros</h2>
+
+        <section id="paramIsdb" class="seccion-parametros activa">
+            <div class="grupo">
+                <label for="modulacion">Modulación</label>
+                <select id="modulacion">
+                    <option value="DQPSK">DQPSK</option>
+                    <option value="QPSK" selected>QPSK</option>
+                    <option value="16QAM">16QAM</option>
+                    <option value="64QAM">64QAM</option>
+                </select>
+            </div>
+
+            <div class="grupo">
+                <label for="servicio">Tipo de recepción</label>
+                <select id="servicio">
+                    <option value="ONESEG" selected>One-Seg</option>
+                    <option value="FULLSEG">Full-Seg</option>
+                </select>
+            </div>
+
+            <button id="btnIsdb" class="boton-principal">ANALIZAR ISDB-Tb</button>
+        </section>
+
+        <section id="paramSegmentos" class="seccion-parametros">
+            <div class="grupo">
+                <label for="capaA">Segmentos Capa A</label>
+                <input id="capaA" type="number" step="1" min="0" max="13" value="1">
+            </div>
+
+            <div class="grupo">
+                <label for="capaB">Segmentos Capa B</label>
+                <input id="capaB" type="number" step="1" min="0" max="13" value="6">
+            </div>
+
+            <div class="grupo">
+                <label for="capaC">Segmentos Capa C</label>
+                <input id="capaC" type="number" step="1" min="0" max="13" value="6">
+            </div>
+
+            <button id="btnSegmentos" class="boton-principal">DISTRIBUIR SEGMENTOS</button>
+        </section>
+
+        <section id="paramCobertura" class="seccion-parametros">
+            <div class="grupo">
+                <label for="radioKm">Radio dado de cobertura (km)</label>
+                <input id="radioKm" type="number" step="0.1" value="10">
+            </div>
+
+            <button id="btnCobertura" class="boton-principal">CALCULAR ÁREA</button>
+        </section>
+
+        <section id="paramTs" class="seccion-parametros">
+            <div class="tarjeta tarjeta-parametro-ts">
+                <h3>Cálculo A — Paquetes TS</h3>
+                <div class="grupo">
+                    <label for="bitrateTs">Bitrate total del TS (Mbps)</label>
+                    <input id="bitrateTs" type="number" step="0.1" value="3">
+                </div>
+            </div>
+
+            <div class="tarjeta tarjeta-parametro-ts">
+                <h3>Cálculo B — Tasa de servicios</h3>
+
+                <div class="grupo">
+                    <label for="videoMbps">Video (Mbps)</label>
+                    <input id="videoMbps" type="number" step="0.1" value="4">
+                </div>
+
+                <div class="grupo">
+                    <label for="audioKbps">Audio (kbps)</label>
+                    <input id="audioKbps" type="number" step="1" value="256">
+                </div>
+
+                <div class="grupo">
+                    <label for="datosKbps">Datos (kbps)</label>
+                    <input id="datosKbps" type="number" step="1" value="500">
+                </div>
+            </div>
+
+            <button id="btnTs" class="boton-principal">CALCULAR AMBOS</button>
+        </section>
+
+        <section id="paramGuarda" class="seccion-parametros">
+            <div class="grupo">
+                <label for="tuMs">Tiempo útil Tu (ms)</label>
+                <input id="tuMs" type="number" step="0.001" value="1">
+            </div>
+
+            <div class="grupo">
+                <label for="fraccionGuarda">Fracción de guarda</label>
+                <select id="fraccionGuarda">
+                    <option value="1/4">1/4</option>
+                    <option value="1/8" selected>1/8</option>
+                    <option value="1/16">1/16</option>
+                    <option value="1/32">1/32</option>
+                </select>
+            </div>
+
+            <div class="grupo">
+                <label for="ecoMs">Retraso del eco (ms)</label>
+                <input id="ecoMs" type="number" step="0.001" value="0.10">
+            </div>
+
+            <button id="btnGuarda" class="boton-principal">CALCULAR INTERVALO</button>
+        </section>
+
+        <section id="paramMedios" class="seccion-parametros">
+            <div class="grupo">
+                <label for="sistemaMedio">Sistema</label>
+                <select id="sistemaMedio">
+                    <option value="TDT" selected>TDT</option>
+                    <option value="CABLE">Cable digital</option>
+                    <option value="IPTV">IPTV</option>
+                    <option value="WEBTV">Web TV</option>
+                    <option value="SATELITE">Satélite</option>
+                </select>
+            </div>
+
+            <button id="btnMedio" class="boton-principal">ANALIZAR SISTEMA</button>
+        </section>
+
+        <div id="estado" class="estado">Listo para analizar.</div>
+    </aside>
+
+    <main class="panel principal">
+        <div class="tabs">
+            <button class="tab activo" data-tab="isdb">ISDB-Tb</button>
+            <button class="tab" data-tab="segmentos">SEGMENTOS</button>
+            <button class="tab" data-tab="cobertura">COBERTURA</button>
+            <button class="tab" data-tab="ts">TRANSPORT STREAM</button>
+            <button class="tab" data-tab="guarda">INTERVALO DE GUARDA</button>
+            <button class="tab" data-tab="medios">MEDIOS / DIAGNÓSTICO</button>
+        </div>
+
+        <section id="isdb" class="contenido-tab activo">
+            <div class="tarjeta">
+                <h3>Cadena funcional de televisión digital terrestre</h3>
+                <div class="cadena">
+                    <div class="bloque-cadena">Audio / video / datos</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">Digitalización</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">Compresión</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">Multiplexación</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">Codificación de canal</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">BST-OFDM</div>
+                </div>
+            </div>
+
+            <div class="rejilla-2">
+                <div class="tarjeta">
+                    <h3>Capacidad y robustez</h3>
+                    <div class="indicadores">
+                        <div class="indicador">
+                            <span>Capacidad relativa</span>
+                            <strong id="isdbCapacidad">—</strong>
+                        </div>
+                        <div class="indicador">
+                            <span>Robustez relativa</span>
+                            <strong id="isdbRobustez">—</strong>
+                        </div>
+                    </div>
+                    <p id="isdbDescripcionMod">—</p>
+                </div>
+
+                <div class="tarjeta">
+                    <h3>Recepción seleccionada</h3>
+                    <p id="isdbServicio">—</p>
+                    <div class="formula">13 segmentos activos en el modelo de clase</div>
+                    <div class="formula">6 MHz / 14 ≈ 428,6 kHz por segmento</div>
+                </div>
+            </div>
+
+            <div class="nota">
+                La comparación capacidad–robustez es cualitativa. La robustez real también depende de codificación,
+                intercalado, nivel de señal e interferencias. No se realiza matemática OFDM avanzada.
+            </div>
+        </section>
+
+        <section id="segmentos" class="contenido-tab">
+            <div class="tarjeta">
+                <h3>Distribución de 13 segmentos activos</h3>
+                <div id="mapaSegmentos" class="segmentos"></div>
+
+                <div class="leyenda-segmentos">
+                    <div class="leyenda-item"><span class="muestra-color capa-a"></span>Capa A</div>
+                    <div class="leyenda-item"><span class="muestra-color capa-b"></span>Capa B</div>
+                    <div class="leyenda-item"><span class="muestra-color capa-c"></span>Capa C</div>
+                    <div class="leyenda-item"><span class="muestra-color sin-asignar"></span>Sin asignar</div>
+                </div>
+            </div>
+
+            <div class="rejilla-2">
+                <div class="tarjeta">
+                    <h3>Control de distribución</h3>
+                    <div class="formula">Total usado = A + B + C</div>
+                    <div class="formula">Restantes = 13 - Total usado</div>
+                    <p id="segmentosResumen">—</p>
+                </div>
+
+                <div class="tarjeta">
+                    <h3>Ancho didáctico de segmento</h3>
+                    <div class="formula">ancho de segmento = 6 MHz / 14</div>
+                    <p id="segmentosAncho">—</p>
+                </div>
+            </div>
+
+            <div class="nota">
+                Los segmentos se asignan a capas de transmisión. Esta representación no fija cuántos programas debe
+                contener cada capa y no constituye planificación profesional de un operador.
+            </div>
+        </section>
+
+        <section id="cobertura" class="contenido-tab">
+            <div class="rejilla-2">
+                <div class="tarjeta">
+                    <h3>Área circular ideal aproximada</h3>
+                    <div class="formula">A = pi x r^2</div>
+                    <p id="coberturaCalculo">—</p>
+                </div>
+
+                <div class="tarjeta">
+                    <h3>Interpretación</h3>
+                    <p>
+                        El radio se entrega como dato. El simulador no calcula el radio a partir de potencia,
+                        antena, propagación ni terreno.
+                    </p>
+                </div>
+            </div>
+
+            <canvas id="grafCobertura" width="1000" height="300"></canvas>
+
+            <div class="advertencia">
+                La cobertura real no es perfectamente circular. Este dibujo solo representa el cálculo básico de área
+                cuando el radio ya es conocido.
+            </div>
+        </section>
+
+        <section id="ts" class="contenido-tab">
+            <div class="tarjeta">
+                <h3>Cadena funcional MPEG y Transport Stream</h3>
+                <div class="cadena">
+                    <div class="bloque-cadena">Audio / video</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">Codificación / compresión</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">ES</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">PES</div>
+                    <div class="flecha">→</div>
+                    <div class="bloque-cadena">Transport Stream</div>
+                </div>
+            </div>
+
+            <div class="tarjeta">
+                <h3>Paquete TS típico: 188 bytes = 1504 bits</h3>
+                <div class="paquete-ts">
+                    <div class="campo-ts"><strong>Sync</strong><small>Sincronización</small></div>
+                    <div class="campo-ts"><strong>PID</strong><small>Identifica flujo</small></div>
+                    <div class="campo-ts"><strong>Control</strong><small>Continuidad / cabecera</small></div>
+                    <div class="campo-ts"><strong>Carga útil</strong><small>Parte del flujo transportado</small></div>
+                </div>
+            </div>
+
+            <div class="rejilla-2">
+                <div class="tarjeta">
+                    <h3>Cálculo A — Paquetes por segundo</h3>
+                    <div class="formula">paquetes/s = bitrate total TS / 1504 bits</div>
+                    <p id="tsPaquetes">—</p>
+                </div>
+
+                <div class="tarjeta">
+                    <h3>Cálculo B — Tasa total de servicios</h3>
+                    <div class="formula">Total servicios = video + audio + datos</div>
+                    <p id="tsServicios">—</p>
+                </div>
+            </div>
+
+            <div class="tarjeta">
+                <h3>PID, PAT y PMT</h3>
+                <table class="tabla">
+                    <thead>
+                        <tr><th>Elemento</th><th>Función</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>PID</td><td>Identifica a qué flujo pertenece un paquete.</td></tr>
+                        <tr><td>PAT</td><td>Indica dónde encontrar la información de cada programa.</td></tr>
+                        <tr><td>PMT</td><td>Indica qué PID forman video, audio y datos de un programa.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="nota" id="tsNota">
+                Los cálculos A y B son independientes. El cálculo A usa un bitrate total de Transport Stream para obtener
+                paquetes por segundo. El cálculo B suma tasas de video, audio y datos como un ejercicio separado.
+                No se debe interpretar que el bitrate TS ingresado en A contiene necesariamente las tasas introducidas en B.
+            </div>
+        </section>
+
+        <section id="guarda" class="contenido-tab">
+            <div class="rejilla-2">
+                <div class="tarjeta">
+                    <h3>Tiempo total del símbolo</h3>
+                    <div class="formula">T_total = T_u + T_g</div>
+                    <div class="formula">T_g = T_u x fracción de guarda</div>
+                    <p id="guardaCalculo">—</p>
+                </div>
+
+                <div class="tarjeta">
+                    <h3>Eficiencia temporal didáctica</h3>
+                    <div class="formula">eficiencia = T_u / T_total</div>
+                    <p id="guardaEficiencia">—</p>
+                </div>
+            </div>
+
+            <div class="tarjeta">
+                <h3>Representación temporal</h3>
+                <div id="barraTiempo" class="barra-tiempo"></div>
+                <p id="guardaEco">—</p>
+            </div>
+
+            <div class="nota">
+                El intervalo de guarda ayuda frente a ecos y multitrayectoria, pero no transporta información nueva.
+                Un intervalo mayor protege más tiempo y reduce la eficiencia.
+            </div>
+        </section>
+
+        <section id="medios" class="contenido-tab">
+            <div class="tarjeta">
+                <h3>Cadena del sistema seleccionado</h3>
+                <div id="cadenaMedio" class="cadena"></div>
+            </div>
+
+            <div class="rejilla-2">
+                <div class="tarjeta">
+                    <h3>Medio y recepción</h3>
+                    <p id="medioDescripcion">—</p>
+                </div>
+
+                <div class="tarjeta">
+                    <h3>Diagnóstico básico</h3>
+                    <p id="medioDiagnostico">—</p>
+                </div>
+            </div>
+
+            <div class="tarjeta">
+                <h3>Comparación general</h3>
+                <table class="tabla">
+                    <thead>
+                        <tr>
+                            <th>Sistema</th>
+                            <th>Medio principal</th>
+                            <th>Equipo típico</th>
+                            <th>Problema común</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>TDT</td><td>Radio terrestre</td><td>Antena UHF y receptor</td><td>Cobertura, ecos</td></tr>
+                        <tr><td>Cable digital</td><td>Coaxial o HFC</td><td>Cable y receptor</td><td>Conectores, nivel bajo</td></tr>
+                        <tr><td>IPTV</td><td>Red IP gestionada</td><td>Decodificador o app</td><td>Red, servicio, configuración</td></tr>
+                        <tr><td>Web TV</td><td>Internet abierto</td><td>App o navegador</td><td>Buffering, congestión</td></tr>
+                        <tr><td>Satélite</td><td>Enlace satelital</td><td>Parabólica, LNB, receptor</td><td>Alineación, clima, cableado</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="advertencia">
+                Este bloque es de diagnóstico funcional básico. No incluye routing avanzado, diseño HFC,
+                planificación de cobertura ni cálculo de enlace satelital.
+            </div>
+        </section>
+    </main>
+
+    <aside class="panel panel-lateral resultados">
+        <h2>Resultados</h2>
+        <div id="resultadosContenido">
+            <div class="resultado">
+                <span>Estado</span>
+                <strong>Seleccione una simulación.</strong>
+            </div>
+        </div>
+    </aside>
+</div>
+<script src="js/core/tv-engine.js"></script>
+<script src="js/api/local-api.js"></script>
+<script src="js/ui/tv-ui.js"></script>
+
+</body>
+</html>
