@@ -1,0 +1,142 @@
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f5f7;
+            color: #222;
+        }
+
+        header {
+            background: #173d68;
+            color: white;
+
+            padding: 14px 22px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+        .titulo h1 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .titulo p {
+            margin: 4px 0 0 0;
+
+            font-size: 12px;
+            color: #dce8f5;
+        }
+
+        .autor {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 8px 14px;
+
+            border: 1px solid #f0b400;
+            border-radius: 18px;
+
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .autor-etiqueta {
+            padding: 4px 9px;
+
+            border-radius: 12px;
+
+            background: #f0b400;
+            color: #111;
+
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .autor-nombre {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .autor-separador {
+            color: #f0b400;
+        }
+
+        .autor-email {
+            color: #5ec8ff;
+
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        main {
+            width: calc(100% - 30px);
+            max-width: 900px;
+
+            margin: 30px auto;
+        }
+
+        .volver {
+            display: inline-block;
+
+            margin-bottom: 18px;
+
+            padding: 8px 13px;
+
+            background: #e4e9ee;
+            color: #173d68;
+
+            border-radius: 4px;
+
+            text-decoration: none;
+
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .volver:hover {
+            background: #d5dde5;
+        }
+
+        .panel {
+            padding: 24px;
+
+            background: white;
+
+            border: 1px solid #ccd3da;
+            border-top: 5px solid #175ea8;
+
+            border-radius: 7px;
+        }
+
+        .panel h2 {
+            margin: 0 0 10px 0;
+
+            color: #173d68;
+
+            font-size: 20px;
+        }
+
+        .panel p {
+            margin: 0;
+
+            color: #555;
+
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 850px) {
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }

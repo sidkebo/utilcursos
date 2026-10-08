@@ -1,0 +1,2017 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Simulador de Modulación AM</title>
+
+
+    <link rel="stylesheet" href="../css/am.css">
+
+
+</head>
+
+
+<body>
+
+
+<header>
+
+
+    <div class="titulo-header">
+
+        <h1>
+            Simulador de Modulación AM
+        </h1>
+
+        <p>
+            Análisis temporal, espectral, implementación y ruido
+        </p>
+
+    </div>
+
+
+    <div class="autor">
+
+        <span class="autor-etiqueta">
+            AUTOR
+        </span>
+
+        <span class="autor-nombre">
+            Eduardo Balderrama
+        </span>
+
+        <span class="autor-separador">
+            •
+        </span>
+
+        <a
+            class="autor-email"
+            href="mailto:sidkebo@gmail.com"
+        >
+            sidkebo@gmail.com
+        </a>
+
+    </div>
+
+
+</header>
+
+
+
+<main>
+
+
+    <section class="panel panel-parametros">
+
+
+        <h2>
+            Parámetros
+        </h2>
+
+
+
+        <div
+            class="grupo-parametros activo"
+            id="parametrosAM"
+        >
+
+
+            <div
+                class="campo"
+                id="campoFuenteModulante"
+            >
+
+                <label for="fuenteModulante">
+                    Señal modulante
+                </label>
+
+                <select id="fuenteModulante">
+
+                    <option value="SENOIDAL" selected>
+                        Senoidal
+                    </option>
+
+                    <option value="TRIANGULAR">
+                        Triangular
+                    </option>
+
+                    <option value="CUADRADA">
+                        Cuadrada
+                    </option>
+
+                    <option value="COMPUESTA">
+                        Señal compuesta
+                    </option>
+
+                    <option value="VARIABLE">
+                        Señal variable
+                    </option>
+
+                    <option value="SENSOR">
+                        Sensor simulado
+                    </option>
+
+                    <option value="AUDIO">
+                        Archivo de audio
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="Ac">
+                    Amplitud portadora Ac (V)
+                </label>
+
+                <input
+                    id="Ac"
+                    type="number"
+                    step="0.1"
+                    value="2"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="fc">
+                    Frecuencia portadora fc (Hz)
+                </label>
+
+                <input
+                    id="fc"
+                    type="number"
+                    step="1"
+                    value="1000"
+                >
+
+            </div>
+
+
+            <div
+                class="campo"
+                id="campoFm"
+            >
+
+                <label for="fm">
+                    Frecuencia modulante fm (Hz)
+                </label>
+
+                <input
+                    id="fm"
+                    type="number"
+                    step="1"
+                    value="100"
+                >
+
+            </div>
+
+
+            <div class="campo">
+
+                <label for="m">
+                    Índice de modulación m
+                </label>
+
+                <input
+                    id="m"
+                    type="number"
+                    step="0.1"
+                    value="0.5"
+                >
+
+            </div>
+
+
+            <div
+                class="campo"
+                id="campoSistema"
+                style="display:none"
+            >
+
+                <label for="sistema">
+                    Sistema espectral
+                </label>
+
+                <select id="sistema">
+
+                    <option value="AM">
+                        AM convencional
+                    </option>
+
+                    <option value="DSB-SC">
+                        DSB-SC
+                    </option>
+
+                    <option value="SSB-USB">
+                        SSB superior
+                    </option>
+
+                    <option value="SSB-LSB">
+                        SSB inferior
+                    </option>
+
+                    <option value="VSB">
+                        VSB
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                class="campo"
+                id="campoVestigio"
+            >
+
+                <label for="vestigio">
+                    Vestigio VSB (Hz)
+                </label>
+
+                <input
+                    id="vestigio"
+                    type="number"
+                    step="1"
+                    value="20"
+                >
+
+            </div>
+
+
+        </div>
+
+
+
+        <div
+            class="grupo-parametros"
+            id="parametrosImplementacion"
+        >
+
+
+            <div class="campo">
+
+                <label for="tipoImplementacion">
+                    Bloque
+                </label>
+
+                <select id="tipoImplementacion">
+
+                    <option value="LC">
+                        Circuito resonante LC
+                    </option>
+
+                    <option value="COLPITTS">
+                        Oscilador Colpitts
+                    </option>
+
+                    <option value="HARTLEY">
+                        Oscilador Hartley
+                    </option>
+
+                    <option value="MODULADOR">
+                        Modulador AM — fuente global
+                    </option>
+
+                    <option value="MEZCLADOR">
+                        Mezclador básico
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div
+                class="campo parametro-implementacion"
+                id="implL"
+            >
+
+                <label for="L_mH">
+                    Inductancia L (mH)
+                </label>
+
+                <input
+                    id="L_mH"
+                    type="number"
+                    step="0.1"
+                    value="10"
+                >
+
+            </div>
+
+
+            <div
+                class="campo parametro-implementacion"
+                id="implC"
+            >
+
+                <label for="C_nF">
+                    Capacitancia C (nF)
+                </label>
+
+                <input
+                    id="C_nF"
+                    type="number"
+                    step="0.1"
+                    value="10"
+                >
+
+            </div>
+
+
+            <div
+                class="campo parametro-implementacion"
+                id="implC1"
+            >
+
+                <label for="C1_nF">
+                    Capacitancia C1 (nF)
+                </label>
+
+                <input
+                    id="C1_nF"
+                    type="number"
+                    step="0.1"
+                    value="10"
+                >
+
+            </div>
+
+
+            <div
+                class="campo parametro-implementacion"
+                id="implC2"
+            >
+
+                <label for="C2_nF">
+                    Capacitancia C2 (nF)
+                </label>
+
+                <input
+                    id="C2_nF"
+                    type="number"
+                    step="0.1"
+                    value="10"
+                >
+
+            </div>
+
+
+            <div
+                class="campo parametro-implementacion"
+                id="implL1"
+            >
+
+                <label for="L1_mH">
+                    Inductancia L1 (mH)
+                </label>
+
+                <input
+                    id="L1_mH"
+                    type="number"
+                    step="0.1"
+                    value="5"
+                >
+
+            </div>
+
+
+            <div
+                class="campo parametro-implementacion"
+                id="implL2"
+            >
+
+                <label for="L2_mH">
+                    Inductancia L2 (mH)
+                </label>
+
+                <input
+                    id="L2_mH"
+                    type="number"
+                    step="0.1"
+                    value="5"
+                >
+
+            </div>
+
+
+            <div
+                class="campo parametro-implementacion"
+                id="implF1"
+            >
+
+                <label for="f1">
+                    Frecuencia f1 (Hz)
+                </label>
+
+                <input
+                    id="f1"
+                    type="number"
+                    step="1"
+                    value="10000"
+                >
+
+            </div>
+
+
+            <div
+                class="campo parametro-implementacion"
+                id="implF2"
+            >
+
+                <label for="f2">
+                    Frecuencia f2 (Hz)
+                </label>
+
+                <input
+                    id="f2"
+                    type="number"
+                    step="1"
+                    value="3000"
+                >
+
+            </div>
+
+
+        </div>
+
+
+
+        <div
+            class="grupo-parametros"
+            id="parametrosRuido"
+        >
+
+            <div
+                style="margin:10px 0 8px 0; padding-top:8px; border-top:1px solid #d7dde3; font-size:12px; font-weight:bold; color:#173d68"
+            >
+                Parámetros de ruido
+            </div>
+
+            <div class="campo">
+
+                <label for="nivelRuido">
+                    Nivel de ruido
+                </label>
+
+                <select id="nivelRuido">
+
+                    <option value="LIMPIO">
+                        Sin ruido
+                    </option>
+
+                    <option
+                        value="BAJO"
+                        selected
+                    >
+                        Bajo
+                    </option>
+
+                    <option value="MEDIO">
+                        Medio
+                    </option>
+
+                    <option value="ALTO">
+                        Alto
+                    </option>
+
+                    <option value="PERSONALIZADO">
+                        Personalizado
+                    </option>
+
+                </select>
+
+            </div>
+
+            <div
+                class="campo"
+                id="campoRuidoPersonalizado"
+            >
+
+                <label for="amplitudRuido">
+                    Amplitud de ruido (V RMS aprox.)
+                </label>
+
+                <input
+                    id="amplitudRuido"
+                    type="number"
+                    step="0.01"
+                    value="0.05"
+                >
+
+            </div>
+
+        </div>
+
+
+
+        <button id="simular">
+            SIMULAR
+        </button>
+
+
+        <div id="mensaje">
+            Preparando simulación...
+        </div>
+
+
+    </section>
+
+
+
+    <section class="panel panel-central">
+
+
+        <div class="pestanas">
+
+
+            <button
+                class="pestana activa"
+                id="tabTiempo"
+            >
+                TIEMPO
+            </button>
+
+
+            <button
+                class="pestana"
+                id="tabEspectro"
+            >
+                ESPECTRO
+            </button>
+
+
+            <button
+                class="pestana"
+                id="tabImplementacion"
+            >
+                IMPLEMENTACIÓN
+            </button>
+
+
+            <button
+                class="pestana"
+                id="tabRuido"
+            >
+                RUIDO
+            </button>
+
+
+        </div>
+
+
+
+        <div
+            class="contenido-pestana activo"
+            id="contenidoTiempo"
+        >
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="resumenFuenteTiempo"
+            >
+                <strong id="tituloFuenteTiempo">
+                    Modulante senoidal
+                </strong>
+
+                <p id="descripcionFuenteTiempo">
+                    Señal de prueba senoidal utilizada para el análisis básico de AM.
+                </p>
+            </div>
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="panelFuenteAnimada"
+            >
+                <strong>
+                    Repetición continua del patrón
+                </strong>
+
+                <p id="descripcionFuenteAnimada">
+                    La señal cambia con el tiempo y vuelve a comenzar automáticamente.
+                </p>
+
+                <div class="controles-fuente">
+                    <button
+                        class="boton-fuente secundario"
+                        id="pausarFuenteAnimada"
+                        type="button"
+                    >
+                        PAUSAR
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="reiniciarFuenteAnimada"
+                        type="button"
+                    >
+                        REINICIAR
+                    </button>
+
+                    <span
+                        id="estadoFuenteAnimada"
+                        style="font-size:11px"
+                    >
+                        Ejecutándose
+                    </span>
+                </div>
+            </div>
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="panelAudioModulante"
+            >
+                <strong>
+                    Archivo de audio como señal modulante
+                </strong>
+
+                <p>
+                    Seleccione un MP3, WAV, OGG u otro formato de audio compatible con el navegador. El archivo se procesa localmente en esta computadora.
+                </p>
+
+                <div class="audio-archivo">
+                    <input
+                        id="archivoAudio"
+                        type="file"
+                        accept="audio/*,.mp3,.wav,.ogg"
+                    >
+                </div>
+
+                <div class="audio-config">
+                    <label for="ventanaAudio">
+                        Ventana de observación:
+                    </label>
+
+                    <select id="ventanaAudio">
+                        <option value="0.001">1 ms</option>
+                        <option value="0.002">2 ms</option>
+                        <option value="0.005">5 ms</option>
+                        <option value="0.010">10 ms</option>
+                        <option value="0.020">20 ms</option>
+                        <option value="0.05">50 ms</option>
+                        <option value="0.10" selected>100 ms</option>
+                        <option value="0.25">250 ms</option>
+                        <option value="0.50">500 ms</option>
+                    </select>
+                </div>
+
+                <div class="controles-fuente">
+                    <button
+                        class="boton-fuente"
+                        id="reproducirAudio"
+                        type="button"
+                    >
+                        REPRODUCIR
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="pausarAudio"
+                        type="button"
+                    >
+                        PAUSA
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="detenerAudio"
+                        type="button"
+                    >
+                        DETENER
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="reiniciarAudio"
+                        type="button"
+                    >
+                        REINICIAR
+                    </button>
+                </div>
+
+                <div
+                    class="audio-datos"
+                    id="estadoAudio"
+                >
+                    Ningún archivo cargado.
+                </div>
+
+                <div class="barra-progreso-audio">
+                    <div id="progresoAudio"></div>
+                </div>
+
+                <audio
+                    id="elementoAudio"
+                    preload="metadata"
+                    style="display:none"
+                ></audio>
+            </div>
+
+
+            <div
+                class="nota-fuente"
+                id="notaFuentesNoSenoidales"
+            >
+                Las fuentes no senoidales se utilizan en TIEMPO, ESPECTRO y en el bloque MODULADOR de IMPLEMENTACIÓN. En ESPECTRO se analiza la ventana actual; la modulante senoidal conserva además el análisis teórico original.
+            </div>
+
+
+            <div class="grafica">
+
+                <h3>
+                    Señal modulante
+                </h3>
+
+                <canvas
+                    id="graficaModulante"
+                ></canvas>
+
+            </div>
+
+
+            <div class="grafica">
+
+                <h3>
+                    Señal portadora
+                </h3>
+
+                <canvas
+                    id="graficaPortadora"
+                ></canvas>
+
+            </div>
+
+
+            <div class="grafica">
+
+                <h3>
+                    Señal AM y envolvente
+                </h3>
+
+                <canvas
+                    id="graficaAM"
+                ></canvas>
+
+            </div>
+
+
+            <div
+                class="grafica"
+                id="zonaComparacionEnvolvente"
+            >
+
+                <div class="comparacion-encabezado">
+
+                    <h3>
+                        Comparación de forma: modulante y envolvente normalizada
+                    </h3>
+
+                    <label class="control-comparacion">
+                        <input
+                            type="checkbox"
+                            id="mostrarComparacionEnvolvente"
+                            checked
+                        >
+                        Mostrar comparación normalizada
+                    </label>
+
+                </div>
+
+                <div
+                    class="nota-comparacion"
+                    id="notaComparacionEnvolvente"
+                >
+                    Ambas gráficas utilizan la misma escala vertical y el mismo intervalo de tiempo. La envolvente se normaliza únicamente para comparar su forma; la gráfica AM superior conserva las amplitudes reales.
+                </div>
+
+                <div
+                    class="comparacion-bloque"
+                    id="bloqueComparacionModulante"
+                >
+
+                    <h4>
+                        Señal modulante
+                    </h4>
+
+                    <canvas
+                        id="graficaComparacionModulante"
+                    ></canvas>
+
+                </div>
+
+                <div
+                    class="comparacion-bloque"
+                    id="bloqueComparacionEnvolvente"
+                >
+
+                    <h4>
+                        Envolvente normalizada
+                    </h4>
+
+                    <canvas
+                        id="graficaComparacionEnvolvente"
+                    ></canvas>
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div
+            class="contenido-pestana"
+            id="contenidoEspectro"
+        >
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="resumenFuenteEspectro"
+            >
+                <strong id="tituloFuenteEspectro">
+                    Modulante senoidal
+                </strong>
+
+                <p id="descripcionFuenteEspectro">
+                    La modulante senoidal conserva el análisis espectral teórico original.
+                </p>
+            </div>
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="panelVentanaFFT"
+                style="display:none"
+            >
+                <strong>
+                    Ventana de análisis FFT
+                </strong>
+
+                <p>
+                    Define el intervalo temporal utilizado para calcular el espectro. Una ventana corta responde mejor a cambios rápidos; una ventana larga mejora la resolución en frecuencia. La resolución propia de la ventana es aproximadamente Δf = 1 / T. El relleno con ceros puede reducir el espaciado entre puntos de la FFT, pero no mejora por sí solo la resolución física de la ventana.
+                </p>
+
+                <div class="audio-config">
+                    <label for="ventanaFFT">
+                        Ventana de análisis:
+                    </label>
+
+                    <select id="ventanaFFT">
+                        <option value="0.001">1 ms</option>
+                        <option value="0.002">2 ms</option>
+                        <option value="0.005">5 ms</option>
+                        <option value="0.010">10 ms</option>
+                        <option value="0.020">20 ms</option>
+                        <option value="0.05">50 ms</option>
+                        <option value="0.10" selected>100 ms</option>
+                        <option value="0.25">250 ms</option>
+                        <option value="0.50">500 ms</option>
+                    </select>
+
+                    <span
+                        id="notaVentanaFFT"
+                        style="font-size:11px; color:#555"
+                    >
+                        Resolución temporal seleccionada: 100 ms
+                    </span>
+                </div>
+            </div>
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="panelAudioEspectro"
+                style="display:none"
+            >
+                <strong>
+                    Control global del archivo de audio
+                </strong>
+
+                <p>
+                    El mismo archivo continúa reproduciéndose al cambiar entre TIEMPO y ESPECTRO. Puede pausarlo, continuar, detenerlo o reiniciarlo desde aquí.
+                </p>
+
+                <div class="controles-fuente">
+                    <button
+                        class="boton-fuente"
+                        id="reproducirAudioEspectro"
+                        type="button"
+                    >
+                        REPRODUCIR
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="pausarAudioEspectro"
+                        type="button"
+                    >
+                        PAUSA
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="detenerAudioEspectro"
+                        type="button"
+                    >
+                        DETENER
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="reiniciarAudioEspectro"
+                        type="button"
+                    >
+                        REINICIAR
+                    </button>
+                </div>
+
+                <div
+                    class="audio-datos"
+                    id="estadoAudioEspectro"
+                >
+                    Ningún archivo cargado.
+                </div>
+
+                <div class="barra-progreso-audio">
+                    <div id="progresoAudioEspectro"></div>
+                </div>
+            </div>
+
+
+            <div
+                class="nota-fuente"
+                id="notaEspectroFuente"
+                style="display:none"
+            >
+                Vista tipo analizador de espectro para observación didáctica. En archivos de audio, la modulante se muestra en dBFS y la señal AM en dBV simulados. No sustituye un analizador de espectro RF calibrado.
+            </div>
+
+
+            <div
+                class="descripcion"
+                id="descripcionEspectro"
+            >
+                AM convencional
+            </div>
+
+
+            <div
+                class="advertencia-espectro"
+                id="advertenciaEspectroComplejo"
+            ></div>
+
+
+            <div
+                class="grafica"
+                id="zonaEspectroModulante"
+                style="display:none"
+            >
+
+                <h3>
+                    Espectro de la señal modulante
+                </h3>
+
+                <div
+                    class="analizador-info"
+                    id="infoAnalizadorModulante"
+                ></div>
+
+                <canvas
+                    id="graficaEspectroModulante"
+                ></canvas>
+
+            </div>
+
+
+            <div class="grafica">
+
+                <h3 id="tituloGraficaEspectroAM">
+                    Representación espectral
+                </h3>
+
+                <div
+                    class="analizador-info"
+                    id="infoAnalizadorAM"
+                ></div>
+
+                <canvas
+                    id="graficaEspectro"
+                ></canvas>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div
+            class="contenido-pestana"
+            id="contenidoImplementacion"
+        >
+
+
+            <div
+                class="descripcion"
+                id="descripcionImplementacion"
+            >
+                Cálculo teórico del bloque seleccionado.
+            </div>
+
+
+            <div
+                class="formula"
+                id="formulaImplementacion"
+            >
+                f0 = 1 / (2 x pi x raíz(L x C))
+            </div>
+
+
+            <div
+                id="zonaModulador"
+                style="display:none"
+            >
+
+
+                <div
+                    class="fuente-tiempo-panel"
+                    id="resumenFuenteImplementacion"
+                >
+                    <strong id="tituloFuenteImplementacion">
+                        Fuente modulante global
+                    </strong>
+
+                    <p id="descripcionFuenteImplementacion">
+                        Utiliza la misma fuente seleccionada en TIEMPO.
+                    </p>
+
+                    <div
+                        class="audio-datos"
+                        id="datosFuenteImplementacion"
+                    >
+                        -
+                    </div>
+                </div>
+
+
+                <div
+                    class="fuente-tiempo-panel"
+                    id="panelAudioImplementacion"
+                    style="display:none"
+                >
+                    <strong>
+                        Control global del archivo de audio
+                    </strong>
+
+                    <p>
+                        Es el mismo archivo utilizado en TIEMPO y ESPECTRO. La reproducción conserva su posición al observar el modulador.
+                    </p>
+
+                    <div class="controles-fuente">
+                        <button
+                            class="boton-fuente"
+                            id="reproducirAudioImplementacion"
+                            type="button"
+                        >
+                            REPRODUCIR
+                        </button>
+
+                        <button
+                            class="boton-fuente secundario"
+                            id="pausarAudioImplementacion"
+                            type="button"
+                        >
+                            PAUSA
+                        </button>
+
+                        <button
+                            class="boton-fuente secundario"
+                            id="detenerAudioImplementacion"
+                            type="button"
+                        >
+                            DETENER
+                        </button>
+
+                        <button
+                            class="boton-fuente secundario"
+                            id="reiniciarAudioImplementacion"
+                            type="button"
+                        >
+                            REINICIAR
+                        </button>
+                    </div>
+
+                    <div
+                        class="audio-datos"
+                        id="estadoAudioImplementacion"
+                    >
+                        Ningún archivo cargado.
+                    </div>
+
+                    <div class="barra-progreso-audio">
+                        <div id="progresoAudioImplementacion"></div>
+                    </div>
+                </div>
+
+
+                <div class="descripcion">
+                    Fuente modulante global → MODULADOR AM ← Portadora. La salida es una señal AM cuya amplitud sigue la forma de la modulante seleccionada.
+                </div>
+
+
+                <div class="grafica">
+
+                    <h3>
+                        Entrada modulante al modulador
+                    </h3>
+
+                    <canvas
+                        id="graficaImplModulante"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="grafica">
+
+                    <h3>
+                        Portadora aplicada al modulador
+                    </h3>
+
+                    <canvas
+                        id="graficaImplPortadora"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="grafica">
+
+                    <h3>
+                        Salida del modulador AM y envolvente
+                    </h3>
+
+                    <canvas
+                        id="graficaImplAM"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="aviso">
+                    El bloque representa el principio funcional del modulador AM. No sustituye la simulación electrónica de un circuito modulador físico. LC, Colpitts y Hartley conservan sus cálculos propios y no dependen de la forma de la modulante.
+                </div>
+
+
+            </div>
+
+
+            <div id="zonaOscilador">
+
+
+                <div class="grafica">
+
+                    <h3>
+                        Frecuencia teórica calculada
+                    </h3>
+
+                    <canvas
+                        id="graficaImplTeorica"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="aviso">
+
+                    Esta representación indica la
+                    frecuencia teórica calculada.
+
+                    No representa una simulación
+                    electrónica completa del
+                    oscilador.
+
+                    La oscilación real debe
+                    verificarse con el circuito
+                    correspondiente.
+
+                </div>
+
+
+            </div>
+
+
+            <div id="zonaMixer">
+
+
+                <div class="grafica">
+
+                    <h3>
+                        Señales de entrada
+                    </h3>
+
+                    <canvas
+                        id="graficaMixerEntrada"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="grafica">
+
+                    <h3>
+                        Salida del mezclador
+                    </h3>
+
+                    <canvas
+                        id="graficaMixerSalida"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="grafica">
+
+                    <h3>
+                        Productos de mezcla
+                    </h3>
+
+                    <canvas
+                        id="graficaMixerEspectro"
+                    ></canvas>
+
+                </div>
+
+
+                <div class="aviso">
+
+                    El mezclador se representa mediante
+                    un modelo ideal de multiplicación.
+
+                    Deben aparecer las componentes
+                    de suma y diferencia.
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <div
+            class="contenido-pestana"
+            id="contenidoRuido"
+        >
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="resumenFuenteRuido"
+            >
+                <strong id="tituloFuenteRuido">
+                    Fuente modulante global
+                </strong>
+
+                <p id="descripcionFuenteRuido">
+                    La misma fuente seleccionada en TIEMPO se utiliza para generar la señal AM limpia y la señal AM con ruido.
+                </p>
+            </div>
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="panelVentanaRuido"
+            >
+                <strong>
+                    Ventana de observación
+                </strong>
+
+                <p>
+                    Define el intervalo temporal utilizado para comparar la AM limpia, la AM con ruido y calcular los valores RMS y la SNR de la ventana actual.
+                </p>
+
+                <div class="audio-config">
+                    <label for="ventanaRuido">
+                        Ventana:
+                    </label>
+
+                    <select id="ventanaRuido">
+                        <option value="0.001">1 ms</option>
+                        <option value="0.002">2 ms</option>
+                        <option value="0.005">5 ms</option>
+                        <option value="0.010">10 ms</option>
+                        <option value="0.020">20 ms</option>
+                        <option value="0.05">50 ms</option>
+                        <option value="0.10" selected>100 ms</option>
+                        <option value="0.25">250 ms</option>
+                        <option value="0.50">500 ms</option>
+                    </select>
+
+                    <span
+                        id="notaVentanaRuido"
+                        style="font-size:11px; color:#555"
+                    >
+                        100 ms
+                    </span>
+                </div>
+            </div>
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="panelFuenteAnimadaRuido"
+                style="display:none"
+            >
+                <strong>
+                    Control de la fuente variable
+                </strong>
+
+                <p>
+                    La misma señal variable o sensor simulado continúa evolucionando al observar RUIDO.
+                </p>
+
+                <div class="controles-fuente">
+                    <button
+                        class="boton-fuente secundario"
+                        id="pausarFuenteAnimadaRuido"
+                        type="button"
+                    >
+                        PAUSAR
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="reiniciarFuenteAnimadaRuido"
+                        type="button"
+                    >
+                        REINICIAR
+                    </button>
+
+                    <span
+                        id="estadoFuenteAnimadaRuido"
+                        style="font-size:11px"
+                    >
+                        Ejecutándose
+                    </span>
+                </div>
+            </div>
+
+
+            <div
+                class="fuente-tiempo-panel"
+                id="panelAudioRuido"
+                style="display:none"
+            >
+                <strong>
+                    Control global del archivo de audio
+                </strong>
+
+                <p>
+                    Es el mismo archivo utilizado en TIEMPO, ESPECTRO e IMPLEMENTACIÓN. La reproducción conserva su posición al observar el efecto del ruido.
+                </p>
+
+                <div class="controles-fuente">
+                    <button
+                        class="boton-fuente"
+                        id="reproducirAudioRuido"
+                        type="button"
+                    >
+                        REPRODUCIR
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="pausarAudioRuido"
+                        type="button"
+                    >
+                        PAUSA
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="detenerAudioRuido"
+                        type="button"
+                    >
+                        DETENER
+                    </button>
+
+                    <button
+                        class="boton-fuente secundario"
+                        id="reiniciarAudioRuido"
+                        type="button"
+                    >
+                        REINICIAR
+                    </button>
+                </div>
+
+                <div
+                    class="audio-datos"
+                    id="estadoAudioRuido"
+                >
+                    Ningún archivo cargado.
+                </div>
+
+                <div class="barra-progreso-audio">
+                    <div id="progresoAudioRuido"></div>
+                </div>
+
+                <div
+                    class="aviso"
+                    style="margin-top:12px"
+                >
+                    <strong>Importante sobre el audio:</strong>
+                    el archivo se reproduce con su sonido original.
+                    El ruido se aplica únicamente a la simulación de la señal AM,
+                    a las gráficas y a los cálculos de RMS y SNR.
+                    Por tanto, el ruido visible en esta pestaña no modifica ni distorsiona
+                    el audio que se escucha.
+                </div>
+            </div>
+
+
+            <div
+                class="descripcion"
+                id="descripcionRuido"
+            >
+                Comparación entre AM limpia y AM con ruido aditivo. El ruido afecta la simulación visual y numérica; si la fuente es un archivo de audio, su reproducción permanece sin ruido audible.
+            </div>
+
+
+            <div class="formula">
+
+                SNR en dB =
+                20 x log10(
+                V señal RMS / V ruido RMS
+                )
+
+            </div>
+
+
+            <div class="grafica">
+
+                <h3>
+                    Señal AM limpia
+                </h3>
+
+                <canvas
+                    id="graficaRuidoLimpia"
+                ></canvas>
+
+            </div>
+
+
+            <div class="grafica">
+
+                <h3 id="tituloRuidoRuidosa">
+                    Señal AM con ruido
+                </h3>
+
+                <canvas
+                    id="graficaRuidoRuidosa"
+                ></canvas>
+
+            </div>
+
+
+            <div class="aviso">
+
+                Los niveles bajo, medio y alto son
+                referencias cualitativas para comparación.
+
+                La amplitud de ruido no representa
+                directamente una SNR conocida ni un
+                porcentaje exacto de ruido.
+
+                <br><br>
+
+                En la gráfica superior, la línea roja corresponde a la envolvente limpia.
+                En la gráfica inferior, la línea roja es una estimación de la envolvente
+                de la señal AM con ruido, por lo que puede observarse irregular y deformada.
+
+            </div>
+
+
+
+            <div class="calculador-potencia">
+
+                <h3>
+                    Cálculo complementario de SNR con potencias
+                </h3>
+
+
+                <div class="formula-potencia">
+
+                    SNR lineal = P señal / P ruido
+
+                    &nbsp;&nbsp; | &nbsp;&nbsp;
+
+                    SNR en dB =
+                    10 x log10(P señal / P ruido)
+
+                </div>
+
+
+                <div class="calculador-potencia-grid">
+
+
+                    <div class="campo-potencia">
+
+                        <label for="potenciaSenal">
+                            Potencia de señal (mW)
+                        </label>
+
+                        <input
+                            id="potenciaSenal"
+                            type="number"
+                            step="0.1"
+                            value="100"
+                        >
+
+                    </div>
+
+
+                    <div class="campo-potencia">
+
+                        <label for="potenciaRuido">
+                            Potencia de ruido (mW)
+                        </label>
+
+                        <input
+                            id="potenciaRuido"
+                            type="number"
+                            step="0.1"
+                            value="1"
+                        >
+
+                    </div>
+
+
+                    <button id="calcularPotencia">
+                        CALCULAR
+                    </button>
+
+
+                    <div class="resultado-potencia">
+
+                        <strong>
+                            SNR lineal
+                        </strong>
+
+                        <span id="snrPotenciaLineal">
+                            100.000
+                        </span>
+
+                    </div>
+
+
+                    <div class="resultado-potencia">
+
+                        <strong>
+                            SNR en dB
+                        </strong>
+
+                        <span id="snrPotenciaDB">
+                            20.000 dB
+                        </span>
+
+                    </div>
+
+
+                </div>
+
+
+                <div id="mensajePotencia">
+
+                    Las dos potencias deben expresarse
+                    en la misma unidad.
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+
+    <section class="panel panel-resultados">
+
+
+        <h2>
+            Resultados
+        </h2>
+
+
+
+        <div
+            class="grupo-resultados activo"
+            id="resultadosTiempo"
+        >
+
+
+            <div class="resultado">
+                <strong>Amax teórico</strong>
+                <span id="AmaxTeorico">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Amin teórico</strong>
+                <span id="AminTeorico">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Amax simulado</strong>
+                <span id="AmaxSimulado">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Amin simulado</strong>
+                <span id="AminSimulado">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Índice m configurado</strong>
+                <span id="mConfigurado">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Índice m simulado</strong>
+                <span id="mSimulado">-</span>
+            </div>
+
+
+            <div class="resultado estado">
+                <strong>Estado</strong>
+                <span id="estado">-</span>
+            </div>
+
+
+        </div>
+
+
+
+        <div
+            class="grupo-resultados"
+            id="resultadosEspectro"
+        >
+
+
+            <div class="resultado">
+                <strong>Sistema</strong>
+                <span id="sistemaResultado">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Componentes transmitidas</strong>
+                <span id="componentes">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>BLI</strong>
+                <span id="BLI">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Portadora / referencia fc</strong>
+                <span id="Portadora">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>BLS</strong>
+                <span id="BLS">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Extremo inferior</strong>
+                <span id="extremoInferior">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Extremo superior</strong>
+                <span id="extremoSuperior">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Contenido espectral significativo</strong>
+                <span id="anchoBanda">-</span>
+            </div>
+
+
+        </div>
+
+
+
+        <div
+            class="grupo-resultados"
+            id="resultadosImplementacion"
+        >
+
+
+            <div class="resultado">
+
+                <strong>Bloque</strong>
+
+                <span id="implNombre">
+                    -
+                </span>
+
+            </div>
+
+
+            <div
+                class="resultado"
+                id="resultadoFuenteImpl"
+                style="display:none"
+            >
+
+                <strong>
+                    Fuente modulante global
+                </strong>
+
+                <span id="implFuenteGlobal">
+                    -
+                </span>
+
+            </div>
+
+
+            <div
+                class="resultado"
+                id="resultadoParametrosAMImpl"
+                style="display:none"
+            >
+
+                <strong>
+                    Parámetros AM globales
+                </strong>
+
+                <span id="implParametrosAM">
+                    -
+                </span>
+
+            </div>
+
+
+            <div
+                class="resultado"
+                id="resultadoCeq"
+                style="display:none"
+            >
+
+                <strong>
+                    Capacitancia equivalente
+                </strong>
+
+                <span id="implCeq">
+                    -
+                </span>
+
+            </div>
+
+
+            <div
+                class="resultado"
+                id="resultadoLtotal"
+                style="display:none"
+            >
+
+                <strong>
+                    Inductancia total
+                </strong>
+
+                <span id="implLtotal">
+                    -
+                </span>
+
+            </div>
+
+
+            <div
+                class="resultado"
+                id="resultadoF0"
+            >
+
+                <strong>
+                    Frecuencia teórica f0
+                </strong>
+
+                <span id="implF0">
+                    -
+                </span>
+
+            </div>
+
+
+            <div
+                class="resultado"
+                id="resultadoFSuma"
+                style="display:none"
+            >
+
+                <strong>
+                    Frecuencia suma
+                </strong>
+
+                <span id="implFSuma">
+                    -
+                </span>
+
+            </div>
+
+
+            <div
+                class="resultado"
+                id="resultadoFDiferencia"
+                style="display:none"
+            >
+
+                <strong>
+                    Frecuencia diferencia
+                </strong>
+
+                <span id="implFDiferencia">
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="resultado estado">
+
+                <strong>
+                    Interpretación
+                </strong>
+
+                <span id="implValidacion">
+                    -
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+
+        <div
+            class="grupo-resultados"
+            id="resultadosRuido"
+        >
+
+
+            <div class="resultado">
+                <strong>Fuente modulante</strong>
+                <span id="ruidoFuenteResultado">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Ventana observada</strong>
+                <span id="ruidoVentanaResultado">-</span>
+            </div>
+
+
+            <div class="resultado">
+                <strong>Nivel</strong>
+                <span id="ruidoNivelResultado">-</span>
+            </div>
+
+
+            <div class="resultado">
+
+                <strong>
+                    Amplitud de ruido
+                </strong>
+
+                <span id="ruidoAmplitudResultado">
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="resultado">
+
+                <strong>
+                    V señal RMS
+                </strong>
+
+                <span id="ruidoVsenal">
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="resultado">
+
+                <strong>
+                    V ruido RMS
+                </strong>
+
+                <span id="ruidoVruido">
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="resultado">
+
+                <strong>
+                    SNR lineal
+                </strong>
+
+                <span id="ruidoSNRlineal">
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="resultado">
+
+                <strong>
+                    SNR en dB
+                </strong>
+
+                <span id="ruidoSNRdB">
+                    -
+                </span>
+
+            </div>
+
+
+            <div class="resultado estado">
+
+                <strong>
+                    Interpretación
+                </strong>
+
+                <span id="ruidoInterpretacion">
+                    -
+                </span>
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
+
+
+
+<script src="../js/common/numpy-compat.js"></script>
+<script src="../js/am/data/noise-seed-12345.js"></script>
+<script src="../js/am/core/am-engine.js"></script>
+<script src="../js/am/core/implementation-engine.js"></script>
+<script src="../js/am/core/noise-engine.js"></script>
+<script src="../js/am/api/local-api.js"></script>
+<script src="../js/am/ui/am-ui.js"></script>
+
+
+</body>
+
+</html>

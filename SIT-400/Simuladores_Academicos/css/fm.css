@@ -1,0 +1,449 @@
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eef1f4;
+            color: #171717;
+            font-size: 13px;
+        }
+
+        header {
+            min-height: 66px;
+            padding: 10px 22px;
+            background: #1d4775;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .titulo h1 {
+            margin: 0;
+            font-size: 21px;
+        }
+
+        .titulo p {
+            margin: 3px 0 0 0;
+            font-size: 12px;
+        }
+
+        .autor {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border: 1px solid #f0b400;
+            border-radius: 18px;
+            background: rgba(0, 0, 0, 0.12);
+            white-space: nowrap;
+        }
+
+        .autor-etiqueta {
+            padding: 4px 9px;
+            border-radius: 12px;
+            background: #f0b400;
+            color: #111;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .autor-nombre {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .autor-separador {
+            color: #f0b400;
+        }
+
+        .autor-email {
+            color: #5ec8ff;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .barra-superior {
+            padding: 7px 14px;
+            background: white;
+            border-bottom: 1px solid #c8d0d8;
+        }
+
+        .volver {
+            color: #175ea8;
+            font-size: 12px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 250px minmax(600px, 1fr) 250px;
+            gap: 12px;
+            padding: 12px;
+            align-items: start;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #c8d0d8;
+            border-radius: 6px;
+        }
+
+        .panel-lateral {
+            padding: 14px;
+            position: sticky;
+            top: 10px;
+        }
+
+        .panel h2 {
+            margin: 0 0 14px 0;
+            color: #153f6d;
+            font-size: 17px;
+        }
+
+        .grupo {
+            margin-bottom: 11px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            height: 36px;
+            padding: 7px 8px;
+            border: 1px solid #999;
+            border-radius: 4px;
+            background: white;
+            font-size: 13px;
+        }
+
+        input[type="file"] {
+            height: auto;
+            padding: 6px;
+        }
+
+        .fila-controles {
+            display: flex;
+            gap: 7px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .fila-controles button {
+            width: auto;
+            min-width: 92px;
+            height: 34px;
+            padding: 0 12px;
+        }
+
+        .dato-inline {
+            font-size: 12px;
+            color: #334;
+        }
+
+        .meta-analizador {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 7px;
+            margin: 8px 0;
+        }
+
+        .meta-analizador div {
+            padding: 7px 8px;
+            background: #edf2f7;
+            border-radius: 4px;
+            min-width: 0;
+        }
+
+        .meta-analizador span {
+            display: block;
+            font-size: 10px;
+            color: #4a5560;
+        }
+
+        .meta-analizador strong {
+            display: block;
+            margin-top: 2px;
+            color: #003b76;
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .oculto {
+            display: none !important;
+        }
+
+        input.campo-error,
+        select.campo-error {
+            border: 2px solid #c62828;
+            background: #fff0f0;
+            color: #7f0000;
+            outline: none;
+        }
+
+        input.campo-error:focus {
+            box-shadow: 0 0 0 2px rgba(198, 40, 40, 0.18);
+        }
+
+        .grupo.grupo-error label {
+            color: #a31515;
+        }
+
+        .error-campo {
+            margin-top: 4px;
+            color: #b00020;
+            font-size: 11px;
+            font-weight: bold;
+            line-height: 1.3;
+        }
+
+        button {
+            border: 0;
+            border-radius: 4px;
+            background: #1e67ad;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #17558f;
+        }
+
+        .boton-principal {
+            width: 100%;
+            height: 40px;
+        }
+
+        .estado {
+            margin-top: 10px;
+            padding: 9px;
+            border-radius: 4px;
+            background: #f0f2f4;
+            font-size: 11px;
+            line-height: 1.4;
+            white-space: pre-line;
+        }
+
+        .estado.estado-error {
+            background: #ffe7e7;
+            border: 1px solid #cf3030;
+            color: #8b0000;
+            font-weight: bold;
+        }
+
+        .principal {
+            padding: 12px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid #c8d0d8;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            width: auto;
+            height: 35px;
+            padding: 0 15px;
+            background: #e6ebf1;
+            color: #111;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tab.activo {
+            background: #174d84;
+            color: white;
+        }
+
+        .contenido-tab {
+            display: none;
+        }
+
+        .contenido-tab.activo {
+            display: block;
+        }
+
+        .grafico-bloque {
+            margin-bottom: 14px;
+        }
+
+        .grafico-bloque h3 {
+            margin: 0 0 5px 0;
+            font-size: 13px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 150px;
+            border: 1px solid #aaa;
+            background: white;
+        }
+
+        .resultado {
+            margin-bottom: 8px;
+            padding: 10px;
+            border-radius: 5px;
+            background: #e9eef4;
+        }
+
+        .resultado span {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 11px;
+        }
+
+        .resultado strong {
+            color: #003b76;
+            font-size: 13px;
+        }
+
+        .resultado.resultado-error {
+            background: #ffe7e7;
+            border: 1px solid #cf3030;
+        }
+
+        .resultado.resultado-error strong {
+            color: #8b0000;
+        }
+
+        .tarjeta {
+            margin-bottom: 12px;
+            padding: 14px;
+            border: 1px solid #c8d0d8;
+            border-radius: 6px;
+            background: #fafbfc;
+        }
+
+        .tarjeta h3 {
+            margin: 0 0 8px 0;
+            color: #153f6d;
+            font-size: 15px;
+        }
+
+        .tarjeta p {
+            margin: 7px 0;
+            line-height: 1.45;
+        }
+
+        .formula {
+            margin: 7px 0;
+            padding: 8px 10px;
+            background: #eef2f6;
+            border-left: 4px solid #1e67ad;
+            font-family: Consolas, monospace;
+        }
+
+        .nota {
+            margin-top: 12px;
+            padding: 10px;
+            border: 1px solid #e4cc75;
+            border-radius: 5px;
+            background: #fff7db;
+            line-height: 1.45;
+        }
+
+        .advertencia {
+            margin-top: 12px;
+            padding: 10px;
+            border: 1px solid #dda6a6;
+            border-radius: 5px;
+            background: #fff1f1;
+            line-height: 1.45;
+        }
+
+        .rejilla-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .mini-boton {
+            width: 100%;
+            height: 36px;
+            margin-top: 4px;
+        }
+
+        .diagrama {
+            margin: 8px 0;
+            padding: 12px;
+            border: 1px dashed #8ea5ba;
+            border-radius: 5px;
+            background: #f5f8fb;
+            text-align: center;
+            font-weight: bold;
+            line-height: 1.7;
+        }
+
+        .tabla {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .tabla th,
+        .tabla td {
+            padding: 7px 8px;
+            border: 1px solid #c8d0d8;
+            text-align: center;
+        }
+
+        .tabla th {
+            background: #e9eef4;
+            color: #153f6d;
+        }
+
+        .seccion-parametros {
+            display: none;
+        }
+
+        .seccion-parametros.activa {
+            display: block;
+        }
+
+        @media (max-width: 1100px) {
+            .layout {
+                grid-template-columns: 220px minmax(520px, 1fr);
+            }
+
+            .resultados {
+                grid-column: 1 / -1;
+                position: static;
+            }
+        }
+
+        @media (max-width: 760px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .panel-lateral {
+                position: static;
+            }
+
+            .rejilla-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .meta-analizador {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }

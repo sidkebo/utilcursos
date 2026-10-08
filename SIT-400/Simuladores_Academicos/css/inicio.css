@@ -1,0 +1,209 @@
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f3f5f7;
+            color: #222;
+        }
+
+        header {
+            background: #173d68;
+            color: white;
+
+            padding: 14px 22px;
+
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            gap: 20px;
+        }
+
+        .titulo h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .titulo p {
+            margin: 4px 0 0 0;
+
+            font-size: 12px;
+            color: #dce8f5;
+        }
+
+        .autor {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 8px 14px;
+
+            border: 1px solid #f0b400;
+            border-radius: 18px;
+
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .autor-etiqueta {
+            padding: 4px 9px;
+
+            border-radius: 12px;
+
+            background: #f0b400;
+            color: #111;
+
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .autor-nombre {
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .autor-separador {
+            color: #f0b400;
+        }
+
+        .autor-email {
+            color: #5ec8ff;
+
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        main {
+            width: calc(100% - 30px);
+            max-width: 1150px;
+
+            margin: 30px auto;
+        }
+
+        .presentacion {
+            margin-bottom: 22px;
+
+            padding: 18px;
+
+            background: white;
+
+            border: 1px solid #ccd3da;
+            border-radius: 6px;
+        }
+
+        .presentacion h2 {
+            margin: 0 0 7px 0;
+
+            color: #173d68;
+
+            font-size: 20px;
+        }
+
+        .presentacion p {
+            margin: 0;
+
+            font-size: 14px;
+            line-height: 1.5;
+
+            color: #444;
+        }
+
+        .materias {
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 18px;
+        }
+
+        .materia {
+            min-height: 245px;
+
+            padding: 22px;
+
+            background: white;
+
+            border: 1px solid #ccd3da;
+            border-top: 5px solid #175ea8;
+
+            border-radius: 7px;
+
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sigla {
+            display: inline-block;
+
+            width: fit-content;
+
+            margin-bottom: 14px;
+
+            padding: 5px 10px;
+
+            border-radius: 13px;
+
+            background: #e7f0fa;
+            color: #174f87;
+
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .materia h3 {
+            margin: 0 0 10px 0;
+
+            color: #173d68;
+
+            font-size: 20px;
+        }
+
+        .materia p {
+            margin: 0 0 18px 0;
+
+            color: #555;
+
+            font-size: 14px;
+            line-height: 1.5;
+
+            flex-grow: 1;
+        }
+
+        .boton {
+            display: block;
+
+            width: 100%;
+
+            padding: 12px;
+
+            background: #175ea8;
+            color: white;
+
+            border-radius: 4px;
+
+            text-align: center;
+            text-decoration: none;
+
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .boton:hover {
+            background: #124b86;
+        }
+
+        @media (max-width: 850px) {
+
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .materias {
+                grid-template-columns: 1fr;
+            }
+        }

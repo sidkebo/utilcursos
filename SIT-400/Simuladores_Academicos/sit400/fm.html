@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Modulación FM / PM</title>
+
+    <link rel="stylesheet" href="../css/fm.css">
+
+</head>
+
+<body>
+
+<header>
+    <div class="titulo">
+        <h1>Simulador de Modulación FM / PM</h1>
+        <p>Análisis temporal, espectral, generación, demodulación, PLL y ruido</p>
+    </div>
+
+    <div class="autor">
+        <span class="autor-etiqueta">AUTOR</span>
+        <span class="autor-nombre">Eduardo Balderrama</span>
+        <span class="autor-separador">•</span>
+        <a class="autor-email" href="mailto:sidkebo@gmail.com">sidkebo@gmail.com</a>
+    </div>
+</header>
+
+<div class="barra-superior">
+    <a class="volver" href="../">← VOLVER AL MENÚ PRINCIPAL</a>
+</div>
+
+<div class="layout">
+
+    <aside class="panel panel-lateral">
+        <h2>Parámetros</h2>
+
+        <section id="paramBase" class="seccion-parametros activa">
+
+            <div class="grupo">
+                <label for="fuenteModulante">Señal modulante</label>
+                <select id="fuenteModulante">
+                    <option value="senoidal" selected>Senoidal</option>
+                    <option value="triangular">Triangular</option>
+                    <option value="cuadrada">Cuadrada</option>
+                    <option value="compuesta">Señal compuesta</option>
+                    <option value="variable">Señal variable</option>
+                    <option value="sensor">Sensor simulado</option>
+                    <option value="audio">Archivo de audio</option>
+                </select>
+            </div>
+
+            <div class="grupo oculto" id="grupoArchivoAudio">
+                <label for="archivoAudio">Archivo de audio</label>
+                <input id="archivoAudio" type="file" accept="audio/*">
+                <div id="audioArchivoInfo" class="dato-inline" style="margin-top:5px">Ningún archivo cargado.</div>
+            </div>
+
+            <div class="grupo">
+                <label for="Ac">Amplitud portadora Ac (V)</label>
+                <input id="Ac" type="number" step="0.1" value="2">
+            </div>
+
+            <div class="grupo">
+                <label for="fc">Frecuencia portadora fc (Hz)</label>
+                <input id="fc" type="number" step="1" value="1000">
+            </div>
+
+            <div class="grupo" id="grupoFmBase">
+                <label for="fm">Frecuencia modulante fm (Hz)</label>
+                <input id="fm" type="number" step="1" value="100">
+            </div>
+
+            <div class="grupo">
+                <label for="Am">Amplitud modulante Am (V)</label>
+                <input id="Am" type="number" step="0.1" value="1">
+            </div>
+
+            <div class="grupo">
+                <label for="delta_f">Desviación máxima delta_f (Hz)</label>
+                <input id="delta_f" type="number" step="1" value="200">
+            </div>
+
+            <div class="grupo">
+                <label for="delta_phi">Desviación máxima delta_phi (rad)</label>
+                <input id="delta_phi" type="number" step="0.1" value="1">
+            </div>
+
+            <button id="btnBase" class="boton-principal">
+                ACTUALIZAR FM / PM
+            </button>
+
+        </section>
+
+        <section id="paramGeneracion" class="seccion-parametros">
+
+            <div class="grupo">
+                <label for="vco_Ac">Amplitud Ac (V)</label>
+                <input id="vco_Ac" type="number" step="0.1" value="1">
+            </div>
+
+            <div class="grupo">
+                <label for="vco_fc">Frecuencia central fc (Hz)</label>
+                <input id="vco_fc" type="number" step="0.1" value="20">
+            </div>
+
+            <div class="grupo">
+                <label for="vco_fm">Frecuencia modulante fm (Hz)</label>
+                <input id="vco_fm" type="number" step="0.1" value="1">
+            </div>
+
+            <div class="grupo">
+                <label for="vco_K">Kvco (Hz/V)</label>
+                <input id="vco_K" type="number" step="0.1" value="5">
+            </div>
+
+            <div class="grupo">
+                <label for="vco_bias">Vbias (V)</label>
+                <input id="vco_bias" type="number" step="0.1" value="2">
+            </div>
+
+            <div class="grupo">
+                <label for="vco_Vm">Vm pico (V)</label>
+                <input id="vco_Vm" type="number" step="0.1" value="1">
+            </div>
+
+            <div class="grupo">
+                <label for="vco_N">Multiplicador N</label>
+                <input id="vco_N" type="number" step="1" min="1" max="20" value="1">
+            </div>
+
+            <button id="btnVco" class="boton-principal">
+                SIMULAR VCO
+            </button>
+
+        </section>
+
+        <section id="paramDemod" class="seccion-parametros">
+
+            <div class="grupo">
+                <label for="demod_Kd">Kd del detector (V/kHz)</label>
+                <input id="demod_Kd" type="number" step="0.01" value="0.2">
+            </div>
+
+            <div class="grupo">
+                <label for="demod_Kvco">Kvco del PLL (Hz/V)</label>
+                <input id="demod_Kvco" type="number" step="1" value="200">
+            </div>
+
+            <div class="grupo">
+                <label for="demod_Vdc">Nivel DC de control (V)</label>
+                <input id="demod_Vdc" type="number" step="0.1" value="2">
+            </div>
+
+            <button id="btnDemod" class="boton-principal">
+                SIMULAR DEMODULACIÓN
+            </button>
+
+        </section>
+
+        <section id="paramRuido" class="seccion-parametros">
+
+            <div class="grupo">
+                <label for="ruido_amp">Ruido relativo de amplitud</label>
+                <input id="ruido_amp" type="number" step="0.01" value="0.15">
+            </div>
+
+            <div class="grupo">
+                <label for="ruido_fase">Perturbación de fase (rad)</label>
+                <input id="ruido_fase" type="number" step="0.01" value="0.08">
+            </div>
+
+            <button id="btnRuido" class="boton-principal">
+                SIMULAR RUIDO
+            </button>
+
+        </section>
+
+        <div id="estado" class="estado">
+            Listo para simular.
+        </div>
+
+    </aside>
+
+    <main class="panel principal">
+
+        <div class="tabs">
+            <button class="tab activo" data-tab="tiempo">TIEMPO</button>
+            <button class="tab" data-tab="calculos">CÁLCULOS</button>
+            <button class="tab" data-tab="espectro">ESPECTRO</button>
+            <button class="tab" data-tab="generacion">GENERACIÓN</button>
+            <button class="tab" data-tab="demodulacion">DEMODULACIÓN / PLL</button>
+            <button class="tab" data-tab="ruido">RUIDO</button>
+        </div>
+
+        <section id="tiempo" class="contenido-tab activo">
+
+            <div class="tarjeta">
+                <h3>Ventana de observación</h3>
+                <p>Define el intervalo temporal mostrado en las gráficas. Es una escala didáctica; no cambia los parámetros físicos de FM o PM.</p>
+                <div class="fila-controles">
+                    <label for="ventanaTiempo" style="margin:0">Ventana:</label>
+                    <select id="ventanaTiempo" style="width:110px">
+                        <option value="1">1 ms</option>
+                        <option value="2">2 ms</option>
+                        <option value="5">5 ms</option>
+                        <option value="10">10 ms</option>
+                        <option value="20">20 ms</option>
+                        <option value="50">50 ms</option>
+                        <option value="100" selected>100 ms</option>
+                        <option value="250">250 ms</option>
+                        <option value="500">500 ms</option>
+                    </select>
+                    <span id="ventanaTiempoInfo" class="dato-inline">100 ms</span>
+                </div>
+            </div>
+
+            <div id="controlAudioTiempo" class="tarjeta oculto control-audio-global">
+                <h3>Control global del archivo de audio</h3>
+                <p>El archivo se usa como señal modulante. La reproducción audible es solo una referencia de la modulante original. La posición se conserva al cambiar de pestaña.</p>
+                <div class="fila-controles">
+                    <button id="audioPlay" type="button" data-audio-action="play">REPRODUCIR</button>
+                    <button id="audioPause" type="button" data-audio-action="pause">PAUSA</button>
+                    <button id="audioStop" type="button" data-audio-action="stop">DETENER</button>
+                    <button id="audioRestart" type="button" data-audio-action="restart">REINICIAR</button>
+                </div>
+                <div id="audioEstadoTiempo" class="estado audio-estado-global" style="margin-top:8px">Cargue un archivo de audio.</div>
+                <input id="audioProgreso" class="audio-progreso-global" type="range" min="0" max="1" step="0.01" value="0" style="margin-top:8px">
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Señal modulante</h3>
+                <canvas id="grafModulante" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Portadora sin modular</h3>
+                <canvas id="grafPortadora" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Señal FM — cambia la separación entre ciclos</h3>
+                <canvas id="grafFM" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Frecuencia instantánea FM f_i(t)</h3>
+                <canvas id="grafFi" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="nota" id="notaFuenteCompleja" style="display:none">
+                Para esta fuente no se usa una única frecuencia modulante f_m para describir todo el mensaje. La gráfica temporal utiliza directamente la forma instantánea de la modulante.
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Señal PM — cambia la fase instantánea</h3>
+                <canvas id="grafPM" width="1000" height="150"></canvas>
+            </div>
+
+        </section>
+
+        <section id="calculos" class="contenido-tab">
+
+            <div class="tarjeta">
+                <h3>Rango instantáneo de frecuencia FM</h3>
+                <div class="formula">f_min = fc - delta_f</div>
+                <div class="formula">f_max = fc + delta_f</div>
+                <p id="calcRango">—</p>
+            </div>
+
+            <div class="tarjeta">
+                <h3>Índice de modulación FM</h3>
+                <div class="formula">beta = delta_f / fm</div>
+                <p id="calcBeta">—</p>
+            </div>
+
+            <div class="tarjeta">
+                <h3>Sensibilidad del modulador FM</h3>
+                <div class="formula">delta_f = kf x Am</div>
+                <div class="formula">kf = delta_f / Am</div>
+                <p id="calcKf">—</p>
+            </div>
+
+            <div class="tarjeta">
+                <h3>Índice y sensibilidad PM</h3>
+                <div class="formula">mp = valor numérico de delta_phi en rad</div>
+                <div class="formula">delta_phi = kp x Am</div>
+                <p id="calcPm">—</p>
+            </div>
+
+        </section>
+
+        <section id="espectro" class="contenido-tab">
+
+            <div class="tarjeta oculto control-audio-global">
+                <h3>Control global del archivo de audio</h3>
+                <p>El mismo archivo y la misma posición de reproducción se comparten con las demás pestañas que utilizan la fuente modulante.</p>
+                <div class="fila-controles">
+                    <button type="button" data-audio-action="play">REPRODUCIR</button>
+                    <button type="button" data-audio-action="pause">PAUSA</button>
+                    <button type="button" data-audio-action="stop">DETENER</button>
+                    <button type="button" data-audio-action="restart">REINICIAR</button>
+                </div>
+                <div class="estado audio-estado-global" style="margin-top:8px">Cargue un archivo de audio.</div>
+                <input class="audio-progreso-global" type="range" min="0" max="1" step="0.01" value="0" style="margin-top:8px">
+            </div>
+
+            <div class="tarjeta">
+                <h3>Análisis espectral según la fuente modulante</h3>
+                <p id="textoModoEspectro">Con modulante senoidal se conserva el análisis analítico con beta, Bessel y Carson.</p>
+                <div class="fila-controles">
+                    <label for="ventanaFFT" style="margin:0">Ventana FFT:</label>
+                    <select id="ventanaFFT" style="width:110px">
+                        <option value="1">1 ms</option>
+                        <option value="2">2 ms</option>
+                        <option value="5">5 ms</option>
+                        <option value="10">10 ms</option>
+                        <option value="20">20 ms</option>
+                        <option value="50">50 ms</option>
+                        <option value="100" selected>100 ms</option>
+                        <option value="250">250 ms</option>
+                        <option value="500">500 ms</option>
+                    </select>
+                    <button id="btnFftCompleja" type="button">ACTUALIZAR FFT</button>
+                </div>
+            </div>
+
+            <div id="espectroComplejo" class="oculto">
+                <div class="nota">
+                    Para señales complejas o audio no se usa un único beta basado en una sola f_m. La FFT permite observar cualitativamente el contenido espectral. Para Carson se usa una frecuencia máxima significativa estimada de la modulante.
+                </div>
+
+                <div id="advertenciaEscalaEspectro" class="advertencia" style="display:none"></div>
+
+                <div class="grafico-bloque" style="margin-top:12px">
+                    <h3>FFT de la señal modulante — dB relativos</h3>
+                    <canvas id="grafFftModulante" width="1000" height="230"></canvas>
+                </div>
+
+                <div class="meta-analizador" id="metaFftModulante"></div>
+
+                <div class="grafico-bloque">
+                    <h3>FFT de la señal FM simulada — dB relativos</h3>
+                    <canvas id="grafFftFm" width="1000" height="250"></canvas>
+                </div>
+
+                <div class="meta-analizador" id="metaFftFm"></div>
+
+                <div class="nota" id="notaFftCompleja">
+                    La FFT es una observación didáctica de la señal simulada; no representa un analizador de espectro RF calibrado.
+                </div>
+            </div>
+
+            <div id="espectroSenoidal">
+
+            <div class="rejilla-2">
+
+                <div class="tarjeta">
+                    <h3>Espectro FM</h3>
+
+                    <p>
+                        Las componentes aparecen alrededor de fc
+                        separadas por múltiplos de fm.
+                    </p>
+
+                    <div class="formula">
+                        f = fc ± n x fm
+                    </div>
+
+                    <div class="formula">
+                        Amplitud relativa ∝ Jn(beta)
+                    </div>
+                </div>
+
+                <div class="tarjeta">
+                    <h3>Regla de Carson</h3>
+
+                    <div class="formula">
+                        B_FM ≈ 2 x (delta_f + fm)
+                    </div>
+
+                    <p id="calcCarson">—</p>
+                </div>
+
+            </div>
+
+            <div class="grupo" style="max-width: 220px;">
+                <label for="ordenEspectro">
+                    Pares laterales mostrados
+                </label>
+
+                <input
+                    id="ordenEspectro"
+                    type="number"
+                    min="1"
+                    max="20"
+                    step="1"
+                    value="8"
+                >
+            </div>
+
+            <button
+                id="btnEspectro"
+                class="mini-boton"
+                style="max-width: 220px;"
+            >
+                ACTUALIZAR ESPECTRO
+            </button>
+
+            <div class="grafico-bloque" style="margin-top: 12px;">
+                <h3>
+                    Componentes espectrales calculadas con Bessel
+                </h3>
+
+                <canvas
+                    id="grafEspectro"
+                    width="1000"
+                    height="250"
+                ></canvas>
+            </div>
+
+            <div class="tarjeta">
+
+                <h3>Componentes mostradas</h3>
+
+                <div style="overflow-x: auto;">
+
+                    <table class="tabla">
+
+                        <thead>
+                            <tr>
+                                <th>Orden</th>
+                                <th>Lado</th>
+                                <th>Frecuencia (Hz)</th>
+                                <th>Jn(beta)</th>
+                                <th>Amplitud</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="tablaEspectro"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+            <div class="nota">
+                La amplitud de cada línea se obtiene con coeficientes
+                de Bessel mediante software. No es necesario calcular
+                manualmente las funciones de Bessel.
+            </div>
+
+            </div>
+
+        </section>
+
+        <section id="generacion" class="contenido-tab">
+
+            <div class="tarjeta oculto control-audio-global">
+                <h3>Control global del archivo de audio</h3>
+                <p>El mismo archivo y la misma posición de reproducción se comparten con las demás pestañas que utilizan la fuente modulante.</p>
+                <div class="fila-controles">
+                    <button type="button" data-audio-action="play">REPRODUCIR</button>
+                    <button type="button" data-audio-action="pause">PAUSA</button>
+                    <button type="button" data-audio-action="stop">DETENER</button>
+                    <button type="button" data-audio-action="restart">REINICIAR</button>
+                </div>
+                <div class="estado audio-estado-global" style="margin-top:8px">Cargue un archivo de audio.</div>
+                <input class="audio-progreso-global" type="range" min="0" max="1" step="0.01" value="0" style="margin-top:8px">
+            </div>
+
+            <div class="tarjeta">
+                <h3>Ventana de observación</h3>
+                <p>Define el intervalo temporal mostrado en las gráficas de generación. Es independiente de TIEMPO y no modifica los parámetros físicos del VCO.</p>
+                <div class="fila-controles">
+                    <label for="ventanaGeneracion" style="margin:0">Ventana:</label>
+                    <select id="ventanaGeneracion" style="width:110px">
+                        <option value="1">1 ms</option>
+                        <option value="2">2 ms</option>
+                        <option value="5">5 ms</option>
+                        <option value="10">10 ms</option>
+                        <option value="20">20 ms</option>
+                        <option value="50">50 ms</option>
+                        <option value="100" selected>100 ms</option>
+                        <option value="250">250 ms</option>
+                        <option value="500">500 ms</option>
+                    </select>
+                    <span id="ventanaGeneracionInfo" class="dato-inline">100 ms</span>
+                </div>
+            </div>
+
+            <div class="rejilla-2">
+
+                <div class="tarjeta">
+
+                    <h3>Método directo</h3>
+
+                    <div class="diagrama">
+                        modulante → control de frecuencia
+                        → oscilador / VCO → señal FM
+                    </div>
+
+                    <p>
+                        La modulante modifica directamente
+                        la frecuencia del oscilador.
+                    </p>
+
+                    <p>
+                        Un varactor puede funcionar como capacitancia
+                        controlada por tensión dentro de un oscilador.
+                    </p>
+
+                </div>
+
+                <div class="tarjeta">
+
+                    <h3>Método indirecto</h3>
+
+                    <div class="diagrama">
+                        modulación angular pequeña
+                        → procesamiento
+                        → multiplicación / traslado
+                        → FM deseada
+                    </div>
+
+                    <p>
+                        El multiplicador aumenta frecuencia central
+                        y desviación. El mezclador traslada
+                        la frecuencia central.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="tarjeta" id="generacionFuenteGlobal">
+                <h3>Fuente modulante global aplicada al principio de VCO</h3>
+                <div class="diagrama">
+                    fuente modulante global → tensión de control equivalente → VCO → señal FM
+                </div>
+                <p id="generacionGlobalTexto">La fuente global controla la desviación instantánea alrededor de fc.</p>
+                <div class="formula">f_i(t) = fc + delta_f x x_m(t)</div>
+                <div class="formula">delta_f = kf x Am</div>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Fuente global aplicada al control del VCO</h3>
+                <canvas id="grafGenGlobalMod" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Frecuencia instantánea resultante de la fuente global</h3>
+                <canvas id="grafGenGlobalFi" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>FM generada con la fuente global</h3>
+                <canvas id="grafGenGlobalFm" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="nota">
+                Las gráficas anteriores aplican el principio del VCO a la fuente global. El modelo senoidal independiente que sigue se conserva para estudiar Vbias, Kvco, Vm y multiplicación.
+            </div>
+
+            <div class="tarjeta">
+
+                <h3>Modelo didáctico de VCO senoidal independiente</h3>
+
+                <div class="formula">
+                    v_control(t) = Vbias + Vm x cos(2 x pi x fm x t)
+                </div>
+
+                <div class="formula">
+                    delta_f = Kvco x Vm
+                </div>
+
+                <div class="formula">
+                    f_i(t) = fc + delta_f x cos(2 x pi x fm x t)
+                </div>
+
+                <p>
+                    Vbias fija el punto de trabajo.
+                    Vm produce la variación de frecuencia
+                    alrededor de fc.
+                </p>
+                <div class="nota" style="margin-top:10px">
+                    Los resultados mostrados en el panel lateral al pulsar SIMULAR VCO corresponden a este modelo VCO senoidal independiente, no a la fuente modulante global.
+                </div>
+
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Tensión de control del VCO</h3>
+                <canvas id="grafVcontrol" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Frecuencia instantánea del VCO</h3>
+                <canvas id="grafFiVco" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Señal FM generada por el modelo de VCO</h3>
+                <canvas id="grafVcoFm" width="1000" height="150"></canvas>
+            </div>
+
+        </section>
+
+        <section id="demodulacion" class="contenido-tab">
+
+            <div class="tarjeta oculto control-audio-global">
+                <h3>Control global del archivo de audio</h3>
+                <p>El mismo archivo y la misma posición de reproducción se comparten con las demás pestañas que utilizan la fuente modulante.</p>
+                <div class="fila-controles">
+                    <button type="button" data-audio-action="play">REPRODUCIR</button>
+                    <button type="button" data-audio-action="pause">PAUSA</button>
+                    <button type="button" data-audio-action="stop">DETENER</button>
+                    <button type="button" data-audio-action="restart">REINICIAR</button>
+                </div>
+                <div class="estado audio-estado-global" style="margin-top:8px">Cargue un archivo de audio.</div>
+                <input class="audio-progreso-global" type="range" min="0" max="1" step="0.01" value="0" style="margin-top:8px">
+            </div>
+
+            <div class="tarjeta">
+                <h3>Ventana de observación</h3>
+                <p>Define el intervalo temporal mostrado en la modulante de referencia, la frecuencia instantánea, el detector y la tensión de control del PLL. Es independiente de TIEMPO.</p>
+                <div class="fila-controles">
+                    <label for="ventanaDemodFm" style="margin:0">Ventana:</label>
+                    <select id="ventanaDemodFm" style="width:110px">
+                        <option value="1">1 ms</option>
+                        <option value="2">2 ms</option>
+                        <option value="5">5 ms</option>
+                        <option value="10">10 ms</option>
+                        <option value="20">20 ms</option>
+                        <option value="50">50 ms</option>
+                        <option value="100" selected>100 ms</option>
+                        <option value="250">250 ms</option>
+                        <option value="500">500 ms</option>
+                    </select>
+                    <span id="ventanaDemodInfo" class="dato-inline">100 ms</span>
+                </div>
+            </div>
+
+            <div class="rejilla-2">
+
+                <div class="tarjeta">
+
+                    <h3>Detector FM directo</h3>
+
+                    <div class="formula">
+                        v_salida(t) ≈ Kd x [f_i(t) - fc]
+                    </div>
+
+                    <p>
+                        El modelo convierte desviación
+                        de frecuencia en tensión.
+                    </p>
+
+                </div>
+
+                <div class="tarjeta">
+
+                    <h3>PLL como demodulador</h3>
+
+                    <div class="formula">
+                        delta_f ≈ Kvco x delta_V_control
+                    </div>
+
+                    <div class="formula">
+                        delta_V_control ≈ delta_f / Kvco
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="diagrama">
+
+                FM de entrada
+                → comparador de fase
+                → filtro de lazo
+                → VCO
+                ↺ realimentación
+
+                <br>
+
+                tensión de control filtrada
+                → señal recuperada
+
+            </div>
+
+            <div class="tarjeta">
+                <h3>Fuente global y recuperación</h3>
+                <p id="demodFuenteTexto">La frecuencia instantánea de la FM se convierte nuevamente en tensión. Con PLL enganchado, la tensión de control sigue la información de la modulante.</p>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Modulante original de referencia</h3>
+                <canvas id="grafDemodModulante" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Frecuencia instantánea de entrada</h3>
+                <canvas id="grafDemodFi" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Salida de detector directo</h3>
+                <canvas id="grafDetector" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Tensión de control de PLL enganchado</h3>
+                <canvas id="grafPllControl" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="nota">
+                Este modelo supone un PLL enganchado
+                y un VCO aproximadamente lineal.
+                No simula rangos de captura,
+                estabilidad avanzada ni diseño del filtro de lazo.
+            </div>
+
+            <div class="advertencia">
+                Para CD4046 no se muestra un pinout universal.
+                La variante exacta, alimentación,
+                comparador de fase, pines del VCO
+                y filtro deben verificarse con la hoja
+                de datos del integrado realmente disponible.
+            </div>
+
+        </section>
+
+        <section id="ruido" class="contenido-tab">
+
+            <div class="tarjeta oculto control-audio-global">
+                <h3>Control global del archivo de audio</h3>
+                <p>El mismo archivo y la misma posición de reproducción se comparten con las demás pestañas que utilizan la fuente modulante.</p>
+                <div class="fila-controles">
+                    <button type="button" data-audio-action="play">REPRODUCIR</button>
+                    <button type="button" data-audio-action="pause">PAUSA</button>
+                    <button type="button" data-audio-action="stop">DETENER</button>
+                    <button type="button" data-audio-action="restart">REINICIAR</button>
+                </div>
+                <div class="estado audio-estado-global" style="margin-top:8px">Cargue un archivo de audio.</div>
+                <input class="audio-progreso-global" type="range" min="0" max="1" step="0.01" value="0" style="margin-top:8px">
+            </div>
+
+            <div class="tarjeta">
+                <h3>Ventana de observación de ruido</h3>
+                <p>Define el intervalo temporal utilizado para comparar la FM limpia, el ruido de amplitud, el limitador y la perturbación de fase.</p>
+                <div class="fila-controles">
+                    <label for="ventanaRuidoFm" style="margin:0">Ventana:</label>
+                    <select id="ventanaRuidoFm" style="width:110px">
+                        <option value="1">1 ms</option>
+                        <option value="2">2 ms</option>
+                        <option value="5">5 ms</option>
+                        <option value="10">10 ms</option>
+                        <option value="20">20 ms</option>
+                        <option value="50">50 ms</option>
+                        <option value="100" selected>100 ms</option>
+                        <option value="250">250 ms</option>
+                        <option value="500">500 ms</option>
+                    </select>
+                    <span id="ventanaRuidoInfo" class="dato-inline">100 ms</span>
+                </div>
+            </div>
+
+            <div id="avisoAudioRuidoFm" class="nota oculto">
+                <strong>Importante sobre el audio:</strong> el archivo se reproduce con su sonido original. El ruido de esta pestaña se aplica únicamente a la simulación de la señal FM, al limitador y a los cálculos mostrados; no modifica ni distorsiona el audio que se escucha.
+            </div>
+
+            <div class="tarjeta">
+
+                <h3>Ruido y limitador en FM</h3>
+
+                <p>
+                    En FM ideal la información está
+                    en frecuencia y fase, no en amplitud.
+                    Un limitador puede reducir variaciones
+                    de amplitud antes de demodular,
+                    pero no elimina perturbaciones
+                    de fase o frecuencia.
+                </p>
+
+                <div class="diagrama">
+                    FM → limitador → demodulador
+                    → filtro / deénfasis → salida
+                </div>
+
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Señal FM limpia</h3>
+                <canvas id="grafRuidoLimpia" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>FM con ruido de amplitud</h3>
+                <canvas id="grafRuidoAmp" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>Salida de limitador didáctico</h3>
+                <canvas id="grafLimitador" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="grafico-bloque">
+                <h3>FM con perturbación de fase</h3>
+                <canvas id="grafRuidoFase" width="1000" height="150"></canvas>
+            </div>
+
+            <div class="nota">
+                La demostración de ruido es cualitativa.
+                Los niveles introducidos no representan
+                una especificación normativa ni un valor
+                de SNR de un sistema real.
+            </div>
+
+            <div class="tarjeta">
+
+                <h3>Preénfasis y deénfasis</h3>
+
+                <div class="diagrama">
+
+                    transmisor:
+                    modulante → preénfasis → modulador FM
+
+                    <br>
+
+                    receptor:
+                    demodulador FM → deénfasis → salida
+
+                </div>
+
+                <p>
+                    No se fijan constantes de tiempo normativas,
+                    porque dependen del sistema considerado.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <aside class="panel panel-lateral resultados">
+
+        <h2>Resultados</h2>
+
+        <div id="resultadosContenido">
+
+            <div class="resultado">
+                <span>Estado</span>
+                <strong>Seleccione una simulación.</strong>
+            </div>
+
+        </div>
+
+    </aside>
+
+</div>
+
+<script src="../js/common/numpy-compat.js"></script>
+<script src="../js/fm/core/special-functions.js"></script>
+<script src="../js/fm/data/noise-seed-12345.js"></script>
+<script src="../js/fm/core/fm-pm-engine.js"></script>
+<script src="../js/fm/api/local-api.js"></script>
+<script src="../js/fm/ui/fm-ui.js"></script>
+
+</body>
+</html>
